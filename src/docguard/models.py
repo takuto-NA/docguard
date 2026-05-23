@@ -59,6 +59,9 @@ class DocguardConfiguration:
     max_section_lines: int
     index_files: tuple[str, ...]
     require_index_reachability: bool
+    require_orphan_detection: bool
+    require_hub_outgoing_links: bool
+    hub_globs: tuple[str, ...]
     severities: dict[str, str]
     document_types: tuple[DocumentTypeConfiguration, ...]
     experimental_rules_enabled: bool = False

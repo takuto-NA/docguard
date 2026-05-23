@@ -18,7 +18,7 @@ MAXIMUM_HUB_OUTGOING_VIOLATIONS = 0
 
 EXPECTED_REPOSITORY_INCOMING_LINKS = {
     "README.md": frozenset(),
-    "CONTEXT.md": frozenset({"README.md"}),
+    "CONTEXT.md": frozenset({"README.md", "docs/usage.md"}),
     "docs/usage.md": frozenset({"README.md"}),
     "docs/adr/0001-cli-first-docguard.md": frozenset({"README.md"}),
     "docs/adr/0002-structured-diagnostics-and-strict-config.md": frozenset(
@@ -42,7 +42,13 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
         }
     ),
     "CONTEXT.md": frozenset({"docs/adr/0004-utf-8-markdown-encoding.md"}),
-    "docs/usage.md": frozenset({"docs/adr/0003-organization-link-rules.md", "docs/adr/0004-utf-8-markdown-encoding.md"}),
+    "docs/usage.md": frozenset(
+        {
+            "CONTEXT.md",
+            "docs/adr/0003-organization-link-rules.md",
+            "docs/adr/0004-utf-8-markdown-encoding.md",
+        }
+    ),
     "docs/adr/0001-cli-first-docguard.md": frozenset(),
     "docs/adr/0002-structured-diagnostics-and-strict-config.md": frozenset(),
     "docs/adr/0003-organization-link-rules.md": frozenset(),

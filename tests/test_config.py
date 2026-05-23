@@ -142,6 +142,69 @@ max_document_lines = "400"
         )
 
 
+def test_phase2_configuration_defaults_are_false(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.require_orphan_detection is False
+    assert configuration.require_hub_outgoing_links is False
+    assert configuration.hub_globs == tuple()
+
+
+def test_phase2_configuration_keys_are_loaded(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_orphan_detection = true
+require_hub_outgoing_links = true
+hub_globs = ["docs/index-*.md"]
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.require_orphan_detection is True
+    assert configuration.require_hub_outgoing_links is True
+    assert configuration.hub_globs == ("docs/index-*.md",)
+
+
+def test_phase2_unknown_key_still_rejected(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_orphan_detection = true
+unexpected_phase2_key = true
+""",
+    )
+    with pytest.raises(ConfigurationError, match="Unknown keys"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
 def test_find_project_root_walks_up_parent_directories(
     temporary_project_directory: Path,
 ) -> None:

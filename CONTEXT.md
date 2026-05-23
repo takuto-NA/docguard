@@ -25,7 +25,7 @@ A relative Markdown link from one in-scope document to another in-scope Markdown
 _Avoid_: backlink, reference, href
 
 **Hub document**:
-A configured navigation document expected to link onward to other in-scope Markdown files. Index files are always hub documents; additional paths may match `hub_globs` in Phase 2.
+A configured navigation document expected to link onward to other in-scope Markdown files. Index files are always hub documents; additional paths may match optional `hub_globs`.
 _Avoid_: index file, landing page, root doc
 
 **Leaf document**:
@@ -63,4 +63,4 @@ _Avoid_: charset, code page, Shift_JIS
 **Developer**: Is that the same as an orphan document?
 **Maintainer**: No. Orphan means nothing links to it. Unreachable means it is not on a path from an index file. A document can be unreachable without being an orphan if it is part of a linked cluster that is not connected to any index.
 **Developer**: Why would a hub document fail a check?
-**Maintainer**: Phase 2 can warn when a hub document has no outgoing links to other in-scope Markdown files. That usually means the navigation entry point is a dead end.
+**Maintainer**: Docguard warns when a hub document has no outgoing links to other in-scope Markdown files. That usually means the navigation entry point is a dead end.

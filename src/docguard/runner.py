@@ -12,6 +12,8 @@ from docguard.graph import build_document_graph
 from docguard.models import DocguardConfiguration
 from docguard.rules import (
     check_document_length,
+    check_hub_missing_outgoing_links,
+    check_orphan_documents,
     check_required_front_matter,
     check_required_headings,
     check_section_lengths,
@@ -57,6 +59,9 @@ def run_docguard_checks(
         )
         if unreachable_diagnostic is not None:
             diagnostics.append(unreachable_diagnostic)
+
+    diagnostics.extend(check_orphan_documents(configuration, document_graph))
+    diagnostics.extend(check_hub_missing_outgoing_links(configuration, document_graph))
 
     checked_document_paths = tuple(
         context.parsed_document.repository_relative_path

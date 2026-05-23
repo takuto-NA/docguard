@@ -17,6 +17,8 @@ DIAGNOSTIC_CODE_SECTION_TOO_LONG = "DG-SIZE002"
 DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING = "DG-FORMAT001"
 DIAGNOSTIC_CODE_MISSING_FRONT_MATTER = "DG-FORMAT003"
 DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX = "DG-ORG003"
+DIAGNOSTIC_CODE_ORPHAN_DOCUMENT = "DG-ORG001"
+DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS = "DG-ORG002"
 
 DIAGNOSTIC_TITLES: dict[str, str] = {
     DIAGNOSTIC_CODE_DOCUMENT_TOO_LONG: "document too long",
@@ -24,6 +26,8 @@ DIAGNOSTIC_TITLES: dict[str, str] = {
     DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING: "missing required heading",
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER: "missing front matter",
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX: "unreachable from index",
+    DIAGNOSTIC_CODE_ORPHAN_DOCUMENT: "orphan document",
+    DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS: "missing outgoing links",
 }
 
 PYPROJECT_FILENAME = "pyproject.toml"
@@ -56,6 +60,12 @@ WHY_MISSING_FRONT_MATTER = (
 WHY_UNREACHABLE_FROM_INDEX = (
     "Documents that cannot be reached from an index file are easy to miss during review."
 )
+WHY_ORPHAN_DOCUMENT = (
+    "Documents with no incoming links from other in-scope documents are easy to overlook."
+)
+WHY_MISSING_OUTGOING_LINKS = (
+    "Hub documents without outgoing links to other in-scope documents are navigation dead ends."
+)
 
 DEFAULT_SEVERITIES: dict[str, str] = {
     DIAGNOSTIC_CODE_DOCUMENT_TOO_LONG: "error",
@@ -63,6 +73,8 @@ DEFAULT_SEVERITIES: dict[str, str] = {
     DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING: "error",
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER: "error",
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX: "error",
+    DIAGNOSTIC_CODE_ORPHAN_DOCUMENT: "warning",
+    DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS: "warning",
 }
 
 ZERO_CONFIG_ADR_PATH_GLOB = "adr/*.md"

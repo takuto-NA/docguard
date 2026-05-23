@@ -36,7 +36,7 @@ Rules and semantics:
 5. **Initial severity is warning.** Both diagnostics default to `warning` so teams can adopt Phase 2 without immediately failing CI.
 6. **Independent from reachability.** `require_index_reachability` and `DG-ORG003` remain separate from ORG001 and ORG002.
 
-Planned configuration shape for Phase 2 Execute:
+Configuration shape:
 
 ```toml
 [tool.docguard]
@@ -50,10 +50,8 @@ DG-ORG001 = "warning"
 DG-ORG002 = "warning"
 ```
 
-Readiness ships pure graph helper functions that compute orphan and hub-outgoing candidates without emitting diagnostics or adding these configuration keys yet.
-
 ## Consequences
 
-- Phase 2 Execute must wire helpers into `rules/organization.py`, extend configuration parsing, and add runner integration.
-- Documentation and tests must preserve the orphan/unreachable example dialogue in `CONTEXT.md`.
-- Dogfood impact must be measured before enabling either rule in this repository's default configuration.
+- Phase 2 Execute wires graph helpers into rule functions in `src/docguard/rules/__init__.py`, extends configuration parsing, and adds runner integration.
+- Documentation and tests preserve the orphan/unreachable example dialogue in `CONTEXT.md`.
+- Dogfood impact was measured before enabling either rule in this repository's default configuration; both flags remain off by default.

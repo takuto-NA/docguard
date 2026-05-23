@@ -8,6 +8,7 @@ import pytest
 
 from docguard.cli import main
 from docguard.constants import (
+    DIAGNOSTIC_CODE_ORPHAN_DOCUMENT,
     EXIT_CODE_CONFIGURATION_FAILURE,
     EXIT_CODE_DIAGNOSTIC_FAILURE,
     EXIT_CODE_SUCCESS,
@@ -196,6 +197,79 @@ def write_oversized_document(docs_directory: Path) -> None:
         f"{long_lines}\n",
         encoding="utf-8",
     )
+
+
+def write_orphan_detection_project(project_root: Path) -> None:
+    docs_directory = project_root / "docs"
+    docs_directory.mkdir()
+    (project_root / "README.md").write_text(
+        "# Index\n\n[Design](docs/design.md)\n",
+        encoding="utf-8",
+    )
+    (docs_directory / "design.md").write_text("# Design\n", encoding="utf-8")
+    (docs_directory / "orphan.md").write_text("# Orphan\n", encoding="utf-8")
+    write_pyproject(
+        project_root,
+        """
+[tool.docguard]
+paths = ["README.md", "docs"]
+index_files = ["README.md"]
+require_orphan_detection = true
+""",
+    )
+
+
+def test_cli_default_exit_success_on_org001_warning(
+    temporary_project_directory: Path,
+    monkeypatch,
+) -> None:
+    write_orphan_detection_project(temporary_project_directory)
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["README.md", "docs"])
+    assert exit_code == EXIT_CODE_SUCCESS
+
+
+def test_cli_default_prints_org001_warning(
+    temporary_project_directory: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    write_orphan_detection_project(temporary_project_directory)
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["README.md", "docs"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert DIAGNOSTIC_CODE_ORPHAN_DOCUMENT in captured_output.out
+    assert "docs/orphan.md" in captured_output.out
+
+
+def test_cli_verbose_prints_org001_warning(
+    temporary_project_directory: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    write_orphan_detection_project(temporary_project_directory)
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["--verbose"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert DIAGNOSTIC_CODE_ORPHAN_DOCUMENT in captured_output.out
+    assert "docs/orphan.md" in captured_output.out
+
+
+def test_cli_json_includes_org001_warning(
+    temporary_project_directory: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    write_orphan_detection_project(temporary_project_directory)
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["--format", "json"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert DIAGNOSTIC_CODE_ORPHAN_DOCUMENT in captured_output.out
+    assert "docs/orphan.md" in captured_output.out
+    assert '"severity": "warning"' in captured_output.out
 
 
 def test_cli_default_prints_warnings_on_success(

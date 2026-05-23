@@ -32,6 +32,9 @@ ALLOWED_TOP_LEVEL_KEYS = {
     "max_section_lines",
     "index_files",
     "require_index_reachability",
+    "require_orphan_detection",
+    "require_hub_outgoing_links",
+    "hub_globs",
     "severity",
     "document_types",
     "experimental_rules_enabled",
@@ -200,6 +203,9 @@ def build_zero_config_configuration(
         max_section_lines=DEFAULT_MAX_SECTION_LINES,
         index_files=tuple(),
         require_index_reachability=False,
+        require_orphan_detection=False,
+        require_hub_outgoing_links=False,
+        hub_globs=tuple(),
         severities=dict(DEFAULT_SEVERITIES),
         document_types=(
             DocumentTypeConfiguration(
@@ -270,6 +276,16 @@ def parse_docguard_configuration(
         ),
         require_index_reachability=bool(
             raw_configuration.get("require_index_reachability", False)
+        ),
+        require_orphan_detection=bool(
+            raw_configuration.get("require_orphan_detection", False)
+        ),
+        require_hub_outgoing_links=bool(
+            raw_configuration.get("require_hub_outgoing_links", False)
+        ),
+        hub_globs=require_string_list(
+            raw_configuration.get("hub_globs"),
+            "hub_globs",
         ),
         severities=parse_severity_table(raw_configuration.get("severity")),
         document_types=document_types,

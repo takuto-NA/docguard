@@ -8,7 +8,7 @@ Docguard is intentionally different from markdownlint or Prettier. Those tools f
 
 Docguard treats Markdown as a maintainable repository asset, not just prose files.
 
-### Scan Markdown from the CLI
+## Scan Markdown from the CLI
 
 ```bash
 docguard docs/ --summary            # recommended for local use
@@ -21,7 +21,7 @@ docguard docs/ --verbose            # success summary or non-error diagnostics
 
 If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration. Otherwise it scans `docs/` with size limits and a built-in ADR document type for `adr/*.md`.
 
-### Output modes
+## Output modes
 
 | Mode | Success output (human) | When to use |
 |------|------------------------|-------------|
@@ -33,7 +33,7 @@ If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration
 
 `--summary` prints a one-line success summary only when there are no diagnostics. If warnings are present, use `--verbose` to review them. `--quiet` cannot be combined with `--summary` or `--verbose`. `--format json` ignores `--quiet`.
 
-### Enforce five MVP diagnostics
+## Enforce seven diagnostics
 
 | Code | What it checks |
 |------|----------------|
@@ -41,11 +41,13 @@ If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration
 | `DG-SIZE002` | A heading section exceeds the line limit |
 | `DG-FORMAT001` | A typed document is missing a required heading |
 | `DG-FORMAT003` | A typed document is missing YAML front matter or a required key |
+| `DG-ORG001` | Orphan document: zero incoming links from other in-scope Markdown files (opt-in) |
+| `DG-ORG002` | Missing outgoing links: hub document with zero outgoing links to in-scope Markdown files (opt-in) |
 | `DG-ORG003` | A document is not reachable from configured index files |
 
 Each diagnostic includes a human-readable message, why-it-matters text, and an optional suggested next action such as a split target.
 
-### Define typed documents
+## Define typed documents
 
 Use `document_types` in `pyproject.toml` to attach rules to glob patterns. ADRs are the primary example:
 
@@ -55,13 +57,111 @@ Use `document_types` in `pyproject.toml` to attach rules to glob patterns. ADRs 
 
 A document may match at most one `document_types` entry. Overlapping globs are rejected as a configuration error.
 
-### Require index reachability
+## Require index reachability
 
 When `require_index_reachability = true`, docguard builds a document link graph and flags documents that cannot be reached from any configured `index_files` entry inside the scanned scope.
 
 This catches documentation that exists in the repository but is easy to miss during review because nothing links to it.
 
-### Run the same checks through pytest
+## Organization link rules (Phase 2)
+
+Phase 2 adds two opt-in organization checks. They use the same document link graph as reachability but answer different questions.
+
+| Question | Diagnostic | When it runs |
+|----------|------------|--------------|
+| Can anyone reach this file from an index? | `DG-ORG003` | `require_index_reachability = true` |
+| Does any other in-scope document link to this file? | `DG-ORG001` | `require_orphan_detection = true` |
+| Does this hub document link onward to other in-scope files? | `DG-ORG002` | `require_hub_outgoing_links = true` |
+
+Orphan and unreachable are **not** the same. A linked cluster that is not connected to any index file can be unreachable without being an orphan. See [CONTEXT.md](../CONTEXT.md) for the glossary and example dialogue.
+
+### Detect orphan documents (`DG-ORG001`)
+
+**What it finds:** in-scope Markdown files that no other in-scope Markdown file links to.
+
+**Typical fix:** add a relative Markdown link to the orphan from another document, or from an index file.
+
+**Example:** if `README.md` links only to `docs/design.md` and `docs/orphan.md` has zero incoming links, docguard reports `DG-ORG001` on `docs/orphan.md`.
+
+**Enable:**
+
+```toml
+[tool.docguard]
+index_files = ["README.md"]
+require_orphan_detection = true
+```
+
+Index files listed in `index_files` are never flagged as orphans, even when they have zero incoming links.
+
+### Detect hub dead ends (`DG-ORG002`)
+
+**What it finds:** hub documents that do not link onward to any other in-scope Markdown file.
+
+**Hub documents** are paths in `index_files` plus any path matching optional `hub_globs`. Leaf documents are not checked for outgoing links.
+
+**Typical fix:** add relative Markdown links from the hub to the documents it should introduce.
+
+**Example:** if `README.md` has no outgoing links to in-scope Markdown, docguard reports `DG-ORG002` on `README.md`. A leaf such as `docs/design.md` is never an `DG-ORG002` target.
+
+**Enable:**
+
+```toml
+[tool.docguard]
+index_files = ["README.md"]
+require_hub_outgoing_links = true
+hub_globs = ["docs/index-*.md"]   # optional; extra hub paths
+```
+
+When `require_hub_outgoing_links = true` but no hub documents are in the scanned scope, docguard reports no diagnostics.
+
+### Enable both rules
+
+Both rules are opt-in and default to `warning`:
+
+```toml
+[tool.docguard]
+index_files = ["README.md"]
+require_orphan_detection = true
+require_hub_outgoing_links = true
+hub_globs = []
+
+[tool.docguard.severity]
+DG-ORG001 = "warning"
+DG-ORG002 = "warning"
+```
+
+Set either code to `"error"` when you want the check to fail CI.
+
+Full specification: [docs/adr/0003-organization-link-rules.md](adr/0003-organization-link-rules.md).
+
+### Run Phase 2 checks
+
+Phase 2 diagnostics use the same entry points as other rules:
+
+```bash
+docguard docs/                 # warnings print on stdout; exit 0 unless severity is error
+docguard docs/ --verbose       # summary plus non-error diagnostics
+docguard docs/ --format json   # machine-readable output for CI
+pytest --docguard              # one pytest item per Markdown file
+```
+
+**Example output** (`DG-ORG001` as a warning):
+
+```text
+FAILED docs/orphan.md::docguard
+
+DG-ORG001 orphan document
+  docs/orphan.md has no incoming links from other in-scope Markdown documents.
+
+Why this matters:
+  Documents with no incoming links from other in-scope documents are easy to overlook.
+
+Link to this document from another in-scope Markdown document.
+```
+
+This repository keeps both Phase 2 flags off in its default `pyproject.toml`. Enable them in your own `pyproject.toml` when you want these checks.
+
+## Run the same checks through pytest
 
 ```bash
 pytest --docguard          # normal tests plus one docguard item per Markdown file
@@ -70,7 +170,7 @@ pytest --docguard-only     # docguard checks only, without normal Python tests
 
 Each Markdown document becomes one pytest item named like `docs/architecture.md::docguard`.
 
-### Use predictable CI exit codes
+## Use predictable CI exit codes
 
 | Code | Meaning |
 |------|---------|
@@ -152,7 +252,6 @@ Non-ASCII headings use `section-{line_number}` when a Latin slug cannot be gener
 
 - Automatic detection of Shift_JIS or other legacy encodings
 - Localized diagnostic messages (English only; Unicode content in paths and headings is fine)
-- Phase 2 organization rules (`DG-ORG001`, `DG-ORG002`) — specified but not implemented yet
 
 Automated coverage lives in `tests/test_unicode_support.py`.
 
@@ -185,6 +284,9 @@ max_document_lines = 400
 max_section_lines = 120
 index_files = ["README.md", "docs/index.md"]
 require_index_reachability = true
+require_orphan_detection = false
+require_hub_outgoing_links = false
+hub_globs = []
 
 [[tool.docguard.document_types]]
 name = "adr"
@@ -204,6 +306,9 @@ Behavior notes:
 - explicit CLI paths must point to Markdown files or directories containing Markdown
 - configured paths that do not exist yet are skipped silently
 - when `require_index_reachability = true`, at least one configured `index_files` entry must be inside the scanned scope
+- orphan detection runs only when `require_orphan_detection = true`; index files in scope are excluded
+- hub outgoing-link checks run only when `require_hub_outgoing_links = true`; hub documents are `index_files` plus optional `hub_globs`
+- when `require_hub_outgoing_links = true` but no hub documents are in scope, docguard reports no diagnostics
 - `experimental_rules_enabled = true` is reserved for future opt-in rules and currently has no effect
 
 ## Example output
@@ -223,34 +328,15 @@ Suggested split:
   - docs/architecture/runtime-model.md
 ```
 
-## Phase 2 specification (not yet implemented)
-
-Phase 2 organization rules are specified in [docs/adr/0003-organization-link-rules.md](adr/0003-organization-link-rules.md).
-
-| Code | What it will check |
-|------|-------------------|
-| `DG-ORG001` | Orphan document: zero incoming links from other in-scope Markdown files |
-| `DG-ORG002` | Missing outgoing links: hub document with zero outgoing links to in-scope Markdown files |
-
-Planned behavior:
-
-- index files listed in `index_files` are excluded from orphan detection
-- hub documents are `index_files` plus optional `hub_globs`
-- leaf documents are not checked for outgoing links
-- both rules default to `warning` and are opt-in via `require_orphan_detection` and `require_hub_outgoing_links`
-- `DG-ORG003` unreachable-from-index remains independent
-
-Readiness ships graph helper functions only. Diagnostics and configuration keys arrive in Phase 2 Execute.
-
 ## Dogfood impact for Phase 2 rules
 
-If Phase 2 helpers were applied to this repository today:
+If Phase 2 rules were enabled in this repository today:
 
 | Document | Incoming | Outgoing | Orphan candidate | Hub outgoing violation |
 |----------|----------|----------|------------------|------------------------|
 | `README.md` | none | 6 links | no (index excluded) | no |
-| `CONTEXT.md` | `README.md` | `docs/adr/0004-utf-8-markdown-encoding.md` | no | no (leaf) |
-| `docs/usage.md` | `README.md` | `docs/adr/0003-organization-link-rules.md`, `docs/adr/0004-utf-8-markdown-encoding.md` | no | no (leaf) |
+| `CONTEXT.md` | `README.md`, `docs/usage.md` | `docs/adr/0004-utf-8-markdown-encoding.md` | no | no (leaf) |
+| `docs/usage.md` | `README.md` | `CONTEXT.md`, `docs/adr/0003-organization-link-rules.md`, `docs/adr/0004-utf-8-markdown-encoding.md` | no | no (leaf) |
 | `docs/adr/0001-cli-first-docguard.md` | `README.md` | none | no | no (leaf) |
 | `docs/adr/0002-structured-diagnostics-and-strict-config.md` | `README.md`, `docs/adr/0004-utf-8-markdown-encoding.md` | none | no | no (leaf) |
 | `docs/adr/0003-organization-link-rules.md` | `README.md`, `docs/usage.md` | none | no | no (leaf) |
@@ -264,7 +350,6 @@ Automated gate: `tests/test_phase2_readiness.py`.
 
 | Phase | Planned diagnostics |
 |-------|---------------------|
-| Phase 2 | `DG-ORG001` orphan document, `DG-ORG002` missing outgoing links |
 | Phase 3 | `DG-SPLIT001` possible mixed document roles, `DG-FORMAT002` unexpected heading order |
 
 Phase 3 rules will ship as warnings or experimental diagnostics first.
@@ -306,4 +391,5 @@ Automated self-check tests live in `tests/test_dogfood.py`.
 - [x] `test_phase2_readiness.py` green
 - [x] `--verbose` shipped and tested
 - [x] Dogfood impact table documented
-- [ ] Phase 2 Execute plan approved
+- [x] Phase 2 Execute plan approved
+- [x] Phase 2 diagnostics and configuration keys shipped

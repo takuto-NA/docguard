@@ -5,16 +5,26 @@ from __future__ import annotations
 from docguard.constants import (
     DIAGNOSTIC_CODE_DOCUMENT_TOO_LONG,
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER,
+    DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS,
     DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING,
+    DIAGNOSTIC_CODE_ORPHAN_DOCUMENT,
     DIAGNOSTIC_CODE_SECTION_TOO_LONG,
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX,
     WHY_DOCUMENT_TOO_LONG,
     WHY_MISSING_FRONT_MATTER,
+    WHY_MISSING_OUTGOING_LINKS,
     WHY_MISSING_REQUIRED_HEADING,
+    WHY_ORPHAN_DOCUMENT,
     WHY_SECTION_TOO_LONG,
     WHY_UNREACHABLE_FROM_INDEX,
 )
 from docguard.diagnostics import Diagnostic, resolve_severity_for_code
+from docguard.graph import (
+    collect_hub_outgoing_violations,
+    collect_orphan_candidates,
+    resolve_hub_document_paths,
+    resolve_index_path_in_scope,
+)
 from docguard.models import DocguardConfiguration, DocumentGraph, DocumentInspectionContext, MarkdownSection
 from docguard.split import build_split_suggestion
 
@@ -179,6 +189,108 @@ def check_required_front_matter(
                 why_it_matters=WHY_MISSING_FRONT_MATTER,
                 suggestion=f"Add '{required_key}' to the YAML front matter block.",
                 document_type_name=inspection_context.document_type.name,
+            )
+        )
+    return diagnostics
+
+
+def resolve_in_scope_index_paths(
+    configuration: DocguardConfiguration,
+    document_graph: DocumentGraph,
+) -> frozenset[str]:
+    in_scope_index_paths: set[str] = set()
+    for index_file in configuration.index_files:
+        index_path_in_scope = resolve_index_path_in_scope(
+            configuration,
+            index_file,
+            set(document_graph.document_paths),
+        )
+        if index_path_in_scope is None:
+            continue
+        in_scope_index_paths.add(index_path_in_scope)
+    return frozenset(in_scope_index_paths)
+
+
+def check_orphan_documents(
+    configuration: DocguardConfiguration,
+    document_graph: DocumentGraph,
+) -> list[Diagnostic]:
+    if not configuration.require_orphan_detection:
+        return []
+
+    excluded_index_paths = resolve_in_scope_index_paths(
+        configuration,
+        document_graph,
+    )
+    orphan_candidates = collect_orphan_candidates(
+        document_graph,
+        excluded_index_paths=excluded_index_paths,
+    )
+    diagnostics: list[Diagnostic] = []
+    for orphan_document_path in sorted(orphan_candidates):
+        diagnostics.append(
+            Diagnostic(
+                code=DIAGNOSTIC_CODE_ORPHAN_DOCUMENT,
+                severity=resolve_severity_for_code(
+                    DIAGNOSTIC_CODE_ORPHAN_DOCUMENT,
+                    configuration.severities,
+                ),
+                document_path=orphan_document_path,
+                message=(
+                    f"{orphan_document_path} has no incoming links from other "
+                    "in-scope Markdown documents."
+                ),
+                why_it_matters=WHY_ORPHAN_DOCUMENT,
+                suggestion=(
+                    "Link to this document from another in-scope Markdown document."
+                ),
+            )
+        )
+    return diagnostics
+
+
+def check_hub_missing_outgoing_links(
+    configuration: DocguardConfiguration,
+    document_graph: DocumentGraph,
+) -> list[Diagnostic]:
+    if not configuration.require_hub_outgoing_links:
+        return []
+
+    in_scope_index_paths = resolve_in_scope_index_paths(
+        configuration,
+        document_graph,
+    )
+    hub_document_paths = resolve_hub_document_paths(
+        document_graph,
+        index_file_paths=in_scope_index_paths,
+        hub_glob_patterns=frozenset(configuration.hub_globs),
+    )
+    if not hub_document_paths:
+        return []
+
+    hub_outgoing_violations = collect_hub_outgoing_violations(
+        document_graph,
+        hub_document_paths,
+    )
+    diagnostics: list[Diagnostic] = []
+    for hub_document_path in sorted(hub_outgoing_violations):
+        diagnostics.append(
+            Diagnostic(
+                code=DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS,
+                severity=resolve_severity_for_code(
+                    DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS,
+                    configuration.severities,
+                ),
+                document_path=hub_document_path,
+                message=(
+                    f"{hub_document_path} has no outgoing links to other "
+                    "in-scope Markdown documents."
+                ),
+                why_it_matters=WHY_MISSING_OUTGOING_LINKS,
+                suggestion=(
+                    "Add relative Markdown links from this hub document to other "
+                    "in-scope documents."
+                ),
             )
         )
     return diagnostics
