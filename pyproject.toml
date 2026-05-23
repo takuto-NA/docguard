@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "docguard"
+version = "0.1.0"
+description = "CLI-first Markdown structure checker for repositories"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Docguard Contributors" }]
+keywords = ["markdown", "documentation", "lint", "ci", "pytest"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+docguard = "docguard.cli:main"
+
+[project.entry-points.pytest11]
+docguard = "docguard.pytest_plugin"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/docguard"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/docguard",
+  "README.md",
+  "CONTEXT.md",
+  "docs/adr",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.docguard]
+paths = ["README.md", "CONTEXT.md", "docs"]
+index_files = ["README.md"]
+require_index_reachability = true
+max_document_lines = 400
+max_section_lines = 120
+
+[tool.docguard.severity]
+DG-SPLIT001 = "warning"
+
+[[tool.docguard.document_types]]
+name = "adr"
+glob = "docs/adr/*.md"
+required_headings = [
+  "Status",
+  "Context",
+  "Decision",
+  "Consequences",
+]
+required_front_matter_keys = ["status", "date"]
+max_document_lines = 160
+max_section_lines = 60
