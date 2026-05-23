@@ -6,7 +6,7 @@ import json
 from dataclasses import asdict
 
 from docguard.constants import DIAGNOSTIC_TITLES
-from docguard.diagnostics import Diagnostic, DiagnosticRunResult
+from docguard.diagnostics import Diagnostic, DiagnosticRunResult, SeverityLevel
 
 
 def format_document_diagnostics_human(
@@ -85,3 +85,32 @@ def format_run_summary(run_result: DiagnosticRunResult) -> str:
         f"Checked {run_result.checked_document_count} documents. "
         f"Found {diagnostic_count} diagnostics."
     )
+
+
+def format_run_verbose(run_result: DiagnosticRunResult) -> str:
+    if not run_result.diagnostics:
+        return (
+            f"Checked {run_result.checked_document_count} documents. "
+            "No diagnostics."
+        )
+
+    non_error_diagnostics = tuple(
+        diagnostic
+        for diagnostic in run_result.diagnostics
+        if diagnostic.severity is not SeverityLevel.ERROR
+    )
+    if not non_error_diagnostics:
+        return format_run_summary(run_result)
+
+    summary_line = (
+        f"Checked {run_result.checked_document_count} documents. "
+        f"Found {len(non_error_diagnostics)} diagnostics."
+    )
+    diagnostic_blocks = format_run_result_human(
+        DiagnosticRunResult(
+            diagnostics=non_error_diagnostics,
+            checked_document_count=run_result.checked_document_count,
+            checked_document_paths=run_result.checked_document_paths,
+        )
+    )
+    return f"{summary_line}\n\n{diagnostic_blocks}"

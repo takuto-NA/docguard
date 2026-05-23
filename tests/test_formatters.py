@@ -9,6 +9,7 @@ from docguard.formatters import (
     format_run_result_human,
     format_run_result_json,
     format_run_summary,
+    format_run_verbose,
 )
 
 
@@ -53,3 +54,30 @@ def test_format_run_summary_reports_checked_document_count() -> None:
     )
     formatted_output = format_run_summary(run_result)
     assert formatted_output == "Checked 4 documents. Found 0 diagnostics."
+
+
+def test_format_run_verbose_reports_no_diagnostics_on_clean_run() -> None:
+    run_result = DiagnosticRunResult(
+        diagnostics=tuple(),
+        checked_document_count=4,
+    )
+    formatted_output = format_run_verbose(run_result)
+    assert formatted_output == "Checked 4 documents. No diagnostics."
+
+
+def test_format_run_verbose_includes_warning_diagnostics() -> None:
+    warning_diagnostic = Diagnostic(
+        code="DG-SIZE001",
+        severity=SeverityLevel.WARNING,
+        document_path="docs/architecture.md",
+        message="docs/architecture.md has 812 lines.",
+        why_it_matters="Large Markdown files tend to mix overview and operations.",
+        suggestion=None,
+    )
+    run_result = DiagnosticRunResult(
+        diagnostics=(warning_diagnostic,),
+        checked_document_count=2,
+    )
+    formatted_output = format_run_verbose(run_result)
+    assert "Checked 2 documents. Found 1 diagnostics." in formatted_output
+    assert "DG-SIZE001 document too long" in formatted_output

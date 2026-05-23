@@ -84,6 +84,19 @@ def test_repository_documentation_passes_docguard_cli_summary(
     assert "Found 0 diagnostics." in captured_output.out
 
 
+def test_repository_documentation_passes_docguard_cli_verbose(
+    monkeypatch,
+    capsys,
+) -> None:
+    project_root = resolve_repository_root()
+    monkeypatch.chdir(project_root)
+    exit_code = docguard_main([*REPOSITORY_DOCUMENTATION_PATHS, "--verbose"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert "Checked" in captured_output.out
+    assert "No diagnostics." in captured_output.out
+
+
 def test_repository_documentation_passes_pytest_docguard_mode() -> None:
     if os.environ.get(SELF_TEST_SUBPROCESS_ENVIRONMENT_VARIABLE):
         pytest.skip("Skip recursive subprocess self-test.")

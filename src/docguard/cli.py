@@ -17,6 +17,7 @@ from docguard.formatters import (
     format_run_result_human,
     format_run_result_json,
     format_run_summary,
+    format_run_verbose,
 )
 from docguard.runner import DocguardConfigurationFailure, run_docguard_from_paths
 
@@ -50,6 +51,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print checked document count and diagnostic count on success.",
     )
+    argument_parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print checked document count and any non-error diagnostics.",
+    )
     return argument_parser
 
 
@@ -65,6 +71,10 @@ def resolve_project_root(config_path: Path | None) -> Path:
 def main(argv: list[str] | None = None) -> int:
     argument_parser = build_argument_parser()
     arguments = argument_parser.parse_args(argv)
+
+    if arguments.verbose and arguments.format == OUTPUT_FORMAT_JSON:
+        argument_parser.error("--verbose cannot be used with --format json")
+
     project_root = resolve_project_root(arguments.config)
     cli_paths = tuple(arguments.paths)
 
@@ -80,6 +90,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if arguments.format == OUTPUT_FORMAT_JSON:
         print(format_run_result_json(run_result))
+    elif run_result.has_error_severity:
+        print(format_run_result_human(run_result))
+    elif arguments.verbose:
+        print(format_run_verbose(run_result))
     elif run_result.diagnostics:
         print(format_run_result_human(run_result))
     elif arguments.summary:

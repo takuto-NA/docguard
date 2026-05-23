@@ -15,6 +15,7 @@ docguard docs/                      # zero-config: scan docs/ with gentle defaul
 docguard README.md docs/            # explicit paths override configured paths
 docguard docs/ --format json        # machine-readable output for CI
 docguard docs/ --summary            # success summary: Checked N documents. Found M diagnostics.
+docguard docs/ --verbose            # success summary or non-error diagnostics
 ```
 
 If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration. Otherwise it scans `docs/` with size limits and a built-in ADR document type for `adr/*.md`.
@@ -80,11 +81,14 @@ Supported values are `error`, `warning`, and `experimental`. Only `error` fails 
 These improvements are part of the current release even though the CLI surface looks the same:
 
 - `--summary` prints checked document count and diagnostic count on success
+- `--verbose` prints checked document count and any non-error diagnostics
 - `--docguard-only` runs only docguard items in pytest
 - document title headings (`# ...`) are not treated as section-size targets when lower-level headings exist
 - missing, out-of-project, or non-Markdown explicit CLI paths exit with code `2` without a traceback
 - invalid severity values and invalid reachability configuration are rejected before scanning
 - JSON output includes `checked_document_count`
+- `--verbose` cannot be used with `--format json`
+- when both `--verbose` and `--summary` are provided, `--verbose` takes precedence
 
 ## Configuration
 
@@ -136,6 +140,42 @@ Suggested split:
   - docs/architecture/runtime-model.md
 ```
 
+## Phase 2 specification (not yet implemented)
+
+Phase 2 organization rules are specified in [docs/adr/0003-organization-link-rules.md](adr/0003-organization-link-rules.md).
+
+| Code | What it will check |
+|------|-------------------|
+| `DG-ORG001` | Orphan document: zero incoming links from other in-scope Markdown files |
+| `DG-ORG002` | Missing outgoing links: hub document with zero outgoing links to in-scope Markdown files |
+
+Planned behavior:
+
+- index files listed in `index_files` are excluded from orphan detection
+- hub documents are `index_files` plus optional `hub_globs`
+- leaf documents are not checked for outgoing links
+- both rules default to `warning` and are opt-in via `require_orphan_detection` and `require_hub_outgoing_links`
+- `DG-ORG003` unreachable-from-index remains independent
+
+Readiness ships graph helper functions only. Diagnostics and configuration keys arrive in Phase 2 Execute.
+
+## Dogfood impact for Phase 2 rules
+
+If Phase 2 helpers were applied to this repository today:
+
+| Document | Incoming | Outgoing | Orphan candidate | Hub outgoing violation |
+|----------|----------|----------|------------------|------------------------|
+| `README.md` | none | 5 links | no (index excluded) | no |
+| `CONTEXT.md` | `README.md` | none | no | no (leaf) |
+| `docs/usage.md` | `README.md` | `docs/adr/0003-organization-link-rules.md` | no | no (leaf) |
+| `docs/adr/0001-cli-first-docguard.md` | `README.md` | none | no | no (leaf) |
+| `docs/adr/0002-structured-diagnostics-and-strict-config.md` | `README.md` | none | no | no (leaf) |
+| `docs/adr/0003-organization-link-rules.md` | `README.md`, `docs/usage.md` | none | no | no (leaf) |
+
+Expected candidate counts: **0 orphan**, **0 hub outgoing violations**.
+
+Automated gate: `tests/test_phase2_readiness.py`.
+
 ## Not implemented yet
 
 | Phase | Planned diagnostics |
@@ -166,6 +206,7 @@ Run the self-check manually:
 ```bash
 docguard README.md CONTEXT.md docs/
 docguard README.md CONTEXT.md docs/ --summary
+docguard README.md CONTEXT.md docs/ --verbose
 docguard README.md CONTEXT.md docs/ --format json
 pytest --docguard
 pytest --docguard-only
@@ -173,3 +214,12 @@ python -m pytest
 ```
 
 Automated self-check tests live in `tests/test_dogfood.py`.
+
+## Phase 2 Readiness Checklist
+
+- [x] ADR 0003 accepted
+- [x] `test_graph_phase2_contract.py` green
+- [x] `test_phase2_readiness.py` green
+- [x] `--verbose` shipped and tested
+- [x] Dogfood impact table documented
+- [ ] Phase 2 Execute plan approved

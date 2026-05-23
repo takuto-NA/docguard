@@ -10,6 +10,7 @@ Docguard helps teams keep documentation from growing too large, becoming unreach
 pip install docguard
 docguard docs/
 docguard docs/ --summary
+docguard docs/ --verbose
 pytest --docguard
 pytest --docguard-only
 ```
@@ -43,6 +44,7 @@ See [docs/usage.md](docs/usage.md) for the full capability list, configuration, 
 - [CONTEXT.md](CONTEXT.md) — domain glossary
 - [docs/adr/0001-cli-first-docguard.md](docs/adr/0001-cli-first-docguard.md)
 - [docs/adr/0002-structured-diagnostics-and-strict-config.md](docs/adr/0002-structured-diagnostics-and-strict-config.md)
+- [docs/adr/0003-organization-link-rules.md](docs/adr/0003-organization-link-rules.md)
 
 ## Roadmap
 

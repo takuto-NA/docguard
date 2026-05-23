@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import fnmatch
+
 from docguard.config import ConfigurationError, resolve_configured_path
 from docguard.markdown import resolve_markdown_link_target
 from docguard.models import (
@@ -124,6 +126,56 @@ def collect_reachable_document_paths(
                 pending_paths.append(linked_path)
 
     return frozenset(reachable_paths)
+
+
+def resolve_hub_document_paths(
+    document_graph: DocumentGraph,
+    index_file_paths: frozenset[str],
+    hub_glob_patterns: frozenset[str] = frozenset(),
+) -> frozenset[str]:
+    hub_document_paths: set[str] = set()
+    for index_file_path in index_file_paths:
+        if index_file_path in document_graph.document_paths:
+            hub_document_paths.add(index_file_path)
+    for document_path in document_graph.document_paths:
+        normalized_path = document_path.replace("\\", "/")
+        for hub_glob_pattern in hub_glob_patterns:
+            if fnmatch.fnmatch(normalized_path, hub_glob_pattern):
+                hub_document_paths.add(document_path)
+    return frozenset(hub_document_paths)
+
+
+def collect_orphan_candidates(
+    document_graph: DocumentGraph,
+    excluded_index_paths: frozenset[str],
+) -> frozenset[str]:
+    orphan_candidates: set[str] = set()
+    for document_path in document_graph.document_paths:
+        if document_path in excluded_index_paths:
+            continue
+        incoming_paths = document_graph.incoming_links.get(document_path, frozenset())
+        if incoming_paths:
+            continue
+        orphan_candidates.add(document_path)
+    return frozenset(orphan_candidates)
+
+
+def collect_hub_outgoing_violations(
+    document_graph: DocumentGraph,
+    hub_document_paths: frozenset[str],
+) -> frozenset[str]:
+    hub_outgoing_violations: set[str] = set()
+    for hub_document_path in hub_document_paths:
+        if hub_document_path not in document_graph.document_paths:
+            continue
+        outgoing_paths = document_graph.outgoing_links.get(
+            hub_document_path,
+            frozenset(),
+        )
+        if outgoing_paths:
+            continue
+        hub_outgoing_violations.add(hub_document_path)
+    return frozenset(hub_outgoing_violations)
 
 
 def build_document_graph(
