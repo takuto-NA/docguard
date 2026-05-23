@@ -52,6 +52,10 @@ _Avoid_: error, violation, lint
 The impact level of a diagnostic: `error` fails the run, `warning` reports but passes, `experimental` is opt-in and initially non-failing.
 _Avoid_: level, priority
 
+**Document encoding**:
+Markdown files must be UTF-8. UTF-8 with BOM is accepted. Non-UTF-8 files fail with exit code 2. See [docs/adr/0004-utf-8-markdown-encoding.md](docs/adr/0004-utf-8-markdown-encoding.md).
+_Avoid_: charset, code page, Shift_JIS
+
 ## Example dialogue
 
 **Developer**: This ADR is flagged as unreachable from index.

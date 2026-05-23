@@ -7,7 +7,9 @@ from pathlib import Path
 
 import yaml
 
+from docguard.config import ConfigurationError
 from docguard.constants import (
+    MARKDOWN_FILE_ENCODING,
     MARKDOWN_FILE_SUFFIX,
     MAXIMUM_HEADING_LEVEL,
     MINIMUM_HEADING_LEVEL,
@@ -155,7 +157,12 @@ def parse_markdown_document(
     absolute_path: Path,
     repository_relative_path: str,
 ) -> ParsedMarkdownDocument:
-    raw_text = absolute_path.read_text(encoding="utf-8")
+    try:
+        raw_text = absolute_path.read_text(encoding=MARKDOWN_FILE_ENCODING)
+    except UnicodeDecodeError as error:
+        raise ConfigurationError(
+            f"Markdown file is not valid UTF-8: {repository_relative_path}"
+        ) from error
     raw_lines = raw_text.splitlines()
     headings = extract_headings(raw_lines)
     return ParsedMarkdownDocument(

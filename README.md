@@ -34,9 +34,9 @@ Docguard focuses on document structure and repository health, not Markdown forma
 | `DG-FORMAT003` | Missing front matter |
 | `DG-ORG003` | Unreachable from index |
 
-You can scan from the CLI, emit JSON for CI, override severity per rule, define typed documents such as ADRs, and run the same checks through pytest.
+You can scan from the CLI, emit JSON for CI, override severity per rule, define typed documents such as ADRs, run the same checks through pytest, and scan UTF-8 Markdown with Japanese or other non-ASCII content.
 
-See [docs/usage.md](docs/usage.md) for the full capability list, configuration, exit codes, and self-test instructions.
+See [docs/usage.md](docs/usage.md) for the full capability list, UTF-8 support, configuration, exit codes, and self-test instructions.
 
 ## Documentation in this repository
 
@@ -45,6 +45,7 @@ See [docs/usage.md](docs/usage.md) for the full capability list, configuration, 
 - [docs/adr/0001-cli-first-docguard.md](docs/adr/0001-cli-first-docguard.md)
 - [docs/adr/0002-structured-diagnostics-and-strict-config.md](docs/adr/0002-structured-diagnostics-and-strict-config.md)
 - [docs/adr/0003-organization-link-rules.md](docs/adr/0003-organization-link-rules.md)
+- [docs/adr/0004-utf-8-markdown-encoding.md](docs/adr/0004-utf-8-markdown-encoding.md)
 
 ## Roadmap
 

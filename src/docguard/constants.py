@@ -28,6 +28,7 @@ DIAGNOSTIC_TITLES: dict[str, str] = {
 
 PYPROJECT_FILENAME = "pyproject.toml"
 
+MARKDOWN_FILE_ENCODING = "utf-8-sig"
 MARKDOWN_FILE_SUFFIX = ".md"
 YAML_FRONT_MATTER_DELIMITER = "---"
 

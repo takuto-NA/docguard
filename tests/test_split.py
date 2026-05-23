@@ -36,6 +36,33 @@ Data flow text.
     assert "docs/architecture/runtime-model.md" in suggestion
 
 
+def test_build_split_suggestion_uses_line_number_for_non_ascii_headings(
+    temporary_project_directory: Path,
+) -> None:
+    markdown_path = temporary_project_directory / "docs" / "notes.md"
+    markdown_path.parent.mkdir(parents=True)
+    markdown_path.write_text(
+        """# メモ
+
+## 概要
+概要テキスト。
+
+## 背景
+背景テキスト。
+""",
+        encoding="utf-8",
+    )
+    parsed_document = parse_markdown_document(
+        markdown_path,
+        "docs/notes.md",
+    )
+    suggestion = build_split_suggestion(parsed_document)
+
+    assert "docs/notes/section-3.md" in suggestion
+    assert "docs/notes/section-6.md" in suggestion
+    assert suggestion.count("section.md") == 0
+
+
 def test_build_split_suggestion_falls_back_to_generic_message(
     temporary_project_directory: Path,
 ) -> None:

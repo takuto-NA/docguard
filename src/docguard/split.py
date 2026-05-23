@@ -13,10 +13,12 @@ MAXIMUM_SUGGESTED_SPLIT_FILES = 5
 SLUG_INVALID_CHARACTER_PATTERN = re.compile(r"[^a-z0-9]+")
 
 
-def slugify_heading_text(heading_text: str) -> str:
+def slugify_heading_text(heading_text: str, line_number: int) -> str:
     normalized_text = heading_text.strip().lower()
     slug_text = SLUG_INVALID_CHARACTER_PATTERN.sub("-", normalized_text).strip("-")
-    return slug_text or "section"
+    if slug_text:
+        return slug_text
+    return f"section-{line_number}"
 
 
 def build_split_suggestion(
@@ -35,6 +37,6 @@ def build_split_suggestion(
     source_stem = source_path.rsplit(".", maxsplit=1)[0]
     suggested_paths: list[str] = []
     for heading in top_level_headings[:MAXIMUM_SUGGESTED_SPLIT_FILES]:
-        slug = slugify_heading_text(heading.text)
+        slug = slugify_heading_text(heading.text, heading.line_number)
         suggested_paths.append(f"- {source_stem}/{slug}.md")
     return "Suggested split:\n" + "\n".join(suggested_paths)

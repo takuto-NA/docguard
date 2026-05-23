@@ -63,9 +63,9 @@ Each Markdown document becomes one pytest item named like `docs/architecture.md:
 |------|---------|
 | `0` | No error-severity diagnostics |
 | `1` | One or more error-severity diagnostics |
-| `2` | Invalid `[tool.docguard]` configuration |
+| `2` | Invalid `[tool.docguard]` configuration or a Markdown file that is not valid UTF-8 |
 
-Warnings do not fail a run. Configuration errors fail before document scanning begins.
+Warnings do not fail a run. Exit code `2` failures are pre-diagnostic: invalid configuration is rejected before scanning, and non-UTF-8 Markdown files fail during discovery with a clear message instead of a traceback.
 
 Severity can be overridden per diagnostic code:
 
@@ -76,6 +76,72 @@ DG-SIZE001 = "warning"
 
 Supported values are `error`, `warning`, and `experimental`. Only `error` fails a run.
 
+## Unicode and UTF-8 support
+
+Docguard officially supports UTF-8 Markdown. Teams can use Japanese or other non-ASCII content in documents, configuration, and file paths without hitting tracebacks.
+
+See [docs/adr/0004-utf-8-markdown-encoding.md](adr/0004-utf-8-markdown-encoding.md) for the encoding contract.
+
+### What you can do
+
+| Capability | Example |
+|------------|---------|
+| Scan Japanese Markdown | `## 概要`, body text, and paths such as `docs/設計.md` |
+| Use Japanese in configuration | `required_headings = ["概要", "背景"]` |
+| Import docguard as a library | `from docguard.runner import run_docguard_from_paths` |
+| Fail safely on non-UTF-8 input | Shift_JIS files exit with code `2` instead of a traceback |
+| Preserve CJK in JSON output | Diagnostic messages keep characters such as `概要` |
+| Read UTF-8 with BOM | BOM is stripped automatically through `utf-8-sig` |
+| Get useful split suggestions for CJK headings | `## 概要` / `## 背景` → `section-3.md`, `section-6.md` |
+
+All entry points share the same behavior:
+
+- CLI: `docguard docs/`
+- pytest: `pytest --docguard`
+- library: `run_docguard_from_paths()`
+
+### Encoding rules
+
+- Markdown files must be UTF-8. Files without a BOM are preferred; UTF-8 with BOM is also accepted.
+- Non-UTF-8 files such as Shift_JIS fail with exit code `2` and do not produce a traceback.
+- Diagnostic messages stay in English.
+- Document paths, heading names, and configuration values may contain Unicode characters.
+
+Example with Japanese required headings:
+
+```toml
+[[tool.docguard.document_types]]
+name = "guide"
+glob = "docs/guide/*.md"
+required_headings = ["概要", "背景"]
+```
+
+Example scan:
+
+```bash
+docguard README.md docs/
+docguard docs/ --format json
+pytest --docguard
+```
+
+Example split suggestion for a Japanese document:
+
+```text
+Suggested split:
+  - docs/notes/section-3.md
+  - docs/notes/section-6.md
+```
+
+Non-ASCII headings use `section-{line_number}` when a Latin slug cannot be generated.
+
+### Not supported yet
+
+- Automatic detection of Shift_JIS or other legacy encodings
+- Localized diagnostic messages (English only; Unicode content in paths and headings is fine)
+- Phase 2 organization rules (`DG-ORG001`, `DG-ORG002`) — specified but not implemented yet
+
+Automated coverage lives in `tests/test_unicode_support.py`.
+
 ## Phase 1.5 UX and reliability
 
 These improvements are part of the current release even though the CLI surface looks the same:
@@ -85,6 +151,7 @@ These improvements are part of the current release even though the CLI surface l
 - `--docguard-only` runs only docguard items in pytest
 - document title headings (`# ...`) are not treated as section-size targets when lower-level headings exist
 - missing, out-of-project, or non-Markdown explicit CLI paths exit with code `2` without a traceback
+- non-UTF-8 Markdown files exit with code `2` without a traceback
 - invalid severity values and invalid reachability configuration are rejected before scanning
 - JSON output includes `checked_document_count`
 - `--verbose` cannot be used with `--format json`
@@ -165,12 +232,13 @@ If Phase 2 helpers were applied to this repository today:
 
 | Document | Incoming | Outgoing | Orphan candidate | Hub outgoing violation |
 |----------|----------|----------|------------------|------------------------|
-| `README.md` | none | 5 links | no (index excluded) | no |
-| `CONTEXT.md` | `README.md` | none | no | no (leaf) |
-| `docs/usage.md` | `README.md` | `docs/adr/0003-organization-link-rules.md` | no | no (leaf) |
+| `README.md` | none | 6 links | no (index excluded) | no |
+| `CONTEXT.md` | `README.md` | `docs/adr/0004-utf-8-markdown-encoding.md` | no | no (leaf) |
+| `docs/usage.md` | `README.md` | `docs/adr/0003-organization-link-rules.md`, `docs/adr/0004-utf-8-markdown-encoding.md` | no | no (leaf) |
 | `docs/adr/0001-cli-first-docguard.md` | `README.md` | none | no | no (leaf) |
-| `docs/adr/0002-structured-diagnostics-and-strict-config.md` | `README.md` | none | no | no (leaf) |
+| `docs/adr/0002-structured-diagnostics-and-strict-config.md` | `README.md`, `docs/adr/0004-utf-8-markdown-encoding.md` | none | no | no (leaf) |
 | `docs/adr/0003-organization-link-rules.md` | `README.md`, `docs/usage.md` | none | no | no (leaf) |
+| `docs/adr/0004-utf-8-markdown-encoding.md` | `README.md`, `CONTEXT.md`, `docs/usage.md` | `docs/adr/0002-structured-diagnostics-and-strict-config.md` | no | no (leaf) |
 
 Expected candidate counts: **0 orphan**, **0 hub outgoing violations**.
 
