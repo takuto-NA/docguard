@@ -8,9 +8,10 @@ Docguard helps teams keep documentation from growing too large, becoming unreach
 
 ```bash
 pip install docguard
-docguard docs/
-docguard docs/ --summary
-docguard docs/ --verbose
+docguard docs/ --summary    # recommended for local use
+docguard docs/              # silent when no diagnostics (CI-friendly default)
+docguard docs/ --quiet      # silent on success, including warnings
+docguard docs/ --verbose    # show warnings without failing the run
 pytest --docguard
 pytest --docguard-only
 ```

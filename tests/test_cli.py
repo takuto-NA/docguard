@@ -175,6 +175,174 @@ paths = ["README.md"]
     assert "Found 0 diagnostics." not in captured_output.out
 
 
+def write_warning_severity_pyproject(project_root: Path) -> None:
+    write_pyproject(
+        project_root,
+        """
+[tool.docguard]
+paths = ["docs"]
+max_document_lines = 400
+
+[tool.docguard.severity]
+DG-SIZE001 = "warning"
+""",
+    )
+
+
+def write_oversized_document(docs_directory: Path) -> None:
+    docs_directory.mkdir(exist_ok=True)
+    long_lines = "\n".join(["line"] * 401)
+    (docs_directory / "architecture.md").write_text(
+        f"{long_lines}\n",
+        encoding="utf-8",
+    )
+
+
+def test_cli_default_prints_warnings_on_success(
+    temporary_project_directory: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    write_oversized_document(temporary_project_directory / "docs")
+    write_warning_severity_pyproject(temporary_project_directory)
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["docs"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert "DG-SIZE001" in captured_output.out
+
+
+def test_cli_quiet_on_clean_success_produces_no_output(
+    temporary_project_directory: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    (temporary_project_directory / "README.md").write_text("# Readme\n", encoding="utf-8")
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["README.md"]
+""",
+    )
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["--quiet"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert captured_output.out == ""
+
+
+def test_cli_quiet_suppresses_warnings_on_success(
+    temporary_project_directory: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    write_oversized_document(temporary_project_directory / "docs")
+    write_warning_severity_pyproject(temporary_project_directory)
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["docs", "--quiet"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert captured_output.out == ""
+
+
+def test_cli_summary_does_not_print_when_warnings_present(
+    temporary_project_directory: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    write_oversized_document(temporary_project_directory / "docs")
+    write_warning_severity_pyproject(temporary_project_directory)
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["docs", "--summary"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert "DG-SIZE001" in captured_output.out
+    assert "Found 0 diagnostics." not in captured_output.out
+
+
+def test_cli_quiet_does_not_suppress_error_output(
+    temporary_project_directory: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    (docs_directory / "architecture.md").write_text(
+        "\n".join(["# Architecture", ""] + ["line"] * 401),
+        encoding="utf-8",
+    )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+max_document_lines = 400
+""",
+    )
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["docs", "--quiet"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_DIAGNOSTIC_FAILURE
+    assert "DG-SIZE001" in captured_output.out
+
+
+def test_cli_quiet_conflicts_with_summary(
+    temporary_project_directory: Path,
+    monkeypatch,
+) -> None:
+    (temporary_project_directory / "README.md").write_text("# Readme\n", encoding="utf-8")
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["README.md"]
+""",
+    )
+    monkeypatch.chdir(temporary_project_directory)
+    with pytest.raises(SystemExit) as exit_info:
+        main(["--quiet", "--summary"])
+    assert exit_info.value.code == EXIT_CODE_CONFIGURATION_FAILURE
+
+
+def test_cli_quiet_conflicts_with_verbose(
+    temporary_project_directory: Path,
+    monkeypatch,
+) -> None:
+    (temporary_project_directory / "README.md").write_text("# Readme\n", encoding="utf-8")
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["README.md"]
+""",
+    )
+    monkeypatch.chdir(temporary_project_directory)
+    with pytest.raises(SystemExit) as exit_info:
+        main(["--quiet", "--verbose"])
+    assert exit_info.value.code == EXIT_CODE_CONFIGURATION_FAILURE
+
+
+def test_cli_quiet_with_json_still_prints_json(
+    temporary_project_directory: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    (temporary_project_directory / "README.md").write_text("# Readme\n", encoding="utf-8")
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["README.md"]
+""",
+    )
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["--quiet", "--format", "json"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert '"diagnostics"' in captured_output.out
+
+
 def test_cli_verbose_does_not_change_error_diagnostic_output(
     temporary_project_directory: Path,
     monkeypatch,

@@ -49,12 +49,23 @@ def build_argument_parser() -> argparse.ArgumentParser:
     argument_parser.add_argument(
         "--summary",
         action="store_true",
-        help="Print checked document count and diagnostic count on success.",
+        help=(
+            "Print checked document count and diagnostic count when the run "
+            "succeeds with no diagnostics."
+        ),
     )
     argument_parser.add_argument(
         "--verbose",
         action="store_true",
         help="Print checked document count and any non-error diagnostics.",
+    )
+    argument_parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help=(
+            "Suppress human output on success, including warnings. "
+            "Errors still print."
+        ),
     )
     return argument_parser
 
@@ -75,6 +86,12 @@ def main(argv: list[str] | None = None) -> int:
     if arguments.verbose and arguments.format == OUTPUT_FORMAT_JSON:
         argument_parser.error("--verbose cannot be used with --format json")
 
+    if arguments.quiet and arguments.summary:
+        argument_parser.error("--quiet cannot be used with --summary")
+
+    if arguments.quiet and arguments.verbose:
+        argument_parser.error("--quiet cannot be used with --verbose")
+
     project_root = resolve_project_root(arguments.config)
     cli_paths = tuple(arguments.paths)
 
@@ -94,6 +111,8 @@ def main(argv: list[str] | None = None) -> int:
         print(format_run_result_human(run_result))
     elif arguments.verbose:
         print(format_run_verbose(run_result))
+    elif arguments.quiet:
+        pass
     elif run_result.diagnostics:
         print(format_run_result_human(run_result))
     elif arguments.summary:

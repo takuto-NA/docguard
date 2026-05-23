@@ -11,14 +11,27 @@ Docguard treats Markdown as a maintainable repository asset, not just prose file
 ### Scan Markdown from the CLI
 
 ```bash
-docguard docs/                      # zero-config: scan docs/ with gentle defaults
+docguard docs/ --summary            # recommended for local use
+docguard docs/                      # silent when no diagnostics (CI-friendly default)
+docguard docs/ --quiet              # silent on success, including warnings
 docguard README.md docs/            # explicit paths override configured paths
 docguard docs/ --format json        # machine-readable output for CI
-docguard docs/ --summary            # success summary: Checked N documents. Found M diagnostics.
 docguard docs/ --verbose            # success summary or non-error diagnostics
 ```
 
 If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration. Otherwise it scans `docs/` with size limits and a built-in ADR document type for `adr/*.md`.
+
+### Output modes
+
+| Mode | Success output (human) | When to use |
+|------|------------------------|-------------|
+| default | silent if no diagnostics; **warnings print** if present | CI when warnings should surface |
+| `--quiet` | silent on success, **including warnings** | CI or scripts that want exit-code-only success |
+| `--summary` | one summary line if **no diagnostics** | local daily check |
+| `--verbose` | summary + non-error diagnostics | warning triage |
+| `--format json` | JSON payload always | machine-readable CI |
+
+`--summary` prints a one-line success summary only when there are no diagnostics. If warnings are present, use `--verbose` to review them. `--quiet` cannot be combined with `--summary` or `--verbose`. `--format json` ignores `--quiet`.
 
 ### Enforce five MVP diagnostics
 
@@ -119,8 +132,9 @@ required_headings = ["概要", "背景"]
 Example scan:
 
 ```bash
-docguard README.md docs/
+docguard README.md docs/ --summary
 docguard docs/ --format json
+docguard docs/ --quiet
 pytest --docguard
 ```
 
@@ -146,8 +160,9 @@ Automated coverage lives in `tests/test_unicode_support.py`.
 
 These improvements are part of the current release even though the CLI surface looks the same:
 
-- `--summary` prints checked document count and diagnostic count on success
+- `--summary` prints checked document count and diagnostic count on success when there are no diagnostics
 - `--verbose` prints checked document count and any non-error diagnostics
+- `--quiet` suppresses human output on success, including warnings; errors still print
 - `--docguard-only` runs only docguard items in pytest
 - document title headings (`# ...`) are not treated as section-size targets when lower-level headings exist
 - missing, out-of-project, or non-Markdown explicit CLI paths exit with code `2` without a traceback
@@ -155,6 +170,7 @@ These improvements are part of the current release even though the CLI surface l
 - invalid severity values and invalid reachability configuration are rejected before scanning
 - JSON output includes `checked_document_count`
 - `--verbose` cannot be used with `--format json`
+- `--quiet` cannot be used with `--summary` or `--verbose`
 - when both `--verbose` and `--summary` are provided, `--verbose` takes precedence
 
 ## Configuration
@@ -272,8 +288,8 @@ Configured checks:
 Run the self-check manually:
 
 ```bash
-docguard README.md CONTEXT.md docs/
 docguard README.md CONTEXT.md docs/ --summary
+docguard README.md CONTEXT.md docs/ --quiet
 docguard README.md CONTEXT.md docs/ --verbose
 docguard README.md CONTEXT.md docs/ --format json
 pytest --docguard
