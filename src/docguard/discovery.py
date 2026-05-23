@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from docguard.config import (
+    ConfigurationError,
     path_matches_any_glob,
     resolve_configured_path,
     resolve_document_type_for_path,
@@ -12,6 +13,37 @@ from docguard.config import (
 from docguard.constants import MARKDOWN_FILE_SUFFIX
 from docguard.models import DocguardConfiguration, DocumentInspectionContext
 from docguard.markdown import parse_markdown_document
+
+
+def ensure_configured_path_exists(
+    configured_path: Path,
+    configured_path_string: str,
+) -> None:
+    if configured_path.exists():
+        return
+    raise ConfigurationError(f"Path not found: {configured_path_string}")
+
+
+def ensure_path_is_inside_project_root(
+    project_root: Path,
+    candidate_path: Path,
+) -> None:
+    resolved_project_root = project_root.resolve()
+    resolved_candidate_path = candidate_path.resolve()
+    try:
+        resolved_candidate_path.relative_to(resolved_project_root)
+    except ValueError as error:
+        raise ConfigurationError(
+            f"Path is outside project root: {resolved_candidate_path}"
+        ) from error
+
+
+def resolve_repository_relative_path(
+    project_root: Path,
+    markdown_file_path: Path,
+) -> str:
+    ensure_path_is_inside_project_root(project_root, markdown_file_path)
+    return markdown_file_path.relative_to(project_root.resolve()).as_posix()
 
 
 def is_markdown_file(path: Path) -> bool:
@@ -47,11 +79,23 @@ def discover_documents(
             configured_path_string,
         )
         if not configured_path.exists():
+            if configuration.validate_explicit_paths:
+                ensure_configured_path_exists(configured_path, configured_path_string)
             continue
+        if configuration.validate_explicit_paths:
+            ensure_path_is_inside_project_root(
+                configuration.project_root,
+                configured_path,
+            )
+            if configured_path.is_file() and not is_markdown_file(configured_path):
+                raise ConfigurationError(
+                    f"Path is not a Markdown file: {configured_path_string}"
+                )
         for markdown_file_path in collect_markdown_files_from_path(configured_path):
-            repository_relative_path = markdown_file_path.relative_to(
-                configuration.project_root
-            ).as_posix()
+            repository_relative_path = resolve_repository_relative_path(
+                configuration.project_root,
+                markdown_file_path,
+            )
             if path_matches_any_glob(
                 repository_relative_path,
                 configuration.ignore_globs,

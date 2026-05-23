@@ -136,6 +136,37 @@ require_index_reachability = true
     assert unreachable_diagnostics[0].document_path == "docs/hidden.md"
 
 
+def test_linked_cluster_not_connected_to_index_is_unreachable(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    (temporary_project_directory / "README.md").write_text("# Index\n", encoding="utf-8")
+    (docs_directory / "alpha.md").write_text("# Alpha\n\n[Beta](beta.md)\n", encoding="utf-8")
+    (docs_directory / "beta.md").write_text("# Beta\n", encoding="utf-8")
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["README.md", "docs"]
+index_files = ["README.md"]
+require_index_reachability = true
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    unreachable_paths = {
+        diagnostic.document_path
+        for diagnostic in run_result.diagnostics
+        if diagnostic.code == DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX
+    }
+    assert unreachable_paths == {"docs/alpha.md", "docs/beta.md"}
+
+
 def test_section_too_long_diagnostic_is_reported(
     temporary_project_directory: Path,
 ) -> None:

@@ -45,6 +45,7 @@ include = [
   "src/docguard",
   "README.md",
   "CONTEXT.md",
+  "docs/usage.md",
   "docs/adr",
 ]
 
@@ -58,9 +59,6 @@ index_files = ["README.md"]
 require_index_reachability = true
 max_document_lines = 400
 max_section_lines = 120
-
-[tool.docguard.severity]
-DG-SPLIT001 = "warning"
 
 [[tool.docguard.document_types]]
 name = "adr"

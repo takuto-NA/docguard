@@ -62,6 +62,7 @@ class DocguardConfiguration:
     severities: dict[str, str]
     document_types: tuple[DocumentTypeConfiguration, ...]
     experimental_rules_enabled: bool = False
+    validate_explicit_paths: bool = False
 
 
 @dataclass(frozen=True)
@@ -70,3 +71,11 @@ class DocumentInspectionContext:
     document_type: DocumentTypeConfiguration | None
     max_document_lines: int
     max_section_lines: int
+
+
+@dataclass(frozen=True)
+class DocumentGraph:
+    document_paths: frozenset[str]
+    outgoing_links: dict[str, frozenset[str]]
+    incoming_links: dict[str, frozenset[str]]
+    reachable_paths: frozenset[str]

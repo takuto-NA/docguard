@@ -9,7 +9,9 @@ Docguard helps teams keep documentation from growing too large, becoming unreach
 ```bash
 pip install docguard
 docguard docs/
+docguard docs/ --summary
 pytest --docguard
+pytest --docguard-only
 ```
 
 For development:
@@ -21,9 +23,19 @@ python -m pytest
 
 ## What this tool checks
 
-The MVP checks document size, section size, required headings, YAML front matter, and index reachability.
+Docguard focuses on document structure and repository health, not Markdown formatting.
 
-See [docs/usage.md](docs/usage.md) for the full capability list, configuration, diagnostics, and self-test instructions.
+| Code | Check |
+|------|-------|
+| `DG-SIZE001` | Document too long |
+| `DG-SIZE002` | Section too long |
+| `DG-FORMAT001` | Missing required heading |
+| `DG-FORMAT003` | Missing front matter |
+| `DG-ORG003` | Unreachable from index |
+
+You can scan from the CLI, emit JSON for CI, override severity per rule, define typed documents such as ADRs, and run the same checks through pytest.
+
+See [docs/usage.md](docs/usage.md) for the full capability list, configuration, exit codes, and self-test instructions.
 
 ## Documentation in this repository
 

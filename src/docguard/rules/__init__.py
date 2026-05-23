@@ -15,7 +15,7 @@ from docguard.constants import (
     WHY_UNREACHABLE_FROM_INDEX,
 )
 from docguard.diagnostics import Diagnostic, resolve_severity_for_code
-from docguard.models import DocguardConfiguration, DocumentInspectionContext
+from docguard.models import DocguardConfiguration, DocumentGraph, DocumentInspectionContext, MarkdownSection
 from docguard.split import build_split_suggestion
 
 
@@ -48,6 +48,22 @@ def check_document_length(
     )
 
 
+def should_check_section_length(
+    sections: tuple[MarkdownSection, ...],
+    section: MarkdownSection,
+) -> bool:
+    if section.heading is None:
+        return True
+    if section.heading.level != 1:
+        return True
+    has_lower_level_sections = any(
+        candidate_section.heading is not None
+        and candidate_section.heading.level > 1
+        for candidate_section in sections
+    )
+    return not has_lower_level_sections
+
+
 def check_section_lengths(
     configuration: DocguardConfiguration,
     inspection_context: DocumentInspectionContext,
@@ -55,6 +71,8 @@ def check_section_lengths(
     diagnostics: list[Diagnostic] = []
     parsed_document = inspection_context.parsed_document
     for section in parsed_document.sections:
+        if not should_check_section_length(parsed_document.sections, section):
+            continue
         if section.line_count <= inspection_context.max_section_lines:
             continue
         heading_label = (
@@ -169,12 +187,12 @@ def check_required_front_matter(
 def check_unreachable_from_index(
     configuration: DocguardConfiguration,
     inspection_context: DocumentInspectionContext,
-    reachable_document_paths: set[str],
+    document_graph: DocumentGraph,
 ) -> Diagnostic | None:
     if not configuration.require_index_reachability:
         return None
     document_path = inspection_context.parsed_document.repository_relative_path
-    if document_path in reachable_document_paths:
+    if document_path in document_graph.reachable_paths:
         return None
     return Diagnostic(
         code=DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX,

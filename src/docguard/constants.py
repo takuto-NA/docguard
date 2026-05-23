@@ -27,7 +27,6 @@ DIAGNOSTIC_TITLES: dict[str, str] = {
 }
 
 PYPROJECT_FILENAME = "pyproject.toml"
-TOOL_DOCGUARD_SECTION = "tool.docguard"
 
 MARKDOWN_FILE_SUFFIX = ".md"
 YAML_FRONT_MATTER_DELIMITER = "---"

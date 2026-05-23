@@ -30,6 +30,8 @@ class Diagnostic:
 @dataclass(frozen=True)
 class DiagnosticRunResult:
     diagnostics: tuple[Diagnostic, ...] = field(default_factory=tuple)
+    checked_document_count: int = 0
+    checked_document_paths: tuple[str, ...] = field(default_factory=tuple)
 
     @property
     def has_error_severity(self) -> bool:

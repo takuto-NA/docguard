@@ -5,7 +5,11 @@ from __future__ import annotations
 import json
 
 from docguard.diagnostics import Diagnostic, DiagnosticRunResult, SeverityLevel
-from docguard.formatters import format_run_result_human, format_run_result_json
+from docguard.formatters import (
+    format_run_result_human,
+    format_run_result_json,
+    format_run_summary,
+)
 
 
 def build_sample_diagnostic() -> Diagnostic:
@@ -31,8 +35,21 @@ def test_format_run_result_human_includes_failure_header() -> None:
 
 
 def test_format_run_result_json_contains_structured_fields() -> None:
-    run_result = DiagnosticRunResult(diagnostics=(build_sample_diagnostic(),))
+    run_result = DiagnosticRunResult(
+        diagnostics=(build_sample_diagnostic(),),
+        checked_document_count=3,
+    )
     formatted_output = format_run_result_json(run_result)
     parsed_output = json.loads(formatted_output)
+    assert parsed_output["checked_document_count"] == 3
     assert parsed_output["diagnostics"][0]["code"] == "DG-SIZE001"
     assert parsed_output["diagnostics"][0]["severity"] == "error"
+
+
+def test_format_run_summary_reports_checked_document_count() -> None:
+    run_result = DiagnosticRunResult(
+        diagnostics=tuple(),
+        checked_document_count=4,
+    )
+    formatted_output = format_run_summary(run_result)
+    assert formatted_output == "Checked 4 documents. Found 0 diagnostics."

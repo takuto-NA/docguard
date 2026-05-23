@@ -13,7 +13,11 @@ from docguard.constants import (
     EXIT_CODE_SUCCESS,
 )
 from docguard.diagnostics import resolve_exit_code_from_diagnostics
-from docguard.formatters import format_run_result_human, format_run_result_json
+from docguard.formatters import (
+    format_run_result_human,
+    format_run_result_json,
+    format_run_summary,
+)
 from docguard.runner import DocguardConfigurationFailure, run_docguard_from_paths
 
 OUTPUT_FORMAT_HUMAN = "human"
@@ -40,6 +44,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
         choices=[OUTPUT_FORMAT_HUMAN, OUTPUT_FORMAT_JSON],
         default=OUTPUT_FORMAT_HUMAN,
         help="Output format for diagnostics.",
+    )
+    argument_parser.add_argument(
+        "--summary",
+        action="store_true",
+        help="Print checked document count and diagnostic count on success.",
     )
     return argument_parser
 
@@ -73,6 +82,8 @@ def main(argv: list[str] | None = None) -> int:
         print(format_run_result_json(run_result))
     elif run_result.diagnostics:
         print(format_run_result_human(run_result))
+    elif arguments.summary:
+        print(format_run_summary(run_result))
 
     return resolve_exit_code_from_diagnostics(run_result.diagnostics)
 

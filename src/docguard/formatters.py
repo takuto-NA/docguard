@@ -70,9 +70,18 @@ def diagnostic_to_dict(diagnostic: Diagnostic) -> dict[str, object]:
 
 def format_run_result_json(run_result: DiagnosticRunResult) -> str:
     payload = {
+        "checked_document_count": run_result.checked_document_count,
         "diagnostics": [
             diagnostic_to_dict(diagnostic)
             for diagnostic in run_result.diagnostics
         ]
     }
     return json.dumps(payload, indent=2, ensure_ascii=False)
+
+
+def format_run_summary(run_result: DiagnosticRunResult) -> str:
+    diagnostic_count = len(run_result.diagnostics)
+    return (
+        f"Checked {run_result.checked_document_count} documents. "
+        f"Found {diagnostic_count} diagnostics."
+    )

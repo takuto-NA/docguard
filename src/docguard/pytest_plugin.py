@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 
 from docguard.config import ConfigurationError, find_project_root, load_docguard_configuration
+from docguard.constants import EXIT_CODE_CONFIGURATION_FAILURE
 from docguard.diagnostics import Diagnostic
-from docguard.discovery import discover_documents
 from docguard.formatters import format_document_diagnostics_human
 from docguard.runner import DocguardConfigurationFailure, run_docguard_checks
 
@@ -22,10 +22,16 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=False,
         help="Run docguard checks against configured Markdown documents.",
     )
+    parser.addoption(
+        "--docguard-only",
+        action="store_true",
+        default=False,
+        help="Run only docguard document checks without normal Python tests.",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    if config.getoption("--docguard"):
+    if config.getoption("--docguard") or config.getoption("--docguard-only"):
         config.addinivalue_line(
             "markers",
             "docguard: docguard document structure check",
@@ -37,8 +43,13 @@ def pytest_collection_modifyitems(
     config: pytest.Config,
     items: list[pytest.Item],
 ) -> None:
-    if not config.getoption("--docguard"):
+    docguard_only_enabled = config.getoption("--docguard-only")
+    docguard_enabled = config.getoption("--docguard")
+    if not docguard_enabled and not docguard_only_enabled:
         return
+
+    if docguard_only_enabled:
+        items.clear()
 
     docguard_collector = DocguardRootCollector.from_parent(
         session,
@@ -60,9 +71,8 @@ class DocguardRootCollector(pytest.Collector):
                 cli_paths=tuple(),
             )
             run_result = run_docguard_checks(configuration)
-            document_contexts = discover_documents(configuration)
-        except ConfigurationError as error:
-            raise DocguardConfigurationFailure(str(error)) from error
+        except (ConfigurationError, DocguardConfigurationFailure) as error:
+            pytest.exit(str(error), returncode=EXIT_CODE_CONFIGURATION_FAILURE)
 
         diagnostics_by_document: dict[str, list[Diagnostic]] = {}
         for diagnostic in run_result.diagnostics:
@@ -71,8 +81,7 @@ class DocguardRootCollector(pytest.Collector):
             )
 
         collected_items: list[pytest.Item] = []
-        for inspection_context in document_contexts:
-            document_path = inspection_context.parsed_document.repository_relative_path
+        for document_path in run_result.checked_document_paths:
             collected_items.append(
                 DocguardMarkdownItem.from_parent(
                     self,

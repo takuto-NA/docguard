@@ -8,7 +8,7 @@ from docguard.config import ConfigurationError, load_docguard_configuration
 from docguard.constants import EXIT_CODE_CONFIGURATION_FAILURE
 from docguard.diagnostics import Diagnostic, DiagnosticRunResult
 from docguard.discovery import discover_documents
-from docguard.graph import collect_reachable_documents
+from docguard.graph import build_document_graph
 from docguard.models import DocguardConfiguration
 from docguard.rules import (
     check_document_length,
@@ -22,11 +22,14 @@ from docguard.rules import (
 def run_docguard_checks(
     configuration: DocguardConfiguration,
 ) -> DiagnosticRunResult:
-    document_contexts = discover_documents(configuration)
-    reachable_document_paths = collect_reachable_documents(
-        configuration,
-        document_contexts,
-    )
+    try:
+        document_contexts = discover_documents(configuration)
+    except ConfigurationError as error:
+        raise DocguardConfigurationFailure(str(error)) from error
+    try:
+        document_graph = build_document_graph(configuration, document_contexts)
+    except ConfigurationError as error:
+        raise DocguardConfigurationFailure(str(error)) from error
 
     diagnostics: list[Diagnostic] = []
     for inspection_context in document_contexts:
@@ -50,12 +53,20 @@ def run_docguard_checks(
         unreachable_diagnostic = check_unreachable_from_index(
             configuration,
             inspection_context,
-            reachable_document_paths,
+            document_graph,
         )
         if unreachable_diagnostic is not None:
             diagnostics.append(unreachable_diagnostic)
 
-    return DiagnosticRunResult(diagnostics=tuple(diagnostics))
+    checked_document_paths = tuple(
+        context.parsed_document.repository_relative_path
+        for context in document_contexts
+    )
+    return DiagnosticRunResult(
+        diagnostics=tuple(diagnostics),
+        checked_document_count=len(document_contexts),
+        checked_document_paths=checked_document_paths,
+    )
 
 
 def run_docguard_from_paths(

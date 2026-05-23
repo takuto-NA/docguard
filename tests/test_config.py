@@ -106,6 +106,24 @@ DG-SIZE001 = "warning"
     assert configuration.severities["DG-SIZE001"] == "warning"
 
 
+def test_invalid_severity_raises_configuration_error(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard.severity]
+DG-SIZE001 = "banana"
+""",
+    )
+    with pytest.raises(ConfigurationError, match="unsupported value"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
 def test_invalid_max_document_lines_raises_configuration_error(
     temporary_project_directory: Path,
 ) -> None:

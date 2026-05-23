@@ -1,40 +1,62 @@
-## What you can do
+# docguard usage
 
-Docguard treats Markdown as a maintainable repository asset, not just prose files.
-
-With the current MVP you can:
-
-- scan Markdown files or directories from the CLI
-- enforce document and section size limits in CI
-- require headings and YAML front matter for typed documents such as ADRs
-- require documents to be reachable from configured index files
-- get human-readable diagnostics with why-it-matters text and suggested next actions
-- emit the same diagnostics as JSON for automation
-- run the same checks through `pytest --docguard`
+Docguard is a CLI-first Markdown structure checker for repositories. It helps teams keep documentation from growing too large, becoming unreachable from index files, or drifting away from expected document types such as ADRs.
 
 Docguard is intentionally different from markdownlint or Prettier. Those tools focus on formatting. Docguard focuses on document structure and repository health.
 
-## CLI usage
+## What you can do today
 
-Scan a directory with zero-config defaults:
+Docguard treats Markdown as a maintainable repository asset, not just prose files.
 
-```bash
-docguard docs/
-```
-
-Scan explicit paths:
+### Scan Markdown from the CLI
 
 ```bash
-docguard README.md docs/
+docguard docs/                      # zero-config: scan docs/ with gentle defaults
+docguard README.md docs/            # explicit paths override configured paths
+docguard docs/ --format json        # machine-readable output for CI
+docguard docs/ --summary            # success summary: Checked N documents. Found M diagnostics.
 ```
 
-Emit JSON for CI or automation:
+If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration. Otherwise it scans `docs/` with size limits and a built-in ADR document type for `adr/*.md`.
+
+### Enforce five MVP diagnostics
+
+| Code | What it checks |
+|------|----------------|
+| `DG-SIZE001` | Whole document exceeds the line limit |
+| `DG-SIZE002` | A heading section exceeds the line limit |
+| `DG-FORMAT001` | A typed document is missing a required heading |
+| `DG-FORMAT003` | A typed document is missing YAML front matter or a required key |
+| `DG-ORG003` | A document is not reachable from configured index files |
+
+Each diagnostic includes a human-readable message, why-it-matters text, and an optional suggested next action such as a split target.
+
+### Define typed documents
+
+Use `document_types` in `pyproject.toml` to attach rules to glob patterns. ADRs are the primary example:
+
+- required headings such as `Status`, `Context`, `Decision`, and `Consequences`
+- required YAML front matter keys such as `status` and `date`
+- per-type line limits that override global defaults
+
+A document may match at most one `document_types` entry. Overlapping globs are rejected as a configuration error.
+
+### Require index reachability
+
+When `require_index_reachability = true`, docguard builds a document link graph and flags documents that cannot be reached from any configured `index_files` entry inside the scanned scope.
+
+This catches documentation that exists in the repository but is easy to miss during review because nothing links to it.
+
+### Run the same checks through pytest
 
 ```bash
-docguard README.md docs/ --format json
+pytest --docguard          # normal tests plus one docguard item per Markdown file
+pytest --docguard-only     # docguard checks only, without normal Python tests
 ```
 
-## Exit codes
+Each Markdown document becomes one pytest item named like `docs/architecture.md::docguard`.
+
+### Use predictable CI exit codes
 
 | Code | Meaning |
 |------|---------|
@@ -44,15 +66,25 @@ docguard README.md docs/ --format json
 
 Warnings do not fail a run. Configuration errors fail before document scanning begins.
 
-## Pytest usage
+Severity can be overridden per diagnostic code:
 
-Run docguard through pytest in CI:
-
-```bash
-pytest --docguard
+```toml
+[tool.docguard.severity]
+DG-SIZE001 = "warning"
 ```
 
-Each Markdown document in the configured scope becomes one pytest item named like `docs/architecture.md::docguard`.
+Supported values are `error`, `warning`, and `experimental`. Only `error` fails a run.
+
+## Phase 1.5 UX and reliability
+
+These improvements are part of the current release even though the CLI surface looks the same:
+
+- `--summary` prints checked document count and diagnostic count on success
+- `--docguard-only` runs only docguard items in pytest
+- document title headings (`# ...`) are not treated as section-size targets when lower-level headings exist
+- missing, out-of-project, or non-Markdown explicit CLI paths exit with code `2` without a traceback
+- invalid severity values and invalid reachability configuration are rejected before scanning
+- JSON output includes `checked_document_count`
 
 ## Configuration
 
@@ -80,18 +112,12 @@ Behavior notes:
 
 - CLI paths override configured `paths`
 - ignored files are excluded from diagnostics and reachability graphs
-- a document may match at most one `document_types` entry
 - index reachability is checked only when `require_index_reachability = true`
-
-## MVP diagnostics
-
-| Code | Meaning |
-|------|---------|
-| `DG-SIZE001` | Document too long |
-| `DG-SIZE002` | Section too long |
-| `DG-FORMAT001` | Missing required heading |
-| `DG-FORMAT003` | Missing front matter |
-| `DG-ORG003` | Unreachable from index |
+- missing or out-of-project CLI paths exit with code `2`
+- explicit CLI paths must point to Markdown files or directories containing Markdown
+- configured paths that do not exist yet are skipped silently
+- when `require_index_reachability = true`, at least one configured `index_files` entry must be inside the scanned scope
+- `experimental_rules_enabled = true` is reserved for future opt-in rules and currently has no effect
 
 ## Example output
 
@@ -110,6 +136,15 @@ Suggested split:
   - docs/architecture/runtime-model.md
 ```
 
+## Not implemented yet
+
+| Phase | Planned diagnostics |
+|-------|---------------------|
+| Phase 2 | `DG-ORG001` orphan document, `DG-ORG002` missing outgoing links |
+| Phase 3 | `DG-SPLIT001` possible mixed document roles, `DG-FORMAT002` unexpected heading order |
+
+Phase 3 rules will ship as warnings or experimental diagnostics first.
+
 ## Self-test in this repository
 
 This repository uses docguard on its own documentation.
@@ -118,8 +153,7 @@ Configured scope in `pyproject.toml`:
 
 - `README.md`
 - `CONTEXT.md`
-- `docs/usage.md`
-- `docs/adr/*.md`
+- everything under `docs/`
 
 Configured checks:
 
@@ -131,8 +165,10 @@ Run the self-check manually:
 
 ```bash
 docguard README.md CONTEXT.md docs/
+docguard README.md CONTEXT.md docs/ --summary
 docguard README.md CONTEXT.md docs/ --format json
 pytest --docguard
+pytest --docguard-only
 python -m pytest
 ```
 

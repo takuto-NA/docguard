@@ -17,6 +17,7 @@ from docguard.constants import (
     ZERO_CONFIG_ADR_PATH_GLOB,
     ZERO_CONFIG_ADR_REQUIRED_HEADINGS,
 )
+from docguard.diagnostics import parse_severity_level
 from docguard.models import DocguardConfiguration, DocumentTypeConfiguration
 
 
@@ -175,6 +176,13 @@ def parse_severity_table(raw_severities: Any) -> dict[str, str]:
             raise ConfigurationError(
                 "[tool.docguard.severity] keys and values must be strings."
             )
+        try:
+            parse_severity_level(raw_severity)
+        except ValueError as error:
+            raise ConfigurationError(
+                f"[tool.docguard.severity] unsupported value for "
+                f"{diagnostic_code}: {raw_severity}"
+            ) from error
         parsed_severities[diagnostic_code] = raw_severity
     return parsed_severities
 
@@ -204,6 +212,7 @@ def build_zero_config_configuration(
             ),
         ),
         experimental_rules_enabled=False,
+        validate_explicit_paths=bool(cli_paths),
     )
 
 
@@ -267,6 +276,7 @@ def parse_docguard_configuration(
         experimental_rules_enabled=bool(
             raw_configuration.get("experimental_rules_enabled", False)
         ),
+        validate_explicit_paths=bool(cli_paths),
     )
 
 
@@ -300,16 +310,6 @@ def normalize_repository_relative_path(
     resolved_project_root = project_root.resolve()
     resolved_candidate_path = candidate_path.resolve()
     return resolved_candidate_path.relative_to(resolved_project_root).as_posix()
-
-
-def normalize_cli_path_to_project_relative(
-    project_root: Path,
-    cli_path: str,
-) -> str:
-    absolute_path = Path(cli_path)
-    if not absolute_path.is_absolute():
-        absolute_path = (Path.cwd() / absolute_path).resolve()
-    return normalize_repository_relative_path(project_root, absolute_path)
 
 
 def resolve_configured_path(project_root: Path, configured_path: str) -> Path:

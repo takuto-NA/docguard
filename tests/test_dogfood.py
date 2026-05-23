@@ -68,6 +68,20 @@ def test_repository_documentation_passes_docguard_cli_json(
     parsed_output = json.loads(captured_output.out)
     assert exit_code == EXIT_CODE_SUCCESS
     assert parsed_output["diagnostics"] == []
+    assert parsed_output["checked_document_count"] > 0
+
+
+def test_repository_documentation_passes_docguard_cli_summary(
+    monkeypatch,
+    capsys,
+) -> None:
+    project_root = resolve_repository_root()
+    monkeypatch.chdir(project_root)
+    exit_code = docguard_main([*REPOSITORY_DOCUMENTATION_PATHS, "--summary"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert "Checked" in captured_output.out
+    assert "Found 0 diagnostics." in captured_output.out
 
 
 def test_repository_documentation_passes_pytest_docguard_mode() -> None:
@@ -79,6 +93,24 @@ def test_repository_documentation_passes_pytest_docguard_mode() -> None:
     environment[SELF_TEST_SUBPROCESS_ENVIRONMENT_VARIABLE] = "1"
     completed_process = subprocess.run(
         [sys.executable, "-m", "pytest", "--docguard", "-q"],
+        cwd=project_root,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=environment,
+    )
+    assert completed_process.returncode == EXIT_CODE_SUCCESS, completed_process.stdout
+
+
+def test_repository_documentation_passes_pytest_docguard_only_mode() -> None:
+    if os.environ.get(SELF_TEST_SUBPROCESS_ENVIRONMENT_VARIABLE):
+        pytest.skip("Skip recursive subprocess self-test.")
+
+    project_root = resolve_repository_root()
+    environment = os.environ.copy()
+    environment[SELF_TEST_SUBPROCESS_ENVIRONMENT_VARIABLE] = "1"
+    completed_process = subprocess.run(
+        [sys.executable, "-m", "pytest", "--docguard-only", "-q"],
         cwd=project_root,
         capture_output=True,
         text=True,
