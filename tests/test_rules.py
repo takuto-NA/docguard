@@ -10,8 +10,10 @@ from docguard.constants import (
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER,
     DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS,
     DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING,
+    DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES,
     DIAGNOSTIC_CODE_ORPHAN_DOCUMENT,
     DIAGNOSTIC_CODE_SECTION_TOO_LONG,
+    DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER,
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX,
     EXIT_CODE_SUCCESS,
 )
@@ -49,6 +51,215 @@ def diagnostics_by_code(run_result, diagnostic_code: str) -> list[Diagnostic]:
         for diagnostic in run_result.diagnostics
         if diagnostic.code == diagnostic_code
     ]
+
+
+def test_mixed_role_detection_off_emits_no_split001(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    (docs_directory / "mixed.md").write_text(
+        """## Overview
+
+Overview text.
+
+## Deployment
+
+Deployment text.
+""",
+        encoding="utf-8",
+    )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_mixed_role_detection = false
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    split001_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES,
+    )
+    assert split001_diagnostics == []
+
+
+def test_mixed_document_roles_diagnostic_when_detection_enabled(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    (docs_directory / "mixed.md").write_text(
+        """## Overview
+
+Overview text.
+
+## Deployment
+
+Deployment text.
+""",
+        encoding="utf-8",
+    )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_mixed_role_detection = true
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    split001_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES,
+    )
+
+    assert len(split001_diagnostics) == 1
+    split001_diagnostic = split001_diagnostics[0]
+    assert split001_diagnostic.document_path == "docs/mixed.md"
+    assert split001_diagnostic.severity is SeverityLevel.WARNING
+    assert "narrative" in split001_diagnostic.message
+    assert "operations" in split001_diagnostic.message
+    assert split001_diagnostic.why_it_matters
+    assert split001_diagnostic.suggestion
+
+
+def test_typed_document_is_never_flagged_for_mixed_roles(
+    temporary_project_directory: Path,
+) -> None:
+    adr_directory = temporary_project_directory / "docs" / "adr"
+    adr_directory.mkdir(parents=True)
+    (adr_directory / "0001-example.md").write_text(
+        """---
+status: accepted
+date: 2026-05-24
+---
+
+# Example
+
+## Status
+Accepted
+
+## Context
+Context text.
+
+## Decision
+Decision text.
+
+## Consequences
+Consequence text.
+""",
+        encoding="utf-8",
+    )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs/adr"]
+require_mixed_role_detection = true
+
+[[tool.docguard.document_types]]
+name = "adr"
+glob = "docs/adr/*.md"
+required_headings = ["Status", "Context", "Decision", "Consequences"]
+required_front_matter_keys = ["status", "date"]
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    split001_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES,
+    )
+    assert split001_diagnostics == []
+
+
+def test_heading_order_off_emits_no_format002(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    (docs_directory / "skip.md").write_text(
+        """## Section
+
+#### Deep
+""",
+        encoding="utf-8",
+    )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_heading_order_check = false
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    format002_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER,
+    )
+    assert format002_diagnostics == []
+
+
+def test_heading_level_skip_diagnostic_when_check_enabled(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    (docs_directory / "skip.md").write_text(
+        """## Section
+
+#### Deep
+""",
+        encoding="utf-8",
+    )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_heading_order_check = true
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    format002_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER,
+    )
+
+    assert len(format002_diagnostics) == 1
+    format002_diagnostic = format002_diagnostics[0]
+    assert format002_diagnostic.document_path == "docs/skip.md"
+    assert format002_diagnostic.severity is SeverityLevel.WARNING
+    assert format002_diagnostic.location == "line 3"
+    assert format002_diagnostic.why_it_matters
+    assert format002_diagnostic.suggestion
 
 
 def test_orphan_document_diagnostic_when_detection_enabled(

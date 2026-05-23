@@ -18,16 +18,43 @@ MAXIMUM_HUB_OUTGOING_VIOLATIONS = 0
 
 EXPECTED_REPOSITORY_INCOMING_LINKS = {
     "README.md": frozenset(),
-    "CONTEXT.md": frozenset({"README.md", "docs/usage.md"}),
-    "docs/usage.md": frozenset({"README.md"}),
+    "CONTEXT.md": frozenset(
+        {"README.md", "docs/organization-rules.md", "docs/structure-rules.md"}
+    ),
+    "docs/usage.md": frozenset(
+        {
+            "README.md",
+            "docs/dogfood.md",
+            "docs/organization-rules.md",
+            "docs/structure-rules.md",
+        }
+    ),
+    "docs/organization-rules.md": frozenset({"README.md", "docs/dogfood.md", "docs/usage.md"}),
+    "docs/structure-rules.md": frozenset({"README.md", "docs/dogfood.md", "docs/usage.md"}),
+    "docs/dogfood.md": frozenset(
+        {
+            "README.md",
+            "docs/organization-rules.md",
+            "docs/structure-rules.md",
+            "docs/usage.md",
+        }
+    ),
     "docs/adr/0001-cli-first-docguard.md": frozenset({"README.md"}),
     "docs/adr/0002-structured-diagnostics-and-strict-config.md": frozenset(
         {"README.md", "docs/adr/0004-utf-8-markdown-encoding.md"}
     ),
     "docs/adr/0003-organization-link-rules.md": frozenset(
-        {"README.md", "docs/usage.md"}
+        {"README.md", "docs/organization-rules.md"}
     ),
-    "docs/adr/0004-utf-8-markdown-encoding.md": frozenset({"README.md", "CONTEXT.md", "docs/usage.md"}),
+    "docs/adr/0004-utf-8-markdown-encoding.md": frozenset(
+        {"README.md", "CONTEXT.md", "docs/usage.md"}
+    ),
+    "docs/adr/0005-phase3-structure-diagnostics.md": frozenset(
+        {"README.md", "docs/structure-rules.md"}
+    ),
+    "docs/adr/0006-document-budget-dogfood-gate.md": frozenset(
+        {"README.md", "CONTEXT.md", "docs/dogfood.md", "docs/usage.md"}
+    ),
 }
 
 EXPECTED_REPOSITORY_OUTGOING_LINKS = {
@@ -35,18 +62,54 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
         {
             "CONTEXT.md",
             "docs/usage.md",
+            "docs/organization-rules.md",
+            "docs/structure-rules.md",
+            "docs/dogfood.md",
             "docs/adr/0001-cli-first-docguard.md",
             "docs/adr/0002-structured-diagnostics-and-strict-config.md",
             "docs/adr/0003-organization-link-rules.md",
             "docs/adr/0004-utf-8-markdown-encoding.md",
+            "docs/adr/0005-phase3-structure-diagnostics.md",
+            "docs/adr/0006-document-budget-dogfood-gate.md",
         }
     ),
-    "CONTEXT.md": frozenset({"docs/adr/0004-utf-8-markdown-encoding.md"}),
+    "CONTEXT.md": frozenset(
+        {
+            "docs/adr/0004-utf-8-markdown-encoding.md",
+            "docs/adr/0006-document-budget-dogfood-gate.md",
+        }
+    ),
     "docs/usage.md": frozenset(
+        {
+            "docs/adr/0004-utf-8-markdown-encoding.md",
+            "docs/adr/0006-document-budget-dogfood-gate.md",
+            "docs/dogfood.md",
+            "docs/organization-rules.md",
+            "docs/structure-rules.md",
+        }
+    ),
+    "docs/organization-rules.md": frozenset(
         {
             "CONTEXT.md",
             "docs/adr/0003-organization-link-rules.md",
-            "docs/adr/0004-utf-8-markdown-encoding.md",
+            "docs/dogfood.md",
+            "docs/usage.md",
+        }
+    ),
+    "docs/structure-rules.md": frozenset(
+        {
+            "CONTEXT.md",
+            "docs/adr/0005-phase3-structure-diagnostics.md",
+            "docs/dogfood.md",
+            "docs/usage.md",
+        }
+    ),
+    "docs/dogfood.md": frozenset(
+        {
+            "docs/adr/0006-document-budget-dogfood-gate.md",
+            "docs/organization-rules.md",
+            "docs/structure-rules.md",
+            "docs/usage.md",
         }
     ),
     "docs/adr/0001-cli-first-docguard.md": frozenset(),
@@ -55,6 +118,8 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
     "docs/adr/0004-utf-8-markdown-encoding.md": frozenset(
         {"docs/adr/0002-structured-diagnostics-and-strict-config.md"}
     ),
+    "docs/adr/0005-phase3-structure-diagnostics.md": frozenset(),
+    "docs/adr/0006-document-budget-dogfood-gate.md": frozenset(),
 }
 
 EXPECTED_ORPHAN_CANDIDATES = frozenset()

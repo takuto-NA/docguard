@@ -12,7 +12,9 @@ from docguard.graph import build_document_graph
 from docguard.models import DocguardConfiguration
 from docguard.rules import (
     check_document_length,
+    check_heading_level_skips,
     check_hub_missing_outgoing_links,
+    check_mixed_document_roles,
     check_orphan_documents,
     check_required_front_matter,
     check_required_headings,
@@ -51,6 +53,15 @@ def run_docguard_checks(
         diagnostics.extend(
             check_required_front_matter(configuration, inspection_context)
         )
+        diagnostics.extend(
+            check_heading_level_skips(configuration, inspection_context)
+        )
+        mixed_roles_diagnostic = check_mixed_document_roles(
+            configuration,
+            inspection_context,
+        )
+        if mixed_roles_diagnostic is not None:
+            diagnostics.append(mixed_roles_diagnostic)
 
         unreachable_diagnostic = check_unreachable_from_index(
             configuration,

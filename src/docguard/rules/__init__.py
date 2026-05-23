@@ -7,15 +7,19 @@ from docguard.constants import (
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER,
     DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS,
     DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING,
+    DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES,
     DIAGNOSTIC_CODE_ORPHAN_DOCUMENT,
     DIAGNOSTIC_CODE_SECTION_TOO_LONG,
+    DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER,
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX,
     WHY_DOCUMENT_TOO_LONG,
     WHY_MISSING_FRONT_MATTER,
     WHY_MISSING_OUTGOING_LINKS,
     WHY_MISSING_REQUIRED_HEADING,
+    WHY_MIXED_DOCUMENT_ROLES,
     WHY_ORPHAN_DOCUMENT,
     WHY_SECTION_TOO_LONG,
+    WHY_UNEXPECTED_HEADING_ORDER,
     WHY_UNREACHABLE_FROM_INDEX,
 )
 from docguard.diagnostics import Diagnostic, resolve_severity_for_code
@@ -26,6 +30,8 @@ from docguard.graph import (
     resolve_index_path_in_scope,
 )
 from docguard.models import DocguardConfiguration, DocumentGraph, DocumentInspectionContext, MarkdownSection
+from docguard.heading_order import find_heading_level_skips
+from docguard.role_families import RoleFamily, detect_mixed_role_families
 from docguard.split import build_split_suggestion
 
 
@@ -194,6 +200,83 @@ def check_required_front_matter(
     return diagnostics
 
 
+def check_heading_level_skips(
+    configuration: DocguardConfiguration,
+    inspection_context: DocumentInspectionContext,
+) -> list[Diagnostic]:
+    if not configuration.require_heading_order_check:
+        return []
+
+    parsed_document = inspection_context.parsed_document
+    diagnostics: list[Diagnostic] = []
+    for violation in find_heading_level_skips(parsed_document.headings):
+        diagnostics.append(
+            Diagnostic(
+                code=DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER,
+                severity=resolve_severity_for_code(
+                    DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER,
+                    configuration.severities,
+                ),
+                document_path=parsed_document.repository_relative_path,
+                message=(
+                    f"Heading '{violation.heading_text}' at line "
+                    f"{violation.line_number} skips from H"
+                    f"{violation.previous_level} to H{violation.current_level}."
+                ),
+                why_it_matters=WHY_UNEXPECTED_HEADING_ORDER,
+                suggestion=(
+                    f"Insert intermediate heading levels between H"
+                    f"{violation.previous_level} and H{violation.current_level}, "
+                    f"or restructure this section."
+                ),
+                location=f"line {violation.line_number}",
+                document_type_name=(
+                    inspection_context.document_type.name
+                    if inspection_context.document_type is not None
+                    else None
+                ),
+            )
+        )
+    return diagnostics
+
+
+def format_role_family_names(role_families: frozenset[RoleFamily]) -> str:
+    return ", ".join(
+        sorted(role_family.value for role_family in role_families)
+    )
+
+
+def check_mixed_document_roles(
+    configuration: DocguardConfiguration,
+    inspection_context: DocumentInspectionContext,
+) -> Diagnostic | None:
+    if not configuration.require_mixed_role_detection:
+        return None
+    if inspection_context.document_type is not None:
+        return None
+
+    parsed_document = inspection_context.parsed_document
+    mixed_role_families = detect_mixed_role_families(parsed_document.headings)
+    if len(mixed_role_families) < 2:
+        return None
+
+    family_names = format_role_family_names(mixed_role_families)
+    return Diagnostic(
+        code=DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES,
+        severity=resolve_severity_for_code(
+            DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES,
+            configuration.severities,
+        ),
+        document_path=parsed_document.repository_relative_path,
+        message=(
+            f"{parsed_document.repository_relative_path} may mix document roles: "
+            f"{family_names}."
+        ),
+        why_it_matters=WHY_MIXED_DOCUMENT_ROLES,
+        suggestion=build_split_suggestion(parsed_document),
+    )
+
+
 def resolve_in_scope_index_paths(
     configuration: DocguardConfiguration,
     document_graph: DocumentGraph,
@@ -322,3 +405,42 @@ def check_unreachable_from_index(
             else None
         ),
     )
+
+
+def collect_mixed_role_candidates(
+    configuration: DocguardConfiguration,
+    document_contexts: tuple[DocumentInspectionContext, ...],
+) -> frozenset[str]:
+    if not configuration.require_mixed_role_detection:
+        return frozenset()
+
+    mixed_role_candidates: set[str] = set()
+    for inspection_context in document_contexts:
+        if inspection_context.document_type is not None:
+            continue
+        mixed_role_families = detect_mixed_role_families(
+            inspection_context.parsed_document.headings
+        )
+        if len(mixed_role_families) < 2:
+            continue
+        mixed_role_candidates.add(
+            inspection_context.parsed_document.repository_relative_path
+        )
+    return frozenset(mixed_role_candidates)
+
+
+def collect_heading_skip_violations(
+    configuration: DocguardConfiguration,
+    document_contexts: tuple[DocumentInspectionContext, ...],
+) -> frozenset[tuple[str, int]]:
+    if not configuration.require_heading_order_check:
+        return frozenset()
+
+    heading_skip_violations: set[tuple[str, int]] = set()
+    for inspection_context in document_contexts:
+        document_path = inspection_context.parsed_document.repository_relative_path
+        for violation in find_heading_level_skips(
+            inspection_context.parsed_document.headings
+        ):
+            heading_skip_violations.add((document_path, violation.line_number))
+    return frozenset(heading_skip_violations)

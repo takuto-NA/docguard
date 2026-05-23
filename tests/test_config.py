@@ -185,6 +185,53 @@ hub_globs = ["docs/index-*.md"]
     assert configuration.hub_globs == ("docs/index-*.md",)
 
 
+def test_phase3_configuration_keys_are_parsed(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_mixed_role_detection = true
+require_heading_order_check = true
+
+[tool.docguard.severity]
+DG-SPLIT001 = "warning"
+DG-FORMAT002 = "warning"
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.require_mixed_role_detection is True
+    assert configuration.require_heading_order_check is True
+    assert configuration.severities["DG-SPLIT001"] == "warning"
+    assert configuration.severities["DG-FORMAT002"] == "warning"
+
+
+def test_phase3_unknown_key_still_rejected(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_mixed_role_detection = true
+unexpected_phase3_key = true
+""",
+    )
+    with pytest.raises(ConfigurationError, match="Unknown keys"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
 def test_phase2_unknown_key_still_rejected(
     temporary_project_directory: Path,
 ) -> None:

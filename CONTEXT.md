@@ -56,6 +56,23 @@ _Avoid_: level, priority
 Markdown files must be UTF-8. UTF-8 with BOM is accepted. Non-UTF-8 files fail with exit code 2. See [docs/adr/0004-utf-8-markdown-encoding.md](docs/adr/0004-utf-8-markdown-encoding.md).
 _Avoid_: charset, code page, Shift_JIS
 
+**Document role family**:
+A built-in category (`narrative`, `decision`, `reference`, or `operations`) inferred from level-2 section heading text.
+_Avoid_: document type, template section
+
+**Mixed document roles**:
+An untyped document whose level-2 headings match two or more document role families.
+_Avoid_: missing required heading, document too long
+
+**Heading level skip**:
+A heading more than one level deeper than the previous heading in document order (for example, H2 followed by H4).
+_Avoid_: missing required heading, wrong section order
+
+**Document budget**:
+A repository-owned size limit that keeps documentation maintainable; exceeding it should trigger splitting or restructuring instead of raising the configured line limit.
+_Avoid_: max lines bump, configuration workaround
+See [docs/adr/0006-document-budget-dogfood-gate.md](docs/adr/0006-document-budget-dogfood-gate.md).
+
 ## Example dialogue
 
 **Developer**: This ADR is flagged as unreachable from index.

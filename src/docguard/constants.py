@@ -15,7 +15,9 @@ DEFAULT_ADR_MAX_SECTION_LINES = 60
 DIAGNOSTIC_CODE_DOCUMENT_TOO_LONG = "DG-SIZE001"
 DIAGNOSTIC_CODE_SECTION_TOO_LONG = "DG-SIZE002"
 DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING = "DG-FORMAT001"
+DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER = "DG-FORMAT002"
 DIAGNOSTIC_CODE_MISSING_FRONT_MATTER = "DG-FORMAT003"
+DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES = "DG-SPLIT001"
 DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX = "DG-ORG003"
 DIAGNOSTIC_CODE_ORPHAN_DOCUMENT = "DG-ORG001"
 DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS = "DG-ORG002"
@@ -24,7 +26,9 @@ DIAGNOSTIC_TITLES: dict[str, str] = {
     DIAGNOSTIC_CODE_DOCUMENT_TOO_LONG: "document too long",
     DIAGNOSTIC_CODE_SECTION_TOO_LONG: "section too long",
     DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING: "missing required heading",
+    DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER: "unexpected heading order",
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER: "missing front matter",
+    DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES: "possible mixed document roles",
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX: "unreachable from index",
     DIAGNOSTIC_CODE_ORPHAN_DOCUMENT: "orphan document",
     DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS: "missing outgoing links",
@@ -54,6 +58,13 @@ WHY_SECTION_TOO_LONG = (
 WHY_MISSING_REQUIRED_HEADING = (
     "Required headings keep documents of the same type comparable and complete."
 )
+WHY_UNEXPECTED_HEADING_ORDER = (
+    "Skipped heading levels make document structure harder to navigate and render."
+)
+WHY_MIXED_DOCUMENT_ROLES = (
+    "Documents that mix narrative, reference, decision, and operations content "
+    "are harder to maintain and usually belong in separate files."
+)
 WHY_MISSING_FRONT_MATTER = (
     "Front matter makes document status and ownership visible without reading the body."
 )
@@ -71,7 +82,9 @@ DEFAULT_SEVERITIES: dict[str, str] = {
     DIAGNOSTIC_CODE_DOCUMENT_TOO_LONG: "error",
     DIAGNOSTIC_CODE_SECTION_TOO_LONG: "error",
     DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING: "error",
+    DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER: "warning",
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER: "error",
+    DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES: "warning",
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX: "error",
     DIAGNOSTIC_CODE_ORPHAN_DOCUMENT: "warning",
     DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS: "warning",

@@ -34,6 +34,8 @@ ALLOWED_TOP_LEVEL_KEYS = {
     "require_index_reachability",
     "require_orphan_detection",
     "require_hub_outgoing_links",
+    "require_mixed_role_detection",
+    "require_heading_order_check",
     "hub_globs",
     "severity",
     "document_types",
@@ -205,6 +207,8 @@ def build_zero_config_configuration(
         require_index_reachability=False,
         require_orphan_detection=False,
         require_hub_outgoing_links=False,
+        require_mixed_role_detection=False,
+        require_heading_order_check=False,
         hub_globs=tuple(),
         severities=dict(DEFAULT_SEVERITIES),
         document_types=(
@@ -282,6 +286,12 @@ def parse_docguard_configuration(
         ),
         require_hub_outgoing_links=bool(
             raw_configuration.get("require_hub_outgoing_links", False)
+        ),
+        require_mixed_role_detection=bool(
+            raw_configuration.get("require_mixed_role_detection", False)
+        ),
+        require_heading_order_check=bool(
+            raw_configuration.get("require_heading_order_check", False)
         ),
         hub_globs=require_string_list(
             raw_configuration.get("hub_globs"),

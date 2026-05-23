@@ -45,8 +45,7 @@ include = [
   "src/docguard",
   "README.md",
   "CONTEXT.md",
-  "docs/usage.md",
-  "docs/adr",
+  "docs",
 ]
 
 [tool.pytest.ini_options]
