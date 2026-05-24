@@ -17,7 +17,7 @@ MAXIMUM_ORPHAN_CANDIDATES = 0
 MAXIMUM_HUB_OUTGOING_VIOLATIONS = 0
 
 EXPECTED_REPOSITORY_INCOMING_LINKS = {
-    "README.md": frozenset(),
+    "README.md": frozenset({"docs/usage.md"}),
     "CONTEXT.md": frozenset(
         {
             "README.md",
@@ -67,6 +67,9 @@ EXPECTED_REPOSITORY_INCOMING_LINKS = {
     "docs/adr/0007-document-responsibility-drift-guard.md": frozenset(
         {"README.md", "CONTEXT.md", "docs/dogfood.md", "docs/release-readiness.md"}
     ),
+    "docs/adr/0008-pypi-alpha-distribution.md": frozenset(
+        {"README.md", "docs/release-readiness.md"}
+    ),
 }
 
 EXPECTED_REPOSITORY_OUTGOING_LINKS = {
@@ -85,6 +88,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
             "docs/adr/0005-phase3-structure-diagnostics.md",
             "docs/adr/0006-document-budget-dogfood-gate.md",
             "docs/adr/0007-document-responsibility-drift-guard.md",
+            "docs/adr/0008-pypi-alpha-distribution.md",
         }
     ),
     "CONTEXT.md": frozenset(
@@ -96,6 +100,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
     ),
     "docs/usage.md": frozenset(
         {
+            "README.md",
             "docs/adr/0004-utf-8-markdown-encoding.md",
             "docs/adr/0006-document-budget-dogfood-gate.md",
             "docs/dogfood.md",
@@ -133,6 +138,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
     "docs/release-readiness.md": frozenset(
         {
             "docs/adr/0007-document-responsibility-drift-guard.md",
+            "docs/adr/0008-pypi-alpha-distribution.md",
             "docs/dogfood.md",
             "docs/usage.md",
         }
@@ -148,6 +154,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
     "docs/adr/0007-document-responsibility-drift-guard.md": frozenset(
         {"docs/dogfood.md"}
     ),
+    "docs/adr/0008-pypi-alpha-distribution.md": frozenset(),
 }
 
 EXPECTED_ORPHAN_CANDIDATES = frozenset()

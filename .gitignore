@@ -8,4 +8,5 @@ dist/
 build/
 .venv/
 venv/
+uv.lock
 *.whl

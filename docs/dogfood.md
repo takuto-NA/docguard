@@ -168,12 +168,19 @@ Configured checks:
 Run the self-check manually:
 
 ```bash
-docguard README.md CONTEXT.md docs/ --summary
-docguard README.md CONTEXT.md docs/ --quiet
-docguard README.md CONTEXT.md docs/ --verbose
-docguard README.md CONTEXT.md docs/ --format json
-pytest --docguard
-pytest --docguard-only
+uv run docguard README.md CONTEXT.md docs/ --summary
+uv run docguard README.md CONTEXT.md docs/ --quiet
+uv run docguard README.md CONTEXT.md docs/ --verbose
+uv run docguard README.md CONTEXT.md docs/ --format json
+uv run pytest --docguard
+uv run pytest --docguard-only
+uv run pytest
+```
+
+Equivalent pip development install:
+
+```bash
+pip install -e ".[dev]"
 python -m pytest
 ```
 

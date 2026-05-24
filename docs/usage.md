@@ -4,6 +4,24 @@ Docguard is a CLI-first Markdown structure checker for repositories. It helps te
 
 Docguard is intentionally different from markdownlint or Prettier. Those tools focus on formatting. Docguard focuses on document structure and repository health.
 
+## Install
+
+From PyPI with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add docguard
+uv run docguard docs/ --summary
+```
+
+Equivalent with pip:
+
+```bash
+pip install docguard
+docguard docs/ --summary
+```
+
+For development in this repository, see [README.md](../README.md#development).
+
 ## What you can do today
 
 Docguard treats Markdown as a maintainable repository asset, not just prose files. Run the same checks from the CLI, JSON output, or pytest.

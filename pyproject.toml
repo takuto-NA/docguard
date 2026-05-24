@@ -4,11 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "docguard"
-version = "0.1.0"
+dynamic = ["version"]
 description = "CLI-first Markdown structure checker for repositories"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Docguard Contributors" }]
 keywords = ["markdown", "documentation", "lint", "ci", "pytest"]
 classifiers = [
@@ -26,9 +27,18 @@ dependencies = [
   "PyYAML>=6.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/takuto-NA/docguard"
+Documentation = "https://github.com/takuto-NA/docguard#readme"
+Repository = "https://github.com/takuto-NA/docguard"
+Issues = "https://github.com/takuto-NA/docguard/issues"
+Changelog = "https://github.com/takuto-NA/docguard/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0",
+  "build>=1.0",
+  "twine>=5.0",
 ]
 
 [project.scripts]
@@ -36,6 +46,9 @@ docguard = "docguard.cli:main"
 
 [project.entry-points.pytest11]
 docguard = "docguard.pytest_plugin"
+
+[tool.hatch.version]
+path = "src/docguard/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/docguard"]
@@ -46,6 +59,7 @@ include = [
   "README.md",
   "CONTEXT.md",
   "docs",
+  "CHANGELOG.md",
 ]
 
 [tool.pytest.ini_options]
