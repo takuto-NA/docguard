@@ -65,7 +65,7 @@ Docguard treats Markdown as a maintainable repository asset, not just prose file
 | Core | Document and section size; typed document shape; index reachability | `DG-SIZE001`, `DG-SIZE002`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003` | on when configured |
 | Phase 2 | Link structure between files: orphans and hub dead ends | `DG-ORG001`, `DG-ORG002` | opt-in, `warning` |
 | Phase 3 | Structure inside each file: mixed roles and heading level skips | `DG-SPLIT001`, `DG-FORMAT002` | opt-in, `warning` |
-| Duplicate guidance | Repeated commands, headings, or list guidance across the scan scope | `DG-SPLIT002` | opt-in, `warning` |
+| Duplicate guidance | Repeated commands or list guidance across the scan scope; headings opt-in | `DG-SPLIT002` | opt-in, `warning` |
 
 Entry points are shared across all diagnostics. See [Scan Markdown from the CLI](#scan-markdown-from-the-cli) and [Run the same checks through pytest](#run-the-same-checks-through-pytest).
 
@@ -108,7 +108,7 @@ If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration
 | `DG-FORMAT002` | A heading skips one or more levels (opt-in) |
 | `DG-FORMAT003` | A typed document is missing YAML front matter or a required key |
 | `DG-SPLIT001` | An untyped document may mix multiple document role families (opt-in) |
-| `DG-SPLIT002` | Repeated commands, headings, or list guidance across the scan scope (opt-in) |
+| `DG-SPLIT002` | Repeated commands or list guidance across the scan scope; headings opt-in |
 | `DG-ORG001` | Orphan document: zero incoming links from other in-scope Markdown files (opt-in) |
 | `DG-ORG002` | Missing outgoing links: hub document with zero outgoing links to in-scope Markdown files (opt-in) |
 | `DG-ORG003` | A document is not reachable from configured index files |
@@ -265,6 +265,7 @@ require_hub_outgoing_links = false
 require_mixed_role_detection = false
 require_heading_order_check = false
 require_duplicate_guidance_detection = false
+duplicate_guidance_kinds = ["code_block", "list_item"]
 allowed_duplicate_patterns = []
 hub_globs = []
 
@@ -292,7 +293,8 @@ Behavior notes:
 - mixed-role detection runs only when `require_mixed_role_detection = true`; typed documents are excluded
 - heading order checks run only when `require_heading_order_check = true`
 - duplicate guidance detection runs only when `require_duplicate_guidance_detection = true`
-- `allowed_duplicate_patterns` suppresses intentional repeated normalized text matched by regular expressions
+- `duplicate_guidance_kinds` selects which atom kinds are checked; default is `code_block` and `list_item`
+- `allowed_duplicate_patterns` suppresses intentional repeated normalized text matched by regular expressions within enabled kinds
 - `experimental_rules_enabled = true` is reserved for future opt-in rules and currently has no effect
 
 When documentation exceeds the configured budget, split files instead of raising `max_document_lines`. See [docs/dogfood.md](dogfood.md) and [docs/adr/0006-document-budget-dogfood-gate.md](adr/0006-document-budget-dogfood-gate.md).

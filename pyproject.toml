@@ -71,12 +71,6 @@ paths = ["README.md", "CONTEXT.md", "docs"]
 index_files = ["README.md"]
 require_index_reachability = true
 require_duplicate_guidance_detection = true
-allowed_duplicate_patterns = [
-  "^Status$",
-  "^Context$",
-  "^Decision$",
-  "^Consequences$",
-]
 max_document_lines = 400
 max_section_lines = 120
 

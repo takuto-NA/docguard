@@ -37,3 +37,4 @@ Alternatives rejected:
 - This repository treats duplicate guidance as a blocking documentation failure.
 - Intentional repetition must be allowlisted explicitly rather than silently tolerated.
 - Documentation refactors should consolidate canonical install, CLI, configuration, and exit-code guidance into one owner section.
+- Default heading duplicate scope was narrowed in [docs/adr/0010-duplicate-guidance-kind-scope.md](0010-duplicate-guidance-kind-scope.md).

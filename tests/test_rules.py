@@ -826,6 +826,82 @@ DG-SIZE001 = "warning"
     assert resolve_exit_code_from_diagnostics(run_result.diagnostics) == EXIT_CODE_SUCCESS
 
 
+def diagnostics_by_code(run_result, diagnostic_code: str) -> list[Diagnostic]:
+    return [
+        diagnostic
+        for diagnostic in run_result.diagnostics
+        if diagnostic.code == diagnostic_code
+    ]
+
+
+def test_template_headings_do_not_trigger_duplicate_guidance_diagnostic_by_default(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    for page_index in range(1, 4):
+        (docs_directory / f"page-{page_index}.md").write_text(
+            f"# Title {page_index}\n\n## 目的\n\nText.\n",
+            encoding="utf-8",
+        )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_duplicate_guidance_detection = true
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    duplicate_guidance_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
+    )
+
+    assert duplicate_guidance_diagnostics == []
+
+
+def test_heading_duplicates_trigger_diagnostic_when_opted_in(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    for page_index in range(1, 4):
+        (docs_directory / f"page-{page_index}.md").write_text(
+            f"# Title {page_index}\n\n## 目的\n\nText.\n",
+            encoding="utf-8",
+        )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_duplicate_guidance_detection = true
+duplicate_guidance_kinds = ["heading"]
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    duplicate_guidance_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
+    )
+
+    assert len(duplicate_guidance_diagnostics) == 1
+    assert duplicate_guidance_diagnostics[0].document_path == "docs/page-1.md"
+    assert "heading" in duplicate_guidance_diagnostics[0].message
+    assert "duplicate_guidance_kinds" in duplicate_guidance_diagnostics[0].suggestion
+
+
 def test_duplicate_guidance_rule_is_silent_when_disabled(
     temporary_project_directory: Path,
 ) -> None:

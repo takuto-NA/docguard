@@ -6,6 +6,10 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 
+from docguard.constants import (
+    ALLOWED_DUPLICATE_GUIDANCE_KINDS,
+    DEFAULT_DUPLICATE_GUIDANCE_KINDS,
+)
 from docguard.markdown import extract_headings, normalize_heading_text
 from docguard.models import DocumentInspectionContext, ParsedMarkdownDocument
 
@@ -226,14 +230,44 @@ def collect_list_item_atoms(
     return tuple(list_item_atoms)
 
 
+def guidance_atom_kind_from_configuration_name(
+    configuration_kind_name: str,
+) -> GuidanceAtomKind:
+    if configuration_kind_name == GuidanceAtomKind.CODE_BLOCK.value:
+        return GuidanceAtomKind.CODE_BLOCK
+    if configuration_kind_name == GuidanceAtomKind.HEADING.value:
+        return GuidanceAtomKind.HEADING
+    if configuration_kind_name == GuidanceAtomKind.LIST_ITEM.value:
+        return GuidanceAtomKind.LIST_ITEM
+    raise ValueError(
+        "duplicate_guidance_kinds contains unsupported value: "
+        f"{configuration_kind_name}"
+    )
+
+
+def resolve_enabled_guidance_atom_kinds(
+    duplicate_guidance_kinds: tuple[str, ...],
+) -> frozenset[GuidanceAtomKind]:
+    enabled_guidance_atom_kinds: set[GuidanceAtomKind] = set()
+    for configuration_kind_name in duplicate_guidance_kinds:
+        enabled_guidance_atom_kinds.add(
+            guidance_atom_kind_from_configuration_name(configuration_kind_name)
+        )
+    return frozenset(enabled_guidance_atom_kinds)
+
+
 def collect_guidance_atoms(
     parsed_document: ParsedMarkdownDocument,
+    enabled_guidance_atom_kinds: frozenset[GuidanceAtomKind],
 ) -> tuple[GuidanceAtom, ...]:
-    return (
-        *collect_code_block_atoms(parsed_document),
-        *collect_heading_atoms(parsed_document),
-        *collect_list_item_atoms(parsed_document),
-    )
+    guidance_atoms: list[GuidanceAtom] = []
+    if GuidanceAtomKind.CODE_BLOCK in enabled_guidance_atom_kinds:
+        guidance_atoms.extend(collect_code_block_atoms(parsed_document))
+    if GuidanceAtomKind.HEADING in enabled_guidance_atom_kinds:
+        guidance_atoms.extend(collect_heading_atoms(parsed_document))
+    if GuidanceAtomKind.LIST_ITEM in enabled_guidance_atom_kinds:
+        guidance_atoms.extend(collect_list_item_atoms(parsed_document))
+    return tuple(guidance_atoms)
 
 
 def minimum_duplicate_occurrences_for_kind(kind: GuidanceAtomKind) -> int:
@@ -257,14 +291,21 @@ def group_guidance_atoms_by_kind_and_text(
 def collect_duplicate_guidance_groups(
     document_contexts: tuple[DocumentInspectionContext, ...],
     allowed_duplicate_patterns: tuple[str, ...],
+    duplicate_guidance_kinds: tuple[str, ...] = DEFAULT_DUPLICATE_GUIDANCE_KINDS,
 ) -> tuple[DuplicateGuidanceGroup, ...]:
     compiled_allowed_patterns = compile_allowed_duplicate_patterns(
         allowed_duplicate_patterns
     )
+    enabled_guidance_atom_kinds = resolve_enabled_guidance_atom_kinds(
+        duplicate_guidance_kinds
+    )
     all_guidance_atoms: list[GuidanceAtom] = []
     for inspection_context in document_contexts:
         all_guidance_atoms.extend(
-            collect_guidance_atoms(inspection_context.parsed_document)
+            collect_guidance_atoms(
+                inspection_context.parsed_document,
+                enabled_guidance_atom_kinds,
+            )
         )
 
     duplicate_groups: list[DuplicateGuidanceGroup] = []

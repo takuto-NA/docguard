@@ -83,9 +83,9 @@ _Avoid_: doc bloat, scope creep, content overlap
 See [docs/adr/0007-document-responsibility-drift-guard.md](docs/adr/0007-document-responsibility-drift-guard.md).
 
 **Duplicate guidance**:
-Repeated commands, headings, list items, or configuration examples that make the same maintenance instruction appear in multiple places without a clear canonical owner.
+Repeated commands, list items, or configuration examples that make the same maintenance instruction appear in multiple places without a clear canonical owner. Heading duplicates are opt-in through `duplicate_guidance_kinds`.
 _Avoid_: copy-paste docs, repeated examples, duplicate setup blocks
-See [docs/adr/0009-duplicate-guidance-diagnostic.md](docs/adr/0009-duplicate-guidance-diagnostic.md).
+See [docs/adr/0009-duplicate-guidance-diagnostic.md](docs/adr/0009-duplicate-guidance-diagnostic.md), [docs/adr/0010-duplicate-guidance-kind-scope.md](docs/adr/0010-duplicate-guidance-kind-scope.md).
 
 ## Example dialogue
 

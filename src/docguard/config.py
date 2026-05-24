@@ -9,8 +9,10 @@ from pathlib import Path
 from typing import Any
 
 from docguard.constants import (
+    ALLOWED_DUPLICATE_GUIDANCE_KINDS,
     DEFAULT_ADR_MAX_DOCUMENT_LINES,
     DEFAULT_ADR_MAX_SECTION_LINES,
+    DEFAULT_DUPLICATE_GUIDANCE_KINDS,
     DEFAULT_MAX_DOCUMENT_LINES,
     DEFAULT_MAX_SECTION_LINES,
     DEFAULT_SEVERITIES,
@@ -38,6 +40,7 @@ ALLOWED_TOP_LEVEL_KEYS = {
     "require_mixed_role_detection",
     "require_heading_order_check",
     "require_duplicate_guidance_detection",
+    "duplicate_guidance_kinds",
     "allowed_duplicate_patterns",
     "hub_globs",
     "severity",
@@ -186,6 +189,34 @@ def validate_allowed_duplicate_patterns(
             ) from error
 
 
+def parse_duplicate_guidance_kinds(raw_value: Any) -> tuple[str, ...]:
+    if raw_value is None:
+        return DEFAULT_DUPLICATE_GUIDANCE_KINDS
+    if not isinstance(raw_value, list) or not all(
+        isinstance(item, str) for item in raw_value
+    ):
+        raise ConfigurationError("duplicate_guidance_kinds must be a list of strings.")
+    if len(raw_value) == 0:
+        raise ConfigurationError("duplicate_guidance_kinds must not be empty.")
+    seen_kind_names: set[str] = set()
+    parsed_kind_names: list[str] = []
+    for kind_index, raw_kind_name in enumerate(raw_value):
+        normalized_kind_name = raw_kind_name.strip()
+        if normalized_kind_name not in ALLOWED_DUPLICATE_GUIDANCE_KINDS:
+            raise ConfigurationError(
+                "duplicate_guidance_kinds["
+                f"{kind_index}] is not supported: {raw_kind_name}"
+            )
+        if normalized_kind_name in seen_kind_names:
+            raise ConfigurationError(
+                "duplicate_guidance_kinds contains duplicate value: "
+                f"{raw_kind_name}"
+            )
+        seen_kind_names.add(normalized_kind_name)
+        parsed_kind_names.append(normalized_kind_name)
+    return tuple(parsed_kind_names)
+
+
 def parse_severity_table(raw_severities: Any) -> dict[str, str]:
     if raw_severities is None:
         return dict(DEFAULT_SEVERITIES)
@@ -226,6 +257,7 @@ def build_zero_config_configuration(
         require_mixed_role_detection=False,
         require_heading_order_check=False,
         require_duplicate_guidance_detection=False,
+        duplicate_guidance_kinds=DEFAULT_DUPLICATE_GUIDANCE_KINDS,
         allowed_duplicate_patterns=tuple(),
         hub_globs=tuple(),
         severities=dict(DEFAULT_SEVERITIES),
@@ -281,6 +313,9 @@ def parse_docguard_configuration(
         "allowed_duplicate_patterns",
     )
     validate_allowed_duplicate_patterns(allowed_duplicate_patterns)
+    duplicate_guidance_kinds = parse_duplicate_guidance_kinds(
+        raw_configuration.get("duplicate_guidance_kinds")
+    )
 
     return DocguardConfiguration(
         project_root=project_root,
@@ -319,6 +354,7 @@ def parse_docguard_configuration(
         require_duplicate_guidance_detection=bool(
             raw_configuration.get("require_duplicate_guidance_detection", False)
         ),
+        duplicate_guidance_kinds=duplicate_guidance_kinds,
         allowed_duplicate_patterns=allowed_duplicate_patterns,
         hub_globs=require_string_list(
             raw_configuration.get("hub_globs"),

@@ -103,22 +103,29 @@ Full specification: [docs/adr/0005-phase3-structure-diagnostics.md](adr/0005-pha
 
 ## Detect duplicate guidance (`DG-SPLIT002`)
 
-**What it finds:** repeated fenced code blocks, headings, or list items whose normalized text appears across the configured scan scope beyond rule thresholds.
+**What it finds:** repeated fenced code blocks or list items whose normalized text appears across the configured scan scope beyond rule thresholds. Heading duplicates are opt-in through `duplicate_guidance_kinds`.
 
-**Typical fix:** keep one canonical install, CLI, configuration, or exit-code section and link to it elsewhere.
+**Typical fix:** keep one canonical install, CLI, configuration, or exit-code section and link to it elsewhere. For intentional template headings, leave `heading` out of `duplicate_guidance_kinds` or add an `allowed_duplicate_patterns` entry when heading detection is enabled.
 
 **Enable:**
 
 ```toml
 [tool.docguard]
 require_duplicate_guidance_detection = true
-allowed_duplicate_patterns = ["^Status$"]
+duplicate_guidance_kinds = ["code_block", "list_item"]
+allowed_duplicate_patterns = []
 ```
 
-Use `allowed_duplicate_patterns` only for intentional repeated labels such as ADR section headings, not to hide accidental command duplication.
+Heading duplicates are opt-in:
 
-Full specification: [docs/adr/0009-duplicate-guidance-diagnostic.md](adr/0009-duplicate-guidance-diagnostic.md).
+```toml
+duplicate_guidance_kinds = ["code_block", "list_item", "heading"]
+```
 
-**In this repository:** duplicate guidance detection is enabled as `error`. Readiness tests expect **0** duplicate guidance groups after allowlisting ADR section headings. See [docs/dogfood.md](dogfood.md).
+Use `allowed_duplicate_patterns` only for intentional repeated normalized text within enabled kinds, not to hide accidental command duplication.
+
+Full specification: [docs/adr/0009-duplicate-guidance-diagnostic.md](adr/0009-duplicate-guidance-diagnostic.md), [docs/adr/0010-duplicate-guidance-kind-scope.md](adr/0010-duplicate-guidance-kind-scope.md).
+
+**In this repository:** duplicate guidance detection is enabled as `error` with default kinds `code_block` and `list_item`. Readiness tests expect **0** duplicate guidance groups. See [docs/dogfood.md](dogfood.md).
 
 See also: [docs/usage.md](usage.md), [docs/dogfood.md](dogfood.md).

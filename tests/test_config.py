@@ -11,7 +11,7 @@ from docguard.config import (
     load_docguard_configuration,
     resolve_document_type_for_path,
 )
-from docguard.constants import DEFAULT_MAX_DOCUMENT_LINES
+from docguard.constants import DEFAULT_DUPLICATE_GUIDANCE_KINDS, DEFAULT_MAX_DOCUMENT_LINES
 
 
 def write_pyproject(project_root: Path, contents: str) -> None:
@@ -207,7 +207,126 @@ DG-SPLIT002 = "error"
     )
     assert configuration.require_duplicate_guidance_detection is True
     assert configuration.allowed_duplicate_patterns == ("^Run docguard locally",)
+    assert configuration.duplicate_guidance_kinds == DEFAULT_DUPLICATE_GUIDANCE_KINDS
     assert configuration.severities["DG-SPLIT002"] == "error"
+
+
+def test_duplicate_guidance_kinds_default_to_code_block_and_list_item(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_duplicate_guidance_detection = true
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.duplicate_guidance_kinds == DEFAULT_DUPLICATE_GUIDANCE_KINDS
+
+
+def test_duplicate_guidance_kinds_can_include_heading(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+duplicate_guidance_kinds = ["code_block", "list_item", "heading"]
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.duplicate_guidance_kinds == (
+        "code_block",
+        "list_item",
+        "heading",
+    )
+
+
+def test_empty_duplicate_guidance_kinds_raises_configuration_error(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+duplicate_guidance_kinds = []
+""",
+    )
+    with pytest.raises(ConfigurationError, match="duplicate_guidance_kinds must not be empty"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
+def test_unknown_duplicate_guidance_kind_raises_configuration_error(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+duplicate_guidance_kinds = ["prose"]
+""",
+    )
+    with pytest.raises(ConfigurationError, match="duplicate_guidance_kinds"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
+def test_duplicate_duplicate_guidance_kind_raises_configuration_error(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+duplicate_guidance_kinds = ["code_block", "code_block"]
+""",
+    )
+    with pytest.raises(ConfigurationError, match="duplicate value"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
+def test_non_string_duplicate_guidance_kind_raises_configuration_error(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+duplicate_guidance_kinds = [true]
+""",
+    )
+    with pytest.raises(ConfigurationError, match="duplicate_guidance_kinds"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
 
 
 def test_invalid_allowed_duplicate_pattern_raises_configuration_error(

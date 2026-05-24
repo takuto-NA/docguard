@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from docguard.constants import DEFAULT_DUPLICATE_GUIDANCE_KINDS
 from docguard.duplicate_guidance import (
     GuidanceAtomKind,
     collect_duplicate_guidance_groups,
     collect_guidance_atoms,
     normalize_code_block,
+    resolve_enabled_guidance_atom_kinds,
 )
 from docguard.markdown import parse_markdown_document
 from docguard.models import DocumentInspectionContext
@@ -64,6 +66,52 @@ uv run docguard docs/ --summary
     assert duplicate_group.atoms[1].document_path == "docs/second.md"
 
 
+def test_collects_duplicate_headings_after_three_occurrences_when_opted_in(
+    temporary_project_directory: Path,
+) -> None:
+    document_contexts = tuple(
+        build_inspection_context(
+            temporary_project_directory,
+            f"docs/page-{page_index}.md",
+            f"# Title {page_index}\n\n## Configuration\n\nText.\n",
+        )
+        for page_index in range(1, 4)
+    )
+    duplicate_groups = collect_duplicate_guidance_groups(
+        document_contexts,
+        allowed_duplicate_patterns=tuple(),
+        duplicate_guidance_kinds=("heading",),
+    )
+
+    heading_duplicate_groups = [
+        duplicate_group
+        for duplicate_group in duplicate_groups
+        if duplicate_group.kind is GuidanceAtomKind.HEADING
+    ]
+    assert len(heading_duplicate_groups) == 1
+    assert heading_duplicate_groups[0].normalized_text == "Configuration"
+    assert len(heading_duplicate_groups[0].atoms) == 3
+
+
+def test_template_headings_are_not_duplicate_by_default(
+    temporary_project_directory: Path,
+) -> None:
+    document_contexts = tuple(
+        build_inspection_context(
+            temporary_project_directory,
+            f"docs/page-{page_index}.md",
+            f"# Title {page_index}\n\n## 目的\n\nText.\n",
+        )
+        for page_index in range(1, 4)
+    )
+    duplicate_groups = collect_duplicate_guidance_groups(
+        document_contexts,
+        allowed_duplicate_patterns=tuple(),
+    )
+
+    assert duplicate_groups == tuple()
+
+
 def test_collects_duplicate_headings_after_three_occurrences(
     temporary_project_directory: Path,
 ) -> None:
@@ -78,6 +126,7 @@ def test_collects_duplicate_headings_after_three_occurrences(
     duplicate_groups = collect_duplicate_guidance_groups(
         document_contexts,
         allowed_duplicate_patterns=tuple(),
+        duplicate_guidance_kinds=("code_block", "list_item", "heading"),
     )
 
     heading_duplicate_groups = [
@@ -144,6 +193,26 @@ uv run docguard docs/ --summary
     assert duplicate_groups == tuple()
 
 
+def test_allowed_duplicate_patterns_suppress_matching_heading_when_opted_in(
+    temporary_project_directory: Path,
+) -> None:
+    document_contexts = tuple(
+        build_inspection_context(
+            temporary_project_directory,
+            f"docs/page-{page_index}.md",
+            f"# Title {page_index}\n\n## Purpose\n\nText.\n",
+        )
+        for page_index in range(1, 4)
+    )
+    duplicate_groups = collect_duplicate_guidance_groups(
+        document_contexts,
+        allowed_duplicate_patterns=(r"^Purpose$",),
+        duplicate_guidance_kinds=("heading",),
+    )
+
+    assert duplicate_groups == tuple()
+
+
 def test_normalize_code_block_removes_shell_comment_only_lines() -> None:
     normalized_code_block = normalize_code_block(
         [
@@ -176,6 +245,12 @@ docguard docs/
         markdown_path,
         "single-line.md",
     )
-    guidance_atoms = collect_guidance_atoms(parsed_document)
+    enabled_guidance_atom_kinds = resolve_enabled_guidance_atom_kinds(
+        DEFAULT_DUPLICATE_GUIDANCE_KINDS
+    )
+    guidance_atoms = collect_guidance_atoms(
+        parsed_document,
+        enabled_guidance_atom_kinds,
+    )
 
     assert guidance_atoms == tuple()

@@ -23,10 +23,13 @@ from docguard.constants import (
     WHY_SECTION_TOO_LONG,
     WHY_UNEXPECTED_HEADING_ORDER,
     WHY_UNREACHABLE_FROM_INDEX,
+    SUGGESTION_DUPLICATE_GUIDANCE,
+    SUGGESTION_DUPLICATE_HEADING_GUIDANCE,
 )
 from docguard.diagnostics import Diagnostic, resolve_severity_for_code
 from docguard.duplicate_guidance import (
     DuplicateGuidanceGroup,
+    GuidanceAtomKind,
     collect_duplicate_guidance_groups,
     format_duplicate_occurrence_references,
 )
@@ -453,6 +456,14 @@ def collect_heading_skip_violations(
     return frozenset(heading_skip_violations)
 
 
+def resolve_duplicate_guidance_suggestion(
+    duplicate_group: DuplicateGuidanceGroup,
+) -> str:
+    if duplicate_group.kind is GuidanceAtomKind.HEADING:
+        return SUGGESTION_DUPLICATE_HEADING_GUIDANCE
+    return SUGGESTION_DUPLICATE_GUIDANCE
+
+
 def check_duplicate_guidance(
     configuration: DocguardConfiguration,
     document_contexts: tuple[DocumentInspectionContext, ...],
@@ -463,6 +474,7 @@ def check_duplicate_guidance(
     duplicate_groups = collect_duplicate_guidance_groups(
         document_contexts,
         configuration.allowed_duplicate_patterns,
+        configuration.duplicate_guidance_kinds,
     )
     diagnostics: list[Diagnostic] = []
     for duplicate_group in duplicate_groups:
@@ -484,10 +496,7 @@ def check_duplicate_guidance(
                     f"({occurrence_references})."
                 ),
                 why_it_matters=WHY_DUPLICATE_GUIDANCE,
-                suggestion=(
-                    "Consolidate repeated guidance into one canonical section "
-                    "and link to it elsewhere."
-                ),
+                suggestion=resolve_duplicate_guidance_suggestion(duplicate_group),
                 location=f"line {primary_atom.line_number}",
             )
         )
@@ -503,4 +512,5 @@ def collect_duplicate_guidance_candidates(
     return collect_duplicate_guidance_groups(
         document_contexts,
         configuration.allowed_duplicate_patterns,
+        configuration.duplicate_guidance_kinds,
     )

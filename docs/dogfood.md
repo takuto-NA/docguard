@@ -143,9 +143,9 @@ With duplicate guidance detection enabled in this repository:
 | `docs/structure-rules.md` | no |
 | `docs/dogfood.md` | no |
 | `docs/release-readiness.md` | no |
-| `docs/adr/*.md` | no (ADR section headings allowlisted) |
+| `docs/adr/*.md` | no |
 
-Expected candidate count: **0 duplicate guidance groups**.
+Expected candidate count: **0 duplicate guidance groups** with default kinds `code_block` and `list_item`.
 
 Automated gate: `tests/test_duplicate_guidance_readiness.py`.
 

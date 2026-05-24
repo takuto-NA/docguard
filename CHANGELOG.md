@@ -6,6 +6,16 @@ All notable user-facing changes to docguard are documented in this file.
 
 Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defaults may change between releases. Breaking changes are listed under each version. Exit codes (`0` success, `1` diagnostic failure, `2` configuration failure) and existing diagnostic code meanings are preserved where practical.
 
+## [Unreleased]
+
+### Added
+
+- `duplicate_guidance_kinds` configuration key to choose which duplicate guidance atom kinds `DG-SPLIT002` checks.
+
+### Changed
+
+- `DG-SPLIT002` no longer detects repeated headings unless `duplicate_guidance_kinds` includes `heading`. Default kinds are `code_block` and `list_item`.
+
 ## [0.1.0] - 2026-05-24
 
 ### Added

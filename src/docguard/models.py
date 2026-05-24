@@ -64,6 +64,7 @@ class DocguardConfiguration:
     require_mixed_role_detection: bool
     require_heading_order_check: bool
     require_duplicate_guidance_detection: bool
+    duplicate_guidance_kinds: tuple[str, ...]
     allowed_duplicate_patterns: tuple[str, ...]
     hub_globs: tuple[str, ...]
     severities: dict[str, str]

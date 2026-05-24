@@ -23,7 +23,7 @@ Docguard focuses on document structure and repository health, not Markdown forma
 | Core | Document and section size; typed document shape; index reachability | `DG-SIZE001`, `DG-SIZE002`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003` | on when configured |
 | Phase 2 | Link structure between files: orphans and hub dead ends | `DG-ORG001`, `DG-ORG002` | opt-in, `warning` |
 | Phase 3 | Structure inside each file: mixed roles and heading level skips | `DG-SPLIT001`, `DG-FORMAT002` | opt-in, `warning` |
-| Duplicate guidance | Repeated commands, headings, or list guidance across the scan scope | `DG-SPLIT002` | opt-in, `warning` |
+| Duplicate guidance | Repeated commands or list guidance across the scan scope; headings opt-in | `DG-SPLIT002` | opt-in, `warning` |
 
 Phase 2 details: [organization rules](https://github.com/takuto-NA/docguard/blob/main/docs/organization-rules.md). Phase 3 and duplicate guidance details: [structure rules](https://github.com/takuto-NA/docguard/blob/main/docs/structure-rules.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 
@@ -72,3 +72,4 @@ Relative links for clone checkouts and docguard reachability checks:
 - [docs/adr/0007-document-responsibility-drift-guard.md](docs/adr/0007-document-responsibility-drift-guard.md)
 - [docs/adr/0008-pypi-alpha-distribution.md](docs/adr/0008-pypi-alpha-distribution.md)
 - [docs/adr/0009-duplicate-guidance-diagnostic.md](docs/adr/0009-duplicate-guidance-diagnostic.md)
+- [docs/adr/0010-duplicate-guidance-kind-scope.md](docs/adr/0010-duplicate-guidance-kind-scope.md)
