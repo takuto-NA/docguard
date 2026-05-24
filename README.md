@@ -6,7 +6,7 @@ Docguard helps teams keep documentation from growing too large, becoming unreach
 
 ## Quick start
 
-Install with `uv add docguard`, then run `uv run docguard docs/ --summary`. Equivalent with pip: `pip install docguard`.
+When `docguard` is on PyPI, install with `uv add docguard`, then run `uv run docguard docs/ --summary`. Equivalent with pip: `pip install docguard`. Until the first PyPI release, use the Git-based install steps in the [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#before-pypi-publication).
 
 Configure `[tool.docguard]` in `pyproject.toml` using the [configuration example](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#configuration). Full install commands, pytest integration, and exit codes: [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 

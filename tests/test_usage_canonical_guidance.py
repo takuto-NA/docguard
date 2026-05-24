@@ -12,7 +12,9 @@ from pathlib import Path
 USAGE_RELATIVE_PATH = "docs/usage.md"
 
 INSTALL_HEADING = "## Install"
+BEFORE_PYPI_PUBLICATION_HEADING = "### Before PyPI publication"
 USE_IN_ANOTHER_REPOSITORY_HEADING = "## Use in another repository"
+PRE_PYPI_GIT_REPOSITORY_URL = "git+https://github.com/takuto-NA/docguard.git"
 WHAT_YOU_CAN_DO_HEADING = "## What you can do today"
 SCAN_CLI_HEADING = "## Scan Markdown from the CLI"
 PYTEST_HEADING = "## Run the same checks through pytest"
@@ -128,6 +130,52 @@ def test_usage_has_one_canonical_install_section() -> None:
     assert count_fenced_blocks_containing_all_markers(
         install_section,
         ("pip install docguard", "docguard docs/ --summary"),
+    ) == 1
+
+
+def test_install_section_documents_pre_pypi_uv_add_from_git() -> None:
+    usage_text = read_usage_text()
+    install_section = extract_section_between_headings(
+        usage_text,
+        INSTALL_HEADING,
+        USE_IN_ANOTHER_REPOSITORY_HEADING,
+    )
+
+    assert BEFORE_PYPI_PUBLICATION_HEADING in install_section
+    assert count_fenced_blocks_containing_all_markers(
+        install_section,
+        (
+            f'docguard @ {PRE_PYPI_GIT_REPOSITORY_URL}',
+            "uv run docguard docs/ --summary",
+        ),
+    ) == 1
+
+
+def test_install_section_documents_pre_pypi_uvx_from_git() -> None:
+    usage_text = read_usage_text()
+    install_section = extract_section_between_headings(
+        usage_text,
+        INSTALL_HEADING,
+        USE_IN_ANOTHER_REPOSITORY_HEADING,
+    )
+
+    assert count_fenced_blocks_containing_all_markers(
+        install_section,
+        ("uvx --from", PRE_PYPI_GIT_REPOSITORY_URL),
+    ) == 1
+
+
+def test_install_section_documents_pre_pypi_uv_pip_from_git() -> None:
+    usage_text = read_usage_text()
+    install_section = extract_section_between_headings(
+        usage_text,
+        INSTALL_HEADING,
+        USE_IN_ANOTHER_REPOSITORY_HEADING,
+    )
+
+    assert count_fenced_blocks_containing_all_markers(
+        install_section,
+        (f'uv pip install "{PRE_PYPI_GIT_REPOSITORY_URL}"',),
     ) == 1
 
 

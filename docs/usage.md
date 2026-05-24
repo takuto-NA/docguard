@@ -6,6 +6,8 @@ Docguard is intentionally different from markdownlint or Prettier. Those tools f
 
 ## Install
 
+### From PyPI
+
 When `docguard` is published on PyPI:
 
 ```bash
@@ -20,10 +22,27 @@ pip install docguard
 docguard docs/ --summary
 ```
 
-Before the first PyPI release, install from the repository:
+### Before PyPI publication
+
+Until the first PyPI release, install from the Git repository.
+
+Add as a project dependency (recommended):
+
+```bash
+uv add "docguard @ git+https://github.com/takuto-NA/docguard.git"
+uv run docguard docs/ --summary
+```
+
+Install into the active environment:
 
 ```bash
 uv pip install "git+https://github.com/takuto-NA/docguard.git"
+```
+
+Run once without adding a dependency:
+
+```bash
+uvx --from "git+https://github.com/takuto-NA/docguard.git" docguard docs/ --summary
 ```
 
 For development in this repository, see [README.md](../README.md#development).
@@ -150,13 +169,15 @@ Supported values are `error`, `warning`, and `experimental`. Only `error` fails 
 
 ## Add docguard to CI
 
-Example GitHub Actions step:
+Example GitHub Actions step after `docguard` is on PyPI:
 
 ```yaml
 - uses: astral-sh/setup-uv@v5
 - run: uv pip install docguard
 - run: uv run docguard docs/ --format json
 ```
+
+Before the first PyPI release, use the Git-based install steps in [Install — Before PyPI publication](#before-pypi-publication) instead of `uv pip install docguard`.
 
 Use exit code `1` for diagnostic failures and `2` for configuration failures. See [Use predictable CI exit codes](#use-predictable-ci-exit-codes).
 

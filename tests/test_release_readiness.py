@@ -42,6 +42,10 @@ REQUIRED_UV_CONTRIBUTOR_COMMANDS = (
 
 REQUIRED_PIP_ALTERNATIVE_COMMAND = "pip install docguard"
 
+REQUIRED_PRE_PYPI_INSTALL_GUIDE_URL = (
+    f"{GITHUB_REPOSITORY_URL}/blob/main/docs/usage.md#before-pypi-publication"
+)
+
 REQUIRED_TOOL_DOCGUARD_MARKER = "[tool.docguard]"
 REQUIRED_ALPHA_MARKER = "Alpha"
 
@@ -192,6 +196,12 @@ def test_readme_documents_uv_first_workflow() -> None:
     assert readme_text.index("uv add docguard") < readme_text.index(
         REQUIRED_PIP_ALTERNATIVE_COMMAND
     ), "README must show uv commands before pip alternatives."
+
+
+def test_readme_links_to_pre_pypi_install_guide() -> None:
+    readme_text = README_PATH.read_text(encoding="utf-8")
+
+    assert REQUIRED_PRE_PYPI_INSTALL_GUIDE_URL in readme_text
 
 
 def test_readme_includes_minimal_configuration_and_alpha_expectations() -> None:
