@@ -63,6 +63,8 @@ class DocguardConfiguration:
     require_hub_outgoing_links: bool
     require_mixed_role_detection: bool
     require_heading_order_check: bool
+    require_duplicate_guidance_detection: bool
+    allowed_duplicate_patterns: tuple[str, ...]
     hub_globs: tuple[str, ...]
     severities: dict[str, str]
     document_types: tuple[DocumentTypeConfiguration, ...]

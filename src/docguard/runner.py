@@ -12,6 +12,7 @@ from docguard.graph import build_document_graph
 from docguard.models import DocguardConfiguration
 from docguard.rules import (
     check_document_length,
+    check_duplicate_guidance,
     check_heading_level_skips,
     check_hub_missing_outgoing_links,
     check_mixed_document_roles,
@@ -73,6 +74,7 @@ def run_docguard_checks(
 
     diagnostics.extend(check_orphan_documents(configuration, document_graph))
     diagnostics.extend(check_hub_missing_outgoing_links(configuration, document_graph))
+    diagnostics.extend(check_duplicate_guidance(configuration, document_contexts))
 
     checked_document_paths = tuple(
         context.parsed_document.repository_relative_path

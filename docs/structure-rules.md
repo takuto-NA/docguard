@@ -101,4 +101,24 @@ Full specification: [docs/adr/0005-phase3-structure-diagnostics.md](adr/0005-pha
 
 **In this repository:** both Phase 3 flags stay off in the default `pyproject.toml`. If you enable them against the current documentation scope, readiness tests expect **0** mixed-role candidates and **0** heading-level skips. See [docs/dogfood.md](dogfood.md).
 
+## Detect duplicate guidance (`DG-SPLIT002`)
+
+**What it finds:** repeated fenced code blocks, headings, or list items whose normalized text appears across the configured scan scope beyond rule thresholds.
+
+**Typical fix:** keep one canonical install, CLI, configuration, or exit-code section and link to it elsewhere.
+
+**Enable:**
+
+```toml
+[tool.docguard]
+require_duplicate_guidance_detection = true
+allowed_duplicate_patterns = ["^Status$"]
+```
+
+Use `allowed_duplicate_patterns` only for intentional repeated labels such as ADR section headings, not to hide accidental command duplication.
+
+Full specification: [docs/adr/0009-duplicate-guidance-diagnostic.md](adr/0009-duplicate-guidance-diagnostic.md).
+
+**In this repository:** duplicate guidance detection is enabled as `error`. Readiness tests expect **0** duplicate guidance groups after allowlisting ADR section headings. See [docs/dogfood.md](dogfood.md).
+
 See also: [docs/usage.md](usage.md), [docs/dogfood.md](dogfood.md).

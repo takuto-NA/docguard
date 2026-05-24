@@ -185,6 +185,69 @@ hub_globs = ["docs/index-*.md"]
     assert configuration.hub_globs == ("docs/index-*.md",)
 
 
+def test_duplicate_guidance_configuration_keys_are_parsed(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_duplicate_guidance_detection = true
+allowed_duplicate_patterns = ["^Run docguard locally"]
+
+[tool.docguard.severity]
+DG-SPLIT002 = "error"
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.require_duplicate_guidance_detection is True
+    assert configuration.allowed_duplicate_patterns == ("^Run docguard locally",)
+    assert configuration.severities["DG-SPLIT002"] == "error"
+
+
+def test_invalid_allowed_duplicate_pattern_raises_configuration_error(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+allowed_duplicate_patterns = ["["]
+""",
+    )
+    with pytest.raises(ConfigurationError, match="allowed_duplicate_patterns"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
+def test_non_string_allowed_duplicate_pattern_raises_configuration_error(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+allowed_duplicate_patterns = [true]
+""",
+    )
+    with pytest.raises(ConfigurationError, match="allowed_duplicate_patterns"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
 def test_phase3_configuration_keys_are_parsed(
     temporary_project_directory: Path,
 ) -> None:

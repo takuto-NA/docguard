@@ -82,6 +82,11 @@ A documentation failure mode where a document absorbs topics outside its declare
 _Avoid_: doc bloat, scope creep, content overlap
 See [docs/adr/0007-document-responsibility-drift-guard.md](docs/adr/0007-document-responsibility-drift-guard.md).
 
+**Duplicate guidance**:
+Repeated commands, headings, list items, or configuration examples that make the same maintenance instruction appear in multiple places without a clear canonical owner.
+_Avoid_: copy-paste docs, repeated examples, duplicate setup blocks
+See [docs/adr/0009-duplicate-guidance-diagnostic.md](docs/adr/0009-duplicate-guidance-diagnostic.md).
+
 ## Example dialogue
 
 **Developer**: This ADR is flagged as unreachable from index.

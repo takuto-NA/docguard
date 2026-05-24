@@ -8,7 +8,7 @@ Two audiences, one dogfood setup:
 
 | Audience | What is available now |
 |----------|----------------------|
-| **Tool users** | Nine structure diagnostics across core, Phase 2 (links between files), and Phase 3 (structure inside each file). Same CLI, JSON, and pytest entry points as any project. |
+| **Tool users** | Ten structure diagnostics across core, Phase 2 (links between files), Phase 3 (structure inside each file), and duplicate guidance. Same CLI, JSON, and pytest entry points as any project. |
 | **Maintainers of this documentation** | A fixed document budget, split pages by role, document responsibility boundaries, and automated gates that block config workarounds for size or document responsibility drift. |
 
 ### Tool capabilities
@@ -129,6 +129,25 @@ If Phase 3 rules were enabled in this repository today:
 Expected candidate counts: **0 mixed role**, **0 heading skip**.
 
 Automated gate: `tests/test_phase3_readiness.py`.
+
+## Dogfood impact for duplicate guidance
+
+With duplicate guidance detection enabled in this repository:
+
+| Document | Duplicate guidance candidate (`DG-SPLIT002`) |
+|----------|----------------------------------------------|
+| `README.md` | no |
+| `CONTEXT.md` | no |
+| `docs/usage.md` | no |
+| `docs/organization-rules.md` | no |
+| `docs/structure-rules.md` | no |
+| `docs/dogfood.md` | no |
+| `docs/release-readiness.md` | no |
+| `docs/adr/*.md` | no (ADR section headings allowlisted) |
+
+Expected candidate count: **0 duplicate guidance groups**.
+
+Automated gate: `tests/test_duplicate_guidance_readiness.py`.
 
 ## Document budget gate
 

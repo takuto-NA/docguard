@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from docguard.constants import (
     DIAGNOSTIC_CODE_DOCUMENT_TOO_LONG,
+    DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER,
     DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS,
     DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING,
@@ -13,6 +14,7 @@ from docguard.constants import (
     DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER,
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX,
     WHY_DOCUMENT_TOO_LONG,
+    WHY_DUPLICATE_GUIDANCE,
     WHY_MISSING_FRONT_MATTER,
     WHY_MISSING_OUTGOING_LINKS,
     WHY_MISSING_REQUIRED_HEADING,
@@ -23,6 +25,11 @@ from docguard.constants import (
     WHY_UNREACHABLE_FROM_INDEX,
 )
 from docguard.diagnostics import Diagnostic, resolve_severity_for_code
+from docguard.duplicate_guidance import (
+    DuplicateGuidanceGroup,
+    collect_duplicate_guidance_groups,
+    format_duplicate_occurrence_references,
+)
 from docguard.graph import (
     collect_hub_outgoing_violations,
     collect_orphan_candidates,
@@ -444,3 +451,56 @@ def collect_heading_skip_violations(
         ):
             heading_skip_violations.add((document_path, violation.line_number))
     return frozenset(heading_skip_violations)
+
+
+def check_duplicate_guidance(
+    configuration: DocguardConfiguration,
+    document_contexts: tuple[DocumentInspectionContext, ...],
+) -> list[Diagnostic]:
+    if not configuration.require_duplicate_guidance_detection:
+        return []
+
+    duplicate_groups = collect_duplicate_guidance_groups(
+        document_contexts,
+        configuration.allowed_duplicate_patterns,
+    )
+    diagnostics: list[Diagnostic] = []
+    for duplicate_group in duplicate_groups:
+        primary_atom = duplicate_group.atoms[0]
+        occurrence_references = format_duplicate_occurrence_references(
+            duplicate_group
+        )
+        diagnostics.append(
+            Diagnostic(
+                code=DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
+                severity=resolve_severity_for_code(
+                    DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
+                    configuration.severities,
+                ),
+                document_path=primary_atom.document_path,
+                message=(
+                    f"Duplicate {duplicate_group.kind.value} guidance appears "
+                    f"{len(duplicate_group.atoms)} times "
+                    f"({occurrence_references})."
+                ),
+                why_it_matters=WHY_DUPLICATE_GUIDANCE,
+                suggestion=(
+                    "Consolidate repeated guidance into one canonical section "
+                    "and link to it elsewhere."
+                ),
+                location=f"line {primary_atom.line_number}",
+            )
+        )
+    return diagnostics
+
+
+def collect_duplicate_guidance_candidates(
+    configuration: DocguardConfiguration,
+    document_contexts: tuple[DocumentInspectionContext, ...],
+) -> tuple[DuplicateGuidanceGroup, ...]:
+    if not configuration.require_duplicate_guidance_detection:
+        return tuple()
+    return collect_duplicate_guidance_groups(
+        document_contexts,
+        configuration.allowed_duplicate_patterns,
+    )

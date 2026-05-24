@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fnmatch
+import re
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -36,6 +37,8 @@ ALLOWED_TOP_LEVEL_KEYS = {
     "require_hub_outgoing_links",
     "require_mixed_role_detection",
     "require_heading_order_check",
+    "require_duplicate_guidance_detection",
+    "allowed_duplicate_patterns",
     "hub_globs",
     "severity",
     "document_types",
@@ -170,6 +173,19 @@ def parse_document_type_configuration(
     )
 
 
+def validate_allowed_duplicate_patterns(
+    allowed_duplicate_patterns: tuple[str, ...],
+) -> None:
+    for pattern_index, raw_pattern in enumerate(allowed_duplicate_patterns):
+        try:
+            re.compile(raw_pattern)
+        except re.error as error:
+            raise ConfigurationError(
+                "allowed_duplicate_patterns["
+                f"{pattern_index}] is not a valid regular expression: {raw_pattern}"
+            ) from error
+
+
 def parse_severity_table(raw_severities: Any) -> dict[str, str]:
     if raw_severities is None:
         return dict(DEFAULT_SEVERITIES)
@@ -209,6 +225,8 @@ def build_zero_config_configuration(
         require_hub_outgoing_links=False,
         require_mixed_role_detection=False,
         require_heading_order_check=False,
+        require_duplicate_guidance_detection=False,
+        allowed_duplicate_patterns=tuple(),
         hub_globs=tuple(),
         severities=dict(DEFAULT_SEVERITIES),
         document_types=(
@@ -258,6 +276,11 @@ def parse_docguard_configuration(
         parse_document_type_configuration(raw_document_type, index)
         for index, raw_document_type in enumerate(raw_document_types)
     )
+    allowed_duplicate_patterns = require_string_list(
+        raw_configuration.get("allowed_duplicate_patterns"),
+        "allowed_duplicate_patterns",
+    )
+    validate_allowed_duplicate_patterns(allowed_duplicate_patterns)
 
     return DocguardConfiguration(
         project_root=project_root,
@@ -293,6 +316,10 @@ def parse_docguard_configuration(
         require_heading_order_check=bool(
             raw_configuration.get("require_heading_order_check", False)
         ),
+        require_duplicate_guidance_detection=bool(
+            raw_configuration.get("require_duplicate_guidance_detection", False)
+        ),
+        allowed_duplicate_patterns=allowed_duplicate_patterns,
         hub_globs=require_string_list(
             raw_configuration.get("hub_globs"),
             "hub_globs",

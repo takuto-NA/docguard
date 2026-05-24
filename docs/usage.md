@@ -32,61 +32,10 @@ For development in this repository, see [README.md](../README.md#development).
 
 Follow these steps when creating or adopting docguard in a separate project.
 
-### 1. Install docguard
-
-Use PyPI when available:
-
-```bash
-uv add docguard
-```
-
-Until PyPI is available, install from GitHub:
-
-```bash
-uv pip install "git+https://github.com/takuto-NA/docguard.git"
-```
-
-Add pytest when using the pytest plugin:
-
-```bash
-uv add --dev pytest
-```
-
-### 2. Add configuration
-
-Create or extend `pyproject.toml` in the target project:
-
-```toml
-[tool.docguard]
-paths = ["docs", "README.md"]
-index_files = ["README.md"]
-max_document_lines = 400
-max_section_lines = 120
-require_index_reachability = true
-```
-
-Add typed document rules when needed. See [Configuration](#configuration) below and [organization-rules.md](organization-rules.md) for Phase 2 opt-in checks.
-
-### 3. Run checks locally
-
-```bash
-uv run docguard docs/ --summary
-uv run docguard docs/ --format json
-uv run pytest --docguard
-uv run pytest --docguard-only
-```
-
-### 4. Add CI
-
-Example GitHub Actions step:
-
-```yaml
-- uses: astral-sh/setup-uv@v5
-- run: uv pip install docguard
-- run: uv run docguard docs/ --format json
-```
-
-Use exit code `1` for diagnostic failures and `2` for configuration failures. See [Use predictable CI exit codes](#use-predictable-ci-exit-codes) below.
+1. **Install docguard** — use [Install](#install). Add pytest when using the pytest plugin: `uv add --dev pytest`.
+2. **Add configuration** — start from the [Configuration](#configuration) example. For Phase 2 opt-in checks, see [organization-rules.md](organization-rules.md).
+3. **Run checks locally** — use [Scan Markdown from the CLI](#scan-markdown-from-the-cli) and [Run the same checks through pytest](#run-the-same-checks-through-pytest).
+4. **Add CI** — use the GitHub Actions pattern under [Add docguard to CI](#add-docguard-to-ci). Exit codes are documented in [Use predictable CI exit codes](#use-predictable-ci-exit-codes).
 
 ## What you can do today
 
@@ -97,17 +46,11 @@ Docguard treats Markdown as a maintainable repository asset, not just prose file
 | Core | Document and section size; typed document shape; index reachability | `DG-SIZE001`, `DG-SIZE002`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003` | on when configured |
 | Phase 2 | Link structure between files: orphans and hub dead ends | `DG-ORG001`, `DG-ORG002` | opt-in, `warning` |
 | Phase 3 | Structure inside each file: mixed roles and heading level skips | `DG-SPLIT001`, `DG-FORMAT002` | opt-in, `warning` |
+| Duplicate guidance | Repeated commands, headings, or list guidance across the scan scope | `DG-SPLIT002` | opt-in, `warning` |
 
-All nine diagnostics share the same entry points:
+Entry points are shared across all diagnostics. See [Scan Markdown from the CLI](#scan-markdown-from-the-cli) and [Run the same checks through pytest](#run-the-same-checks-through-pytest).
 
-```bash
-docguard docs/ --summary
-docguard docs/ --format json
-pytest --docguard
-pytest --docguard-only
-```
-
-Phase 2 details: [docs/organization-rules.md](organization-rules.md). Phase 3 details: [docs/structure-rules.md](structure-rules.md). UTF-8 and Japanese content: [Unicode and UTF-8 support](#unicode-and-utf-8-support) below.
+Phase 2 details: [docs/organization-rules.md](organization-rules.md). Phase 3 details: [docs/structure-rules.md](structure-rules.md). Duplicate guidance details: [docs/structure-rules.md#detect-duplicate-guidance-dg-split002](structure-rules.md#detect-duplicate-guidance-dg-split002). UTF-8 and Japanese content: [Unicode and UTF-8 support](#unicode-and-utf-8-support).
 
 This repository dogfoods docguard with a fixed **400-line document budget**; see [docs/dogfood.md](dogfood.md#what-you-can-rely-on-in-this-repository).
 
@@ -134,9 +77,9 @@ If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration
 | `--verbose` | summary + non-error diagnostics | warning triage |
 | `--format json` | JSON payload always | machine-readable CI |
 
-`--summary` prints a one-line success summary only when there are no diagnostics. If warnings are present, use `--verbose` to review them. `--quiet` cannot be combined with `--summary` or `--verbose`. `--format json` ignores `--quiet`.
+`--summary` prints a one-line success summary only when there are no diagnostics. If warnings are present, use `--verbose` to review them. `--quiet` cannot be combined with `--summary` or `--verbose`. `--format json` ignores `--quiet`. `--verbose` cannot be used with `--format json`.
 
-## Enforce nine diagnostics
+## Enforce diagnostics
 
 | Code | What it checks |
 |------|----------------|
@@ -146,6 +89,7 @@ If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration
 | `DG-FORMAT002` | A heading skips one or more levels (opt-in) |
 | `DG-FORMAT003` | A typed document is missing YAML front matter or a required key |
 | `DG-SPLIT001` | An untyped document may mix multiple document role families (opt-in) |
+| `DG-SPLIT002` | Repeated commands, headings, or list guidance across the scan scope (opt-in) |
 | `DG-ORG001` | Orphan document: zero incoming links from other in-scope Markdown files (opt-in) |
 | `DG-ORG002` | Missing outgoing links: hub document with zero outgoing links to in-scope Markdown files (opt-in) |
 | `DG-ORG003` | A document is not reachable from configured index files |
@@ -204,6 +148,18 @@ DG-SIZE001 = "warning"
 
 Supported values are `error`, `warning`, and `experimental`. Only `error` fails a run.
 
+## Add docguard to CI
+
+Example GitHub Actions step:
+
+```yaml
+- uses: astral-sh/setup-uv@v5
+- run: uv pip install docguard
+- run: uv run docguard docs/ --format json
+```
+
+Use exit code `1` for diagnostic failures and `2` for configuration failures. See [Use predictable CI exit codes](#use-predictable-ci-exit-codes).
+
 ## Unicode and UTF-8 support
 
 Docguard officially supports UTF-8 Markdown. Teams can use Japanese or other non-ASCII content in documents, configuration, and file paths without hitting tracebacks.
@@ -217,21 +173,17 @@ See [docs/adr/0004-utf-8-markdown-encoding.md](adr/0004-utf-8-markdown-encoding.
 | Scan Japanese Markdown | `## 概要`, body text, and paths such as `docs/設計.md` |
 | Use Japanese in configuration | `required_headings = ["概要", "背景"]` |
 | Import docguard as a library | `from docguard.runner import run_docguard_from_paths` |
-| Fail safely on non-UTF-8 input | Shift_JIS files exit with code `2` instead of a traceback |
+| Fail safely on non-UTF-8 input | Shift_JIS files fail during discovery instead of a traceback |
 | Preserve CJK in JSON output | Diagnostic messages keep characters such as `概要` |
 | Read UTF-8 with BOM | BOM is stripped automatically through `utf-8-sig` |
 | Get useful split suggestions for CJK headings | `## 概要` / `## 背景` → `section-3.md`, `section-6.md` |
 
-All entry points share the same behavior:
-
-- CLI: `docguard docs/`
-- pytest: `pytest --docguard`
-- library: `run_docguard_from_paths()`
+CLI, pytest, and library entry points share the same behavior. Use [Scan Markdown from the CLI](#scan-markdown-from-the-cli), [Run the same checks through pytest](#run-the-same-checks-through-pytest), or `run_docguard_from_paths()`.
 
 ### Encoding rules
 
 - Markdown files must be UTF-8. Files without a BOM are preferred; UTF-8 with BOM is also accepted.
-- Non-UTF-8 files such as Shift_JIS fail with exit code `2` and do not produce a traceback.
+- Non-UTF-8 files such as Shift_JIS fail during discovery instead of producing a traceback. See [Use predictable CI exit codes](#use-predictable-ci-exit-codes).
 - Diagnostic messages stay in English.
 - Document paths, heading names, and configuration values may contain Unicode characters.
 
@@ -242,15 +194,6 @@ Example with Japanese required headings:
 name = "guide"
 glob = "docs/guide/*.md"
 required_headings = ["概要", "背景"]
-```
-
-Example scan:
-
-```bash
-docguard README.md docs/ --summary
-docguard docs/ --format json
-docguard docs/ --quiet
-pytest --docguard
 ```
 
 Example split suggestion for a Japanese document:
@@ -272,19 +215,16 @@ Automated coverage lives in `tests/test_unicode_support.py`.
 
 ## Phase 1.5 UX and reliability
 
-These improvements are part of the current release even though the CLI surface looks the same:
+These improvements are part of the current release even though the CLI surface looks the same.
 
-- `--summary` prints checked document count and diagnostic count on success when there are no diagnostics
-- `--verbose` prints checked document count and any non-error diagnostics
-- `--quiet` suppresses human output on success, including warnings; errors still print
+- Output flag combinations: [Output modes](#output-modes)
+- Exit code meanings: [Use predictable CI exit codes](#use-predictable-ci-exit-codes)
+
+Additional behaviors:
+
 - `--docguard-only` runs only docguard items in pytest
 - document title headings (`# ...`) are not treated as section-size targets when lower-level headings exist
-- missing, out-of-project, or non-Markdown explicit CLI paths exit with code `2` without a traceback
-- non-UTF-8 Markdown files exit with code `2` without a traceback
-- invalid severity values and invalid reachability configuration are rejected before scanning
 - JSON output includes `checked_document_count`
-- `--verbose` cannot be used with `--format json`
-- `--quiet` cannot be used with `--summary` or `--verbose`
 - when both `--verbose` and `--summary` are provided, `--verbose` takes precedence
 
 ## Configuration
@@ -303,6 +243,8 @@ require_orphan_detection = false
 require_hub_outgoing_links = false
 require_mixed_role_detection = false
 require_heading_order_check = false
+require_duplicate_guidance_detection = false
+allowed_duplicate_patterns = []
 hub_globs = []
 
 [[tool.docguard.document_types]]
@@ -319,7 +261,7 @@ Behavior notes:
 - CLI paths override configured `paths`
 - ignored files are excluded from diagnostics and reachability graphs
 - index reachability is checked only when `require_index_reachability = true`
-- missing or out-of-project CLI paths exit with code `2`
+- missing or out-of-project CLI paths fail with exit code `2` — see [Use predictable CI exit codes](#use-predictable-ci-exit-codes)
 - explicit CLI paths must point to Markdown files or directories containing Markdown
 - configured paths that do not exist yet are skipped silently
 - when `require_index_reachability = true`, at least one configured `index_files` entry must be inside the scanned scope
@@ -328,6 +270,8 @@ Behavior notes:
 - when `require_hub_outgoing_links = true` but no hub documents are in scope, docguard reports no diagnostics
 - mixed-role detection runs only when `require_mixed_role_detection = true`; typed documents are excluded
 - heading order checks run only when `require_heading_order_check = true`
+- duplicate guidance detection runs only when `require_duplicate_guidance_detection = true`
+- `allowed_duplicate_patterns` suppresses intentional repeated normalized text matched by regular expressions
 - `experimental_rules_enabled = true` is reserved for future opt-in rules and currently has no effect
 
 When documentation exceeds the configured budget, split files instead of raising `max_document_lines`. See [docs/dogfood.md](dogfood.md) and [docs/adr/0006-document-budget-dogfood-gate.md](adr/0006-document-budget-dogfood-gate.md).

@@ -7,6 +7,7 @@ from pathlib import Path
 from docguard.config import load_docguard_configuration
 from docguard.constants import (
     DIAGNOSTIC_CODE_DOCUMENT_TOO_LONG,
+    DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER,
     DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS,
     DIAGNOSTIC_CODE_MISSING_REQUIRED_HEADING,
@@ -823,3 +824,122 @@ DG-SIZE001 = "warning"
     assert len(run_result.diagnostics) == 1
     assert run_result.diagnostics[0].severity is SeverityLevel.WARNING
     assert resolve_exit_code_from_diagnostics(run_result.diagnostics) == EXIT_CODE_SUCCESS
+
+
+def test_duplicate_guidance_rule_is_silent_when_disabled(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    shared_install_block = """```bash
+uv add docguard
+uv run docguard docs/ --summary
+```"""
+    (docs_directory / "first.md").write_text(
+        f"# First\n\n{shared_install_block}\n",
+        encoding="utf-8",
+    )
+    (docs_directory / "second.md").write_text(
+        f"# Second\n\n{shared_install_block}\n",
+        encoding="utf-8",
+    )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_duplicate_guidance_detection = false
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    duplicate_guidance_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
+    )
+    assert duplicate_guidance_diagnostics == []
+
+
+def test_duplicate_guidance_diagnostic_is_reported_when_enabled(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    shared_install_block = """```bash
+uv add docguard
+uv run docguard docs/ --summary
+```"""
+    (docs_directory / "first.md").write_text(
+        f"# First\n\n{shared_install_block}\n",
+        encoding="utf-8",
+    )
+    (docs_directory / "second.md").write_text(
+        f"# Second\n\n{shared_install_block}\n",
+        encoding="utf-8",
+    )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_duplicate_guidance_detection = true
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    duplicate_guidance_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
+    )
+    assert len(duplicate_guidance_diagnostics) == 1
+    assert duplicate_guidance_diagnostics[0].document_path == "docs/first.md"
+    assert "code_block" in duplicate_guidance_diagnostics[0].message
+
+
+def test_duplicate_guidance_uses_warning_by_default(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    shared_install_block = """```bash
+uv add docguard
+uv run docguard docs/ --summary
+```"""
+    (docs_directory / "first.md").write_text(
+        f"# First\n\n{shared_install_block}\n",
+        encoding="utf-8",
+    )
+    (docs_directory / "second.md").write_text(
+        f"# Second\n\n{shared_install_block}\n",
+        encoding="utf-8",
+    )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_duplicate_guidance_detection = true
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    duplicate_guidance_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
+    )
+    assert len(duplicate_guidance_diagnostics) == 1
+    assert duplicate_guidance_diagnostics[0].severity is SeverityLevel.WARNING
+    assert resolve_exit_code_from_diagnostics(run_result.diagnostics) == EXIT_CODE_SUCCESS
+

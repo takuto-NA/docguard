@@ -6,37 +6,13 @@ Docguard helps teams keep documentation from growing too large, becoming unreach
 
 ## Quick start
 
-With [uv](https://docs.astral.sh/uv/):
+Install with `uv add docguard`, then run `uv run docguard docs/ --summary`. Equivalent with pip: `pip install docguard`.
+
+Configure `[tool.docguard]` in `pyproject.toml` using the [configuration example](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#configuration). Full install commands, pytest integration, and exit codes: [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 
 ```bash
-uv add docguard
-uv run docguard docs/ --summary
-uv run docguard docs/ --format json
-uv run pytest --docguard
-uv run pytest --docguard-only
-```
-
-Equivalent with pip:
-
-```bash
-pip install docguard
 docguard docs/ --summary
-pytest --docguard
 ```
-
-## Configuration
-
-Add a minimal configuration to `pyproject.toml`:
-
-```toml
-[tool.docguard]
-paths = ["docs"]
-index_files = ["README.md"]
-max_document_lines = 400
-max_section_lines = 120
-```
-
-Full configuration, diagnostics, and exit codes: [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#what-you-can-do-today). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 
 ## What this tool checks
 
@@ -47,8 +23,9 @@ Docguard focuses on document structure and repository health, not Markdown forma
 | Core | Document and section size; typed document shape; index reachability | `DG-SIZE001`, `DG-SIZE002`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003` | on when configured |
 | Phase 2 | Link structure between files: orphans and hub dead ends | `DG-ORG001`, `DG-ORG002` | opt-in, `warning` |
 | Phase 3 | Structure inside each file: mixed roles and heading level skips | `DG-SPLIT001`, `DG-FORMAT002` | opt-in, `warning` |
+| Duplicate guidance | Repeated commands, headings, or list guidance across the scan scope | `DG-SPLIT002` | opt-in, `warning` |
 
-Phase 2 details: [organization rules](https://github.com/takuto-NA/docguard/blob/main/docs/organization-rules.md). Phase 3 details: [structure rules](https://github.com/takuto-NA/docguard/blob/main/docs/structure-rules.md).
+Phase 2 details: [organization rules](https://github.com/takuto-NA/docguard/blob/main/docs/organization-rules.md). Phase 3 and duplicate guidance details: [structure rules](https://github.com/takuto-NA/docguard/blob/main/docs/structure-rules.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 
 ## Development
 
@@ -94,3 +71,4 @@ Relative links for clone checkouts and docguard reachability checks:
 - [docs/adr/0006-document-budget-dogfood-gate.md](docs/adr/0006-document-budget-dogfood-gate.md)
 - [docs/adr/0007-document-responsibility-drift-guard.md](docs/adr/0007-document-responsibility-drift-guard.md)
 - [docs/adr/0008-pypi-alpha-distribution.md](docs/adr/0008-pypi-alpha-distribution.md)
+- [docs/adr/0009-duplicate-guidance-diagnostic.md](docs/adr/0009-duplicate-guidance-diagnostic.md)
