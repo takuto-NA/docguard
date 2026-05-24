@@ -6,7 +6,7 @@ Docguard is intentionally different from markdownlint or Prettier. Those tools f
 
 ## Install
 
-From PyPI with [uv](https://docs.astral.sh/uv/):
+When `docguard` is published on PyPI:
 
 ```bash
 uv add docguard
@@ -20,7 +20,73 @@ pip install docguard
 docguard docs/ --summary
 ```
 
+Before the first PyPI release, install from the repository:
+
+```bash
+uv pip install "git+https://github.com/takuto-NA/docguard.git"
+```
+
 For development in this repository, see [README.md](../README.md#development).
+
+## Use in another repository
+
+Follow these steps when creating or adopting docguard in a separate project.
+
+### 1. Install docguard
+
+Use PyPI when available:
+
+```bash
+uv add docguard
+```
+
+Until PyPI is available, install from GitHub:
+
+```bash
+uv pip install "git+https://github.com/takuto-NA/docguard.git"
+```
+
+Add pytest when using the pytest plugin:
+
+```bash
+uv add --dev pytest
+```
+
+### 2. Add configuration
+
+Create or extend `pyproject.toml` in the target project:
+
+```toml
+[tool.docguard]
+paths = ["docs", "README.md"]
+index_files = ["README.md"]
+max_document_lines = 400
+max_section_lines = 120
+require_index_reachability = true
+```
+
+Add typed document rules when needed. See [Configuration](#configuration) below and [organization-rules.md](organization-rules.md) for Phase 2 opt-in checks.
+
+### 3. Run checks locally
+
+```bash
+uv run docguard docs/ --summary
+uv run docguard docs/ --format json
+uv run pytest --docguard
+uv run pytest --docguard-only
+```
+
+### 4. Add CI
+
+Example GitHub Actions step:
+
+```yaml
+- uses: astral-sh/setup-uv@v5
+- run: uv pip install docguard
+- run: uv run docguard docs/ --format json
+```
+
+Use exit code `1` for diagnostic failures and `2` for configuration failures. See [Use predictable CI exit codes](#use-predictable-ci-exit-codes) below.
 
 ## What you can do today
 

@@ -36,7 +36,7 @@ max_document_lines = 400
 max_section_lines = 120
 ```
 
-Full configuration, diagnostics, and exit codes: [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#what-you-can-do-today).
+Full configuration, diagnostics, and exit codes: [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#what-you-can-do-today). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 
 ## What this tool checks
 
