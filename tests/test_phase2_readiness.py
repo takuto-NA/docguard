@@ -40,6 +40,7 @@ EXPECTED_REPOSITORY_INCOMING_LINKS = {
         {
             "README.md",
             "docs/adr/0010-duplicate-guidance-kind-scope.md",
+            "docs/adr/0011-duplicate-prose-paragraph-guidance.md",
             "docs/dogfood.md",
             "docs/usage.md",
         }
@@ -82,6 +83,7 @@ EXPECTED_REPOSITORY_INCOMING_LINKS = {
             "README.md",
             "CONTEXT.md",
             "docs/adr/0010-duplicate-guidance-kind-scope.md",
+            "docs/adr/0011-duplicate-prose-paragraph-guidance.md",
             "docs/structure-rules.md",
         }
     ),
@@ -90,6 +92,16 @@ EXPECTED_REPOSITORY_INCOMING_LINKS = {
             "README.md",
             "CONTEXT.md",
             "docs/adr/0009-duplicate-guidance-diagnostic.md",
+            "docs/adr/0011-duplicate-prose-paragraph-guidance.md",
+            "docs/structure-rules.md",
+        }
+    ),
+    "docs/adr/0011-duplicate-prose-paragraph-guidance.md": frozenset(
+        {
+            "README.md",
+            "CONTEXT.md",
+            "docs/adr/0009-duplicate-guidance-diagnostic.md",
+            "docs/dogfood.md",
             "docs/structure-rules.md",
         }
     ),
@@ -114,6 +126,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
             "docs/adr/0008-pypi-alpha-distribution.md",
             "docs/adr/0009-duplicate-guidance-diagnostic.md",
             "docs/adr/0010-duplicate-guidance-kind-scope.md",
+            "docs/adr/0011-duplicate-prose-paragraph-guidance.md",
         }
     ),
     "CONTEXT.md": frozenset(
@@ -123,6 +136,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
             "docs/adr/0007-document-responsibility-drift-guard.md",
             "docs/adr/0009-duplicate-guidance-diagnostic.md",
             "docs/adr/0010-duplicate-guidance-kind-scope.md",
+            "docs/adr/0011-duplicate-prose-paragraph-guidance.md",
         }
     ),
     "docs/usage.md": frozenset(
@@ -149,6 +163,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
             "docs/adr/0005-phase3-structure-diagnostics.md",
             "docs/adr/0009-duplicate-guidance-diagnostic.md",
             "docs/adr/0010-duplicate-guidance-kind-scope.md",
+            "docs/adr/0011-duplicate-prose-paragraph-guidance.md",
             "docs/dogfood.md",
             "docs/usage.md",
         }
@@ -158,6 +173,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
             "CONTEXT.md",
             "docs/adr/0006-document-budget-dogfood-gate.md",
             "docs/adr/0007-document-responsibility-drift-guard.md",
+            "docs/adr/0011-duplicate-prose-paragraph-guidance.md",
             "docs/organization-rules.md",
             "docs/release-readiness.md",
             "docs/structure-rules.md",
@@ -185,11 +201,18 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
     ),
     "docs/adr/0008-pypi-alpha-distribution.md": frozenset(),
     "docs/adr/0009-duplicate-guidance-diagnostic.md": frozenset(
-        {"docs/adr/0010-duplicate-guidance-kind-scope.md"}
+        {"docs/adr/0010-duplicate-guidance-kind-scope.md", "docs/adr/0011-duplicate-prose-paragraph-guidance.md"}
     ),
     "docs/adr/0010-duplicate-guidance-kind-scope.md": frozenset(
         {
             "docs/adr/0009-duplicate-guidance-diagnostic.md",
+            "docs/structure-rules.md",
+        }
+    ),
+    "docs/adr/0011-duplicate-prose-paragraph-guidance.md": frozenset(
+        {
+            "docs/adr/0009-duplicate-guidance-diagnostic.md",
+            "docs/adr/0010-duplicate-guidance-kind-scope.md",
             "docs/structure-rules.md",
         }
     ),

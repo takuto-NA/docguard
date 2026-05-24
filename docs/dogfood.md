@@ -88,16 +88,16 @@ Phase 2 and Phase 3 opt-in rules can be enabled against the current documentatio
 
 ## Dogfood impact for Phase 2 rules
 
-If Phase 2 rules were enabled in this repository today:
+If Phase 2 rules were enabled in this repository today. Authoritative link counts live in `tests/test_phase2_readiness.py`; update that test when adding documents or links.
 
 | Document | Incoming | Outgoing | Orphan candidate | Hub outgoing violation |
 |----------|----------|----------|------------------|------------------------|
-| `README.md` | none | 13 links | no (index excluded) | no |
-| `CONTEXT.md` | `README.md`, `docs/dogfood.md`, `docs/organization-rules.md`, `docs/structure-rules.md` | `docs/adr/0004-utf-8-markdown-encoding.md`, `docs/adr/0006-document-budget-dogfood-gate.md`, `docs/adr/0007-document-responsibility-drift-guard.md` | no | no (leaf) |
+| `README.md` | none | 17 links | no (index excluded) | no |
+| `CONTEXT.md` | `README.md`, `docs/dogfood.md`, `docs/organization-rules.md`, `docs/structure-rules.md` | `docs/adr/0004-utf-8-markdown-encoding.md`, `docs/adr/0006-document-budget-dogfood-gate.md`, `docs/adr/0007-document-responsibility-drift-guard.md`, `docs/adr/0009-duplicate-guidance-diagnostic.md`, `docs/adr/0010-duplicate-guidance-kind-scope.md`, `docs/adr/0011-duplicate-prose-paragraph-guidance.md` | no | no (leaf) |
 | `docs/usage.md` | `README.md`, `docs/dogfood.md`, `docs/organization-rules.md`, `docs/release-readiness.md`, `docs/structure-rules.md` | `docs/organization-rules.md`, `docs/structure-rules.md`, `docs/dogfood.md`, `docs/adr/0004-utf-8-markdown-encoding.md`, `docs/adr/0006-document-budget-dogfood-gate.md` | no | no (leaf) |
 | `docs/organization-rules.md` | `README.md`, `docs/usage.md`, `docs/dogfood.md` | `CONTEXT.md`, `docs/adr/0003-organization-link-rules.md`, `docs/dogfood.md`, `docs/usage.md` | no | no (leaf) |
-| `docs/structure-rules.md` | `README.md`, `docs/usage.md`, `docs/dogfood.md` | `CONTEXT.md`, `docs/adr/0005-phase3-structure-diagnostics.md`, `docs/dogfood.md`, `docs/usage.md` | no | no (leaf) |
-| `docs/dogfood.md` | `README.md`, `docs/adr/0007-document-responsibility-drift-guard.md`, `docs/organization-rules.md`, `docs/release-readiness.md`, `docs/structure-rules.md`, `docs/usage.md` | `CONTEXT.md`, `docs/organization-rules.md`, `docs/structure-rules.md`, `docs/adr/0006-document-budget-dogfood-gate.md`, `docs/adr/0007-document-responsibility-drift-guard.md`, `docs/release-readiness.md`, `docs/usage.md` | no | no (leaf) |
+| `docs/structure-rules.md` | `README.md`, `docs/adr/0010-duplicate-guidance-kind-scope.md`, `docs/adr/0011-duplicate-prose-paragraph-guidance.md`, `docs/dogfood.md`, `docs/usage.md` | `CONTEXT.md`, `docs/adr/0005-phase3-structure-diagnostics.md`, `docs/adr/0009-duplicate-guidance-diagnostic.md`, `docs/adr/0010-duplicate-guidance-kind-scope.md`, `docs/adr/0011-duplicate-prose-paragraph-guidance.md`, `docs/dogfood.md`, `docs/usage.md` | no | no (leaf) |
+| `docs/dogfood.md` | `README.md`, `docs/adr/0007-document-responsibility-drift-guard.md`, `docs/organization-rules.md`, `docs/release-readiness.md`, `docs/structure-rules.md`, `docs/usage.md` | `CONTEXT.md`, `docs/organization-rules.md`, `docs/structure-rules.md`, `docs/adr/0006-document-budget-dogfood-gate.md`, `docs/adr/0007-document-responsibility-drift-guard.md`, `docs/adr/0011-duplicate-prose-paragraph-guidance.md`, `docs/release-readiness.md`, `docs/usage.md` | no | no (leaf) |
 | `docs/release-readiness.md` | `README.md`, `docs/dogfood.md` | `docs/adr/0007-document-responsibility-drift-guard.md`, `docs/dogfood.md`, `docs/usage.md` | no | no (leaf) |
 | `docs/adr/0001-cli-first-docguard.md` | `README.md` | none | no | no (leaf) |
 | `docs/adr/0002-structured-diagnostics-and-strict-config.md` | `README.md`, `docs/adr/0004-utf-8-markdown-encoding.md` | none | no | no (leaf) |
@@ -106,6 +106,7 @@ If Phase 2 rules were enabled in this repository today:
 | `docs/adr/0005-phase3-structure-diagnostics.md` | `README.md`, `docs/structure-rules.md` | none | no | no (leaf) |
 | `docs/adr/0006-document-budget-dogfood-gate.md` | `README.md`, `CONTEXT.md`, `docs/dogfood.md`, `docs/usage.md` | none | no | no (leaf) |
 | `docs/adr/0007-document-responsibility-drift-guard.md` | `README.md`, `CONTEXT.md`, `docs/dogfood.md`, `docs/release-readiness.md` | `docs/dogfood.md` | no | no (leaf) |
+| `docs/adr/0011-duplicate-prose-paragraph-guidance.md` | `README.md`, `CONTEXT.md`, `docs/adr/0009-duplicate-guidance-diagnostic.md`, `docs/dogfood.md`, `docs/structure-rules.md` | `docs/adr/0009-duplicate-guidance-diagnostic.md`, `docs/adr/0010-duplicate-guidance-kind-scope.md`, `docs/structure-rules.md` | no | no (leaf) |
 
 Expected candidate counts: **0 orphan**, **0 hub outgoing violations**.
 
@@ -145,7 +146,7 @@ With duplicate guidance detection enabled in this repository:
 | `docs/release-readiness.md` | no |
 | `docs/adr/*.md` | no |
 
-Expected candidate count: **0 duplicate guidance groups** with default kinds `code_block` and `list_item`.
+Expected candidate count: **0 duplicate guidance groups** with default kinds `code_block` and `list_item`. Prose paragraph detection is opt-in through `duplicate_guidance_kinds = ["paragraph"]`; see [docs/adr/0011-duplicate-prose-paragraph-guidance.md](adr/0011-duplicate-prose-paragraph-guidance.md).
 
 Automated gate: `tests/test_duplicate_guidance_readiness.py`.
 

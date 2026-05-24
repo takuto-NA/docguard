@@ -7,20 +7,26 @@ from dataclasses import dataclass
 from enum import Enum
 
 from docguard.constants import (
-    ALLOWED_DUPLICATE_GUIDANCE_KINDS,
     DEFAULT_DUPLICATE_GUIDANCE_KINDS,
 )
-from docguard.markdown import extract_headings, normalize_heading_text
+from docguard.markdown import (
+    extract_headings,
+    normalize_heading_text,
+    parse_heading_line,
+)
 from docguard.models import DocumentInspectionContext, ParsedMarkdownDocument
 
 FENCED_CODE_BLOCK_OPEN_PATTERN = re.compile(r"^\s*```")
 LIST_ITEM_PATTERN = re.compile(r"^\s*(?:[-*+]|\d+\.)\s+(.*)$")
 SHELL_COMMENT_LINE_PATTERN = re.compile(r"^\s*#")
+MARKDOWN_TABLE_ROW_PATTERN = re.compile(r"^\s*\|")
 
 MINIMUM_CODE_BLOCK_NON_EMPTY_LINE_COUNT = 2
 MINIMUM_DUPLICATE_CODE_BLOCK_OCCURRENCES = 2
 MINIMUM_DUPLICATE_HEADING_OCCURRENCES = 3
 MINIMUM_DUPLICATE_LIST_ITEM_OCCURRENCES = 3
+MINIMUM_DUPLICATE_PARAGRAPH_OCCURRENCES = 3
+MINIMUM_PARAGRAPH_CHARACTER_COUNT = 80
 MAXIMUM_OCCURRENCE_REFERENCES_IN_MESSAGE = 3
 
 
@@ -28,6 +34,7 @@ class GuidanceAtomKind(str, Enum):
     CODE_BLOCK = "code_block"
     HEADING = "heading"
     LIST_ITEM = "list_item"
+    PARAGRAPH = "paragraph"
 
 
 @dataclass(frozen=True)
@@ -144,6 +151,84 @@ def normalize_list_item_text(raw_list_item_text: str) -> str:
     return collapsed_whitespace_text
 
 
+def normalize_paragraph_text(raw_paragraph_text: str) -> str:
+    collapsed_whitespace_text = " ".join(raw_paragraph_text.strip().split())
+    return collapsed_whitespace_text
+
+
+def resolve_front_matter_end_line_number(raw_lines: list[str]) -> int | None:
+    if len(raw_lines) < 3:
+        return None
+    if raw_lines[0].strip() != "---":
+        return None
+    for line_index in range(1, len(raw_lines)):
+        if raw_lines[line_index].strip() == "---":
+            return line_index + 1
+    return None
+
+
+def is_non_prose_paragraph_line(line_text: str) -> bool:
+    if parse_heading_line(line_text, line_number=0) is not None:
+        return True
+    if LIST_ITEM_PATTERN.match(line_text) is not None:
+        return True
+    if MARKDOWN_TABLE_ROW_PATTERN.match(line_text) is not None:
+        return True
+    return False
+
+
+def extract_paragraphs(raw_lines: list[str]) -> tuple[tuple[int, str], ...]:
+    paragraphs: list[tuple[int, str]] = []
+    inside_code_block = False
+    front_matter_end_line_number = resolve_front_matter_end_line_number(raw_lines)
+    paragraph_buffer: list[str] = []
+    paragraph_start_line_number: int | None = None
+
+    for line_index, line_text in enumerate(raw_lines, start=1):
+        if (
+            front_matter_end_line_number is not None
+            and line_index <= front_matter_end_line_number
+        ):
+            continue
+
+        if FENCED_CODE_BLOCK_OPEN_PATTERN.match(line_text):
+            if paragraph_buffer:
+                raw_paragraph_text = "\n".join(paragraph_buffer)
+                paragraphs.append((paragraph_start_line_number, raw_paragraph_text))
+                paragraph_buffer = []
+                paragraph_start_line_number = None
+            inside_code_block = not inside_code_block
+            continue
+        if inside_code_block:
+            continue
+
+        if line_text.strip() == "":
+            if paragraph_buffer:
+                raw_paragraph_text = "\n".join(paragraph_buffer)
+                paragraphs.append((paragraph_start_line_number, raw_paragraph_text))
+                paragraph_buffer = []
+                paragraph_start_line_number = None
+            continue
+
+        if is_non_prose_paragraph_line(line_text):
+            if paragraph_buffer:
+                raw_paragraph_text = "\n".join(paragraph_buffer)
+                paragraphs.append((paragraph_start_line_number, raw_paragraph_text))
+                paragraph_buffer = []
+                paragraph_start_line_number = None
+            continue
+
+        if paragraph_start_line_number is None:
+            paragraph_start_line_number = line_index
+        paragraph_buffer.append(line_text)
+
+    if paragraph_buffer and paragraph_start_line_number is not None:
+        raw_paragraph_text = "\n".join(paragraph_buffer)
+        paragraphs.append((paragraph_start_line_number, raw_paragraph_text))
+
+    return tuple(paragraphs)
+
+
 def extract_list_items(raw_lines: list[str]) -> tuple[tuple[int, str], ...]:
     list_items: list[tuple[int, str]] = []
     inside_code_block = False
@@ -230,6 +315,30 @@ def collect_list_item_atoms(
     return tuple(list_item_atoms)
 
 
+def collect_paragraph_atoms(
+    parsed_document: ParsedMarkdownDocument,
+) -> tuple[GuidanceAtom, ...]:
+    raw_lines = parsed_document.raw_text.splitlines()
+    paragraph_atoms: list[GuidanceAtom] = []
+
+    for line_number, raw_paragraph_text in extract_paragraphs(raw_lines):
+        normalized_paragraph_text = normalize_paragraph_text(raw_paragraph_text)
+        if normalized_paragraph_text == "":
+            continue
+        if len(normalized_paragraph_text) < MINIMUM_PARAGRAPH_CHARACTER_COUNT:
+            continue
+        paragraph_atoms.append(
+            GuidanceAtom(
+                kind=GuidanceAtomKind.PARAGRAPH,
+                normalized_text=normalized_paragraph_text,
+                document_path=parsed_document.repository_relative_path,
+                line_number=line_number,
+            )
+        )
+
+    return tuple(paragraph_atoms)
+
+
 def guidance_atom_kind_from_configuration_name(
     configuration_kind_name: str,
 ) -> GuidanceAtomKind:
@@ -239,6 +348,8 @@ def guidance_atom_kind_from_configuration_name(
         return GuidanceAtomKind.HEADING
     if configuration_kind_name == GuidanceAtomKind.LIST_ITEM.value:
         return GuidanceAtomKind.LIST_ITEM
+    if configuration_kind_name == GuidanceAtomKind.PARAGRAPH.value:
+        return GuidanceAtomKind.PARAGRAPH
     raise ValueError(
         "duplicate_guidance_kinds contains unsupported value: "
         f"{configuration_kind_name}"
@@ -267,6 +378,8 @@ def collect_guidance_atoms(
         guidance_atoms.extend(collect_heading_atoms(parsed_document))
     if GuidanceAtomKind.LIST_ITEM in enabled_guidance_atom_kinds:
         guidance_atoms.extend(collect_list_item_atoms(parsed_document))
+    if GuidanceAtomKind.PARAGRAPH in enabled_guidance_atom_kinds:
+        guidance_atoms.extend(collect_paragraph_atoms(parsed_document))
     return tuple(guidance_atoms)
 
 
@@ -275,6 +388,8 @@ def minimum_duplicate_occurrences_for_kind(kind: GuidanceAtomKind) -> int:
         return MINIMUM_DUPLICATE_CODE_BLOCK_OCCURRENCES
     if kind is GuidanceAtomKind.HEADING:
         return MINIMUM_DUPLICATE_HEADING_OCCURRENCES
+    if kind is GuidanceAtomKind.PARAGRAPH:
+        return MINIMUM_DUPLICATE_PARAGRAPH_OCCURRENCES
     return MINIMUM_DUPLICATE_LIST_ITEM_OCCURRENCES
 
 

@@ -68,8 +68,9 @@ WHY_MIXED_DOCUMENT_ROLES = (
     "are harder to maintain and usually belong in separate files."
 )
 WHY_DUPLICATE_GUIDANCE = (
-    "Repeated commands, headings, or list guidance make maintenance instructions "
-    "harder to keep consistent without a clear canonical owner."
+    "Repeated commands, headings, list guidance, or prose paragraphs make "
+    "maintenance instructions harder to keep consistent without a clear "
+    "canonical owner."
 )
 SUGGESTION_DUPLICATE_GUIDANCE = (
     "Consolidate repeated guidance into one canonical section "
@@ -83,7 +84,7 @@ SUGGESTION_DUPLICATE_HEADING_GUIDANCE = (
 
 DEFAULT_DUPLICATE_GUIDANCE_KINDS = ("code_block", "list_item")
 ALLOWED_DUPLICATE_GUIDANCE_KINDS = frozenset(
-    {"code_block", "heading", "list_item"}
+    {"code_block", "heading", "list_item", "paragraph"}
 )
 WHY_MISSING_FRONT_MATTER = (
     "Front matter makes document status and ownership visible without reading the body."

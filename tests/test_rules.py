@@ -980,6 +980,47 @@ require_duplicate_guidance_detection = true
     assert "code_block" in duplicate_guidance_diagnostics[0].message
 
 
+SHARED_DUPLICATE_PARAGRAPH_TEXT = (
+    "The loader must reject packages above 12288 bytes until "
+    "chunked transfer is verified on hardware."
+)
+
+
+def test_paragraph_duplicates_trigger_diagnostic_when_opted_in(
+    temporary_project_directory: Path,
+) -> None:
+    docs_directory = temporary_project_directory / "docs"
+    docs_directory.mkdir()
+    for page_index in range(1, 4):
+        (docs_directory / f"page-{page_index}.md").write_text(
+            f"# Title {page_index}\n\n{SHARED_DUPLICATE_PARAGRAPH_TEXT}\n",
+            encoding="utf-8",
+        )
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+require_duplicate_guidance_detection = true
+duplicate_guidance_kinds = ["paragraph"]
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    run_result = run_docguard_checks(configuration)
+    duplicate_guidance_diagnostics = diagnostics_by_code(
+        run_result,
+        DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
+    )
+
+    assert len(duplicate_guidance_diagnostics) == 1
+    assert duplicate_guidance_diagnostics[0].document_path == "docs/page-1.md"
+    assert "paragraph" in duplicate_guidance_diagnostics[0].message
+
+
 def test_duplicate_guidance_uses_warning_by_default(
     temporary_project_directory: Path,
 ) -> None:

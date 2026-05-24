@@ -253,6 +253,25 @@ duplicate_guidance_kinds = ["code_block", "list_item", "heading"]
     )
 
 
+def test_duplicate_guidance_kinds_can_include_paragraph(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+duplicate_guidance_kinds = ["paragraph"]
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.duplicate_guidance_kinds == ("paragraph",)
+
+
 def test_empty_duplicate_guidance_kinds_raises_configuration_error(
     temporary_project_directory: Path,
 ) -> None:

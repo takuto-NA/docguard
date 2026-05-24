@@ -103,11 +103,46 @@ Full specification: [docs/adr/0005-phase3-structure-diagnostics.md](adr/0005-pha
 
 ## Detect duplicate guidance (`DG-SPLIT002`)
 
-**What it finds:** repeated fenced code blocks or list items whose normalized text appears across the configured scan scope beyond rule thresholds. Heading duplicates are opt-in through `duplicate_guidance_kinds`.
+**What it finds:** repeated fenced code blocks, list items, or prose paragraphs whose normalized text appears across the configured scan scope beyond rule thresholds. Heading and paragraph duplicates are opt-in through `duplicate_guidance_kinds`.
 
-**Typical fix:** keep one canonical install, CLI, configuration, or exit-code section and link to it elsewhere. For intentional template headings, leave `heading` out of `duplicate_guidance_kinds` or add an `allowed_duplicate_patterns` entry when heading detection is enabled.
+### What each kind detects
 
-**Enable:**
+| Kind | Default | Minimum occurrences | Typical duplicate |
+|------|---------|---------------------|-------------------|
+| `code_block` | on | 2 | Same install or CLI command block in two files |
+| `list_item` | on | 3 | Same checklist bullet in three files |
+| `heading` | opt-in | 3 | Same `## Configuration` heading in three files |
+| `paragraph` | opt-in | 3 | Same long body paragraph in three files |
+
+### What paragraph opt-in adds
+
+Before `paragraph` was available, docguard could report GREEN while the same decisions, numeric thresholds, or roadmap prose appeared as copy-pasted body text in multiple documents. Size, link, heading-order, and default duplicate guidance checks do not catch that class of redundancy.
+
+With `paragraph` enabled, docguard compares **normalized exact text** of prose paragraphs across the scan scope. Example: if three documents all contain
+
+```markdown
+The loader must reject packages above 12288 bytes until chunked transfer is verified on hardware.
+```
+
+docguard reports one `DG-SPLIT002` duplicate paragraph group and lists the file paths.
+
+**Typical fix:** keep one canonical narrative section (for example a gate definition or postmortem) and replace copies elsewhere with a relative link.
+
+### What paragraph does not detect
+
+| Out of scope | Why |
+|--------------|-----|
+| Paraphrased prose | No semantic similarity; only normalized exact matches |
+| Table-only numeric duplication | Markdown table rows are excluded from paragraph extraction |
+| Two-document duplication | Paragraph groups require at least three occurrences |
+| Short boilerplate | Paragraphs shorter than 80 normalized characters are ignored |
+| Blockquotes as a separate kind | Blockquote lines are treated like body prose when long enough |
+
+Semantic near-duplicates still require manual review or a future rule. See [docs/adr/0011-duplicate-prose-paragraph-guidance.md](adr/0011-duplicate-prose-paragraph-guidance.md).
+
+**Typical fix (all kinds):** keep one canonical install, CLI, configuration, exit-code, or narrative section and link to it elsewhere. For intentional template headings, leave `heading` out of `duplicate_guidance_kinds` or add an `allowed_duplicate_patterns` entry when heading detection is enabled.
+
+**Enable default kinds:**
 
 ```toml
 [tool.docguard]
@@ -122,9 +157,29 @@ Heading duplicates are opt-in:
 duplicate_guidance_kinds = ["code_block", "list_item", "heading"]
 ```
 
+Prose paragraph duplicates are opt-in:
+
+```toml
+duplicate_guidance_kinds = ["code_block", "list_item", "paragraph"]
+```
+
+Paragraph-only detection:
+
+```toml
+duplicate_guidance_kinds = ["paragraph"]
+```
+
+Paragraph detection uses normalized exact text equality, not semantic similarity. It ignores fenced code, headings, list items, Markdown table rows, YAML front matter, and paragraphs shorter than 80 characters. A duplicate paragraph must appear at least three times across the scan scope.
+
+**Review locally:**
+
+```bash
+docguard docs/ --verbose
+```
+
 Use `allowed_duplicate_patterns` only for intentional repeated normalized text within enabled kinds, not to hide accidental command duplication.
 
-Full specification: [docs/adr/0009-duplicate-guidance-diagnostic.md](adr/0009-duplicate-guidance-diagnostic.md), [docs/adr/0010-duplicate-guidance-kind-scope.md](adr/0010-duplicate-guidance-kind-scope.md).
+Full specification: [docs/adr/0009-duplicate-guidance-diagnostic.md](adr/0009-duplicate-guidance-diagnostic.md), [docs/adr/0010-duplicate-guidance-kind-scope.md](adr/0010-duplicate-guidance-kind-scope.md), [docs/adr/0011-duplicate-prose-paragraph-guidance.md](adr/0011-duplicate-prose-paragraph-guidance.md).
 
 **In this repository:** duplicate guidance detection is enabled as `error` with default kinds `code_block` and `list_item`. Readiness tests expect **0** duplicate guidance groups. See [docs/dogfood.md](dogfood.md).
 

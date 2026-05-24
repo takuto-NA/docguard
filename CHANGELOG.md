@@ -10,11 +10,12 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 
 ### Added
 
+- Opt-in `paragraph` kind for `DG-SPLIT002` duplicate guidance detection.
 - `duplicate_guidance_kinds` configuration key to choose which duplicate guidance atom kinds `DG-SPLIT002` checks.
 
 ### Changed
 
-- `DG-SPLIT002` no longer detects repeated headings unless `duplicate_guidance_kinds` includes `heading`. Default kinds are `code_block` and `list_item`.
+- `DG-SPLIT002` no longer detects repeated headings unless `duplicate_guidance_kinds` includes `heading`. Default kinds are `code_block` and `list_item`. Prose paragraph detection requires `paragraph` in `duplicate_guidance_kinds`.
 
 ## [0.1.0] - 2026-05-24
 
