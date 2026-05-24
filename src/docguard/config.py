@@ -15,6 +15,7 @@ from docguard.constants import (
     DEFAULT_DUPLICATE_GUIDANCE_KINDS,
     DEFAULT_MAX_DOCUMENT_LINES,
     DEFAULT_MAX_SECTION_LINES,
+    DEFAULT_MAX_STRONG_EMPHASIS_PAIRS,
     DEFAULT_SEVERITIES,
     PYPROJECT_FILENAME,
     ZERO_CONFIG_ADR_PATH_GLOB,
@@ -42,6 +43,9 @@ ALLOWED_TOP_LEVEL_KEYS = {
     "require_duplicate_guidance_detection",
     "duplicate_guidance_kinds",
     "allowed_duplicate_patterns",
+    "max_strong_emphasis_pairs",
+    "allowed_prose_phrases",
+    "extra_prohibited_prose_patterns",
     "hub_globs",
     "severity",
     "document_types",
@@ -123,6 +127,27 @@ def require_positive_integer(
     if not isinstance(raw_value, int) or raw_value <= 0:
         raise ConfigurationError(f"{field_name} must be a positive integer.")
     return raw_value
+
+
+def require_non_negative_integer(
+    raw_value: Any,
+    field_name: str,
+) -> int:
+    if not isinstance(raw_value, int) or raw_value < 0:
+        raise ConfigurationError(f"{field_name} must be a non-negative integer.")
+    return raw_value
+
+
+def validate_extra_prohibited_prose_patterns(
+    extra_prohibited_prose_patterns: tuple[str, ...],
+) -> None:
+    for pattern_text in extra_prohibited_prose_patterns:
+        try:
+            re.compile(pattern_text, re.IGNORECASE)
+        except re.error as error:
+            raise ConfigurationError(
+                f"Invalid extra_prohibited_prose_patterns regex: {pattern_text}"
+            ) from error
 
 
 def parse_document_type_configuration(
@@ -259,6 +284,9 @@ def build_zero_config_configuration(
         require_duplicate_guidance_detection=False,
         duplicate_guidance_kinds=DEFAULT_DUPLICATE_GUIDANCE_KINDS,
         allowed_duplicate_patterns=tuple(),
+        max_strong_emphasis_pairs=DEFAULT_MAX_STRONG_EMPHASIS_PAIRS,
+        allowed_prose_phrases=tuple(),
+        extra_prohibited_prose_patterns=tuple(),
         hub_globs=tuple(),
         severities=dict(DEFAULT_SEVERITIES),
         document_types=(
@@ -316,6 +344,15 @@ def parse_docguard_configuration(
     duplicate_guidance_kinds = parse_duplicate_guidance_kinds(
         raw_configuration.get("duplicate_guidance_kinds")
     )
+    allowed_prose_phrases = require_string_list(
+        raw_configuration.get("allowed_prose_phrases"),
+        "allowed_prose_phrases",
+    )
+    extra_prohibited_prose_patterns = require_string_list(
+        raw_configuration.get("extra_prohibited_prose_patterns"),
+        "extra_prohibited_prose_patterns",
+    )
+    validate_extra_prohibited_prose_patterns(extra_prohibited_prose_patterns)
 
     return DocguardConfiguration(
         project_root=project_root,
@@ -356,6 +393,15 @@ def parse_docguard_configuration(
         ),
         duplicate_guidance_kinds=duplicate_guidance_kinds,
         allowed_duplicate_patterns=allowed_duplicate_patterns,
+        max_strong_emphasis_pairs=require_non_negative_integer(
+            raw_configuration.get(
+                "max_strong_emphasis_pairs",
+                DEFAULT_MAX_STRONG_EMPHASIS_PAIRS,
+            ),
+            "max_strong_emphasis_pairs",
+        ),
+        allowed_prose_phrases=allowed_prose_phrases,
+        extra_prohibited_prose_patterns=extra_prohibited_prose_patterns,
         hub_globs=require_string_list(
             raw_configuration.get("hub_globs"),
             "hub_globs",

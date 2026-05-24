@@ -76,6 +76,8 @@ max_section_lines = 120
 
 [tool.docguard.severity]
 DG-SPLIT002 = "error"
+DG-STYLE001 = "error"
+DG-STYLE002 = "error"
 
 [[tool.docguard.document_types]]
 name = "adr"

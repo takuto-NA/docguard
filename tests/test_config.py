@@ -433,6 +433,54 @@ unexpected_phase3_key = true
         )
 
 
+def test_prose_style_configuration_keys_are_parsed(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+max_strong_emphasis_pairs = 2
+allowed_prose_phrases = ["What you can check"]
+extra_prohibited_prose_patterns = ["\\\\bkindly\\\\b"]
+
+[tool.docguard.severity]
+DG-STYLE001 = "warning"
+DG-STYLE002 = "error"
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.max_strong_emphasis_pairs == 2
+    assert configuration.allowed_prose_phrases == ("What you can check",)
+    assert configuration.extra_prohibited_prose_patterns == ("\\bkindly\\b",)
+    assert configuration.severities["DG-STYLE001"] == "warning"
+    assert configuration.severities["DG-STYLE002"] == "error"
+
+
+def test_invalid_extra_prohibited_prose_pattern_rejected(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["docs"]
+extra_prohibited_prose_patterns = ["(["]
+""",
+    )
+    with pytest.raises(ConfigurationError, match="extra_prohibited_prose_patterns"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
 def test_phase2_unknown_key_still_rejected(
     temporary_project_directory: Path,
 ) -> None:

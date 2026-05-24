@@ -19,6 +19,8 @@ DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER = "DG-FORMAT002"
 DIAGNOSTIC_CODE_MISSING_FRONT_MATTER = "DG-FORMAT003"
 DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES = "DG-SPLIT001"
 DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE = "DG-SPLIT002"
+DIAGNOSTIC_CODE_EXCESS_STRONG_EMPHASIS = "DG-STYLE001"
+DIAGNOSTIC_CODE_PROHIBITED_PROSE_PATTERN = "DG-STYLE002"
 DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX = "DG-ORG003"
 DIAGNOSTIC_CODE_ORPHAN_DOCUMENT = "DG-ORG001"
 DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS = "DG-ORG002"
@@ -31,6 +33,8 @@ DIAGNOSTIC_TITLES: dict[str, str] = {
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER: "missing front matter",
     DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES: "possible mixed document roles",
     DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE: "duplicate guidance",
+    DIAGNOSTIC_CODE_EXCESS_STRONG_EMPHASIS: "excess strong emphasis",
+    DIAGNOSTIC_CODE_PROHIBITED_PROSE_PATTERN: "prohibited prose pattern",
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX: "unreachable from index",
     DIAGNOSTIC_CODE_ORPHAN_DOCUMENT: "orphan document",
     DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS: "missing outgoing links",
@@ -98,6 +102,23 @@ WHY_ORPHAN_DOCUMENT = (
 WHY_MISSING_OUTGOING_LINKS = (
     "Hub documents without outgoing links to other in-scope documents are navigation dead ends."
 )
+WHY_EXCESS_STRONG_EMPHASIS = (
+    "Heavy Markdown strong emphasis in prose often signals AI-generated drafts or "
+    "decorative wording that makes documentation harder to scan."
+)
+WHY_PROHIBITED_PROSE_PATTERN = (
+    "Direct address and casual filler words make repository documentation sound "
+    "promotional or conversational instead of precise and maintainable."
+)
+SUGGESTION_EXCESS_STRONG_EMPHASIS = (
+    "Remove strong emphasis from prose or rewrite the sentence in plain text."
+)
+SUGGESTION_PROHIBITED_PROSE_PATTERN = (
+    "Rewrite the sentence in neutral documentation voice, or add an "
+    "allowed_prose_phrases entry when the wording is intentional."
+)
+
+DEFAULT_MAX_STRONG_EMPHASIS_PAIRS = 0
 
 DEFAULT_SEVERITIES: dict[str, str] = {
     DIAGNOSTIC_CODE_DOCUMENT_TOO_LONG: "error",
@@ -107,6 +128,8 @@ DEFAULT_SEVERITIES: dict[str, str] = {
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER: "error",
     DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES: "warning",
     DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE: "warning",
+    DIAGNOSTIC_CODE_EXCESS_STRONG_EMPHASIS: "warning",
+    DIAGNOSTIC_CODE_PROHIBITED_PROSE_PATTERN: "warning",
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX: "error",
     DIAGNOSTIC_CODE_ORPHAN_DOCUMENT: "warning",
     DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS: "warning",

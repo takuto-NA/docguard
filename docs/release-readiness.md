@@ -25,7 +25,7 @@ Checklist:
 - [x] ADR 0008 accepted.
 - [x] Release notes in `CHANGELOG.md` for `0.1.0`.
 - [x] CI runs full pytest, docguard self-check, build, twine check, and wheel smoke on Python 3.11–3.13.
-- [x] Repository language guard test for user-facing pages (`tests/test_release_readiness.py`).
+- [x] Repository prose style guard for user-facing pages through docguard core (`tests/test_release_readiness.py`).
 - [x] Wheel smoke test installs the built wheel and runs `docguard --help` plus installed pytest plugin discovery.
 - [x] Manual publish workflow configured for PyPI Trusted Publishing.
 

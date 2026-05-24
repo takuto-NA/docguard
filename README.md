@@ -16,16 +16,16 @@ docguard docs/ --summary
 
 ## What this tool checks
 
-Docguard focuses on document structure and repository health, not Markdown formatting.
+Docguard focuses on document structure and repository health. Prose style checks (`DG-STYLE001`, `DG-STYLE002`) flag decorative strong emphasis and conversational phrasing in body text; they are not a general Markdown formatter.
 
 | Phase | What you can check | Diagnostics | Typical default |
 |-------|-------------------|-------------|-----------------|
-| Core | Document and section size; typed document shape; index reachability | `DG-SIZE001`, `DG-SIZE002`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003` | on when configured |
+| Core | Document and section size; typed document shape; index reachability; prose style | `DG-SIZE001`, `DG-SIZE002`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003`, `DG-STYLE001`, `DG-STYLE002` | on when configured; prose style `warning` |
 | Phase 2 | Link structure between files: orphans and hub dead ends | `DG-ORG001`, `DG-ORG002` | opt-in, `warning` |
 | Phase 3 | Structure inside each file: mixed roles and heading level skips | `DG-SPLIT001`, `DG-FORMAT002` | opt-in, `warning` |
 | Duplicate guidance | Repeated commands, list guidance, or prose paragraphs across the scan scope; headings and paragraphs opt-in | `DG-SPLIT002` | opt-in, `warning` |
 
-Phase 2 details: [organization rules](https://github.com/takuto-NA/docguard/blob/main/docs/organization-rules.md). Phase 3 and duplicate guidance details: [structure rules](https://github.com/takuto-NA/docguard/blob/main/docs/structure-rules.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
+Phase 2 details: [organization rules](https://github.com/takuto-NA/docguard/blob/main/docs/organization-rules.md). Phase 3 and duplicate guidance details: [structure rules](https://github.com/takuto-NA/docguard/blob/main/docs/structure-rules.md). Prose style details: [prose style rules](https://github.com/takuto-NA/docguard/blob/main/docs/prose-style-rules.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 
 ## Development
 
@@ -42,6 +42,7 @@ uv run docguard README.md CONTEXT.md docs/ --summary
 - [Usage](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md)
 - [Organization rules (Phase 2)](https://github.com/takuto-NA/docguard/blob/main/docs/organization-rules.md)
 - [Structure rules (Phase 3)](https://github.com/takuto-NA/docguard/blob/main/docs/structure-rules.md)
+- [Prose style rules](https://github.com/takuto-NA/docguard/blob/main/docs/prose-style-rules.md)
 - [Dogfood and self-test](https://github.com/takuto-NA/docguard/blob/main/docs/dogfood.md)
 - [Release readiness](https://github.com/takuto-NA/docguard/blob/main/docs/release-readiness.md)
 - [Domain glossary (CONTEXT.md)](https://github.com/takuto-NA/docguard/blob/main/CONTEXT.md)
@@ -51,7 +52,7 @@ uv run docguard README.md CONTEXT.md docs/ --summary
 
 Alpha (`Development Status :: 3 - Alpha`). Configuration keys, diagnostic JSON fields, and rule defaults may change; breaking changes are recorded in [CHANGELOG.md](https://github.com/takuto-NA/docguard/blob/main/CHANGELOG.md). Exit codes and existing diagnostic meanings are preserved where practical.
 
-Phase 3 structure diagnostics (`DG-SPLIT001`, `DG-FORMAT002`) are implemented. Release readiness is documented in [docs/release-readiness.md](https://github.com/takuto-NA/docguard/blob/main/docs/release-readiness.md).
+Phase 3 structure diagnostics (`DG-SPLIT001`, `DG-FORMAT002`) and prose style diagnostics (`DG-STYLE001`, `DG-STYLE002`) are implemented. Release readiness is documented in [docs/release-readiness.md](https://github.com/takuto-NA/docguard/blob/main/docs/release-readiness.md).
 
 ## Repository navigation
 
@@ -60,6 +61,7 @@ Relative links for clone checkouts and docguard reachability checks:
 - [docs/usage.md](docs/usage.md)
 - [docs/organization-rules.md](docs/organization-rules.md)
 - [docs/structure-rules.md](docs/structure-rules.md)
+- [docs/prose-style-rules.md](docs/prose-style-rules.md)
 - [docs/dogfood.md](docs/dogfood.md)
 - [docs/release-readiness.md](docs/release-readiness.md)
 - [CONTEXT.md](CONTEXT.md)
@@ -74,3 +76,4 @@ Relative links for clone checkouts and docguard reachability checks:
 - [docs/adr/0009-duplicate-guidance-diagnostic.md](docs/adr/0009-duplicate-guidance-diagnostic.md)
 - [docs/adr/0010-duplicate-guidance-kind-scope.md](docs/adr/0010-duplicate-guidance-kind-scope.md)
 - [docs/adr/0011-duplicate-prose-paragraph-guidance.md](docs/adr/0011-duplicate-prose-paragraph-guidance.md)
+- [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md)

@@ -87,6 +87,19 @@ Repeated commands, list items, or prose paragraphs that make the same maintenanc
 _Avoid_: copy-paste docs, repeated examples, duplicate setup blocks
 See [docs/adr/0009-duplicate-guidance-diagnostic.md](docs/adr/0009-duplicate-guidance-diagnostic.md), [docs/adr/0010-duplicate-guidance-kind-scope.md](docs/adr/0010-duplicate-guidance-kind-scope.md), [docs/adr/0011-duplicate-prose-paragraph-guidance.md](docs/adr/0011-duplicate-prose-paragraph-guidance.md).
 
+**Prose style violation**:
+Excess Markdown strong emphasis or prohibited conversational phrasing in body prose. Checked by `DG-STYLE001` and `DG-STYLE002`; typed documents are excluded.
+_Avoid_: AI-like text, formatting error, lint
+See [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md).
+
+**Strong emphasis pair**:
+One closed strong emphasis span in a prose line after inline code segments are removed.
+_Avoid_: bold marker count, asterisk count
+
+**Prose line**:
+A non-empty line that is not a code fence, heading, front matter line, table row, glossary term definition line, or part of the example dialogue section.
+_Avoid_: body text, paragraph
+
 ## Example dialogue
 
 **Developer**: This ADR is flagged as unreachable from index.

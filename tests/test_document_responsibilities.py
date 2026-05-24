@@ -48,6 +48,7 @@ FORBIDDEN_DOGFOOD_RELEASE_MARKERS = (
     "Add release notes for user-facing changes",
     "Add CI that runs the full pytest suite and the docguard self-check",
     "Add a documentation language guard for user-facing pages",
+    "Add a prose style guard for user-facing pages",
     "Add a wheel smoke test that installs the built package and runs `docguard --help`",
     "Do not present the project as a stable package until the PyPI and compatibility items are complete",
 )

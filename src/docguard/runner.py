@@ -17,6 +17,7 @@ from docguard.rules import (
     check_hub_missing_outgoing_links,
     check_mixed_document_roles,
     check_orphan_documents,
+    check_prose_style,
     check_required_front_matter,
     check_required_headings,
     check_section_lengths,
@@ -56,6 +57,9 @@ def run_docguard_checks(
         )
         diagnostics.extend(
             check_heading_level_skips(configuration, inspection_context)
+        )
+        diagnostics.extend(
+            check_prose_style(configuration, inspection_context)
         )
         mixed_roles_diagnostic = check_mixed_document_roles(
             configuration,

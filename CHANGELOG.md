@@ -10,11 +10,15 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 
 ### Added
 
-- Opt-in `paragraph` kind for `DG-SPLIT002` duplicate guidance detection.
-- `duplicate_guidance_kinds` configuration key to choose which duplicate guidance atom kinds `DG-SPLIT002` checks.
+- Prose style diagnostics `DG-STYLE001` (excess strong emphasis) and `DG-STYLE002` (prohibited prose patterns), always on with default `warning` severity.
+- Configuration keys `max_strong_emphasis_pairs`, `allowed_prose_phrases`, and `extra_prohibited_prose_patterns`.
+- [docs/prose-style-rules.md](docs/prose-style-rules.md) and [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md).
 
 ### Changed
 
+- PyPI README prose checks reuse the docguard core instead of duplicated release-gate regex logic (supersedes ADR 0008 item 6 for emphasis and prohibited-pattern checks).
+- Opt-in `paragraph` kind for `DG-SPLIT002` duplicate guidance detection.
+- `duplicate_guidance_kinds` configuration key to choose which duplicate guidance atom kinds `DG-SPLIT002` checks.
 - `DG-SPLIT002` no longer detects repeated headings unless `duplicate_guidance_kinds` includes `heading`. Default kinds are `code_block` and `list_item`. Prose paragraph detection requires `paragraph` in `duplicate_guidance_kinds`.
 
 ## [0.1.0] - 2026-05-24

@@ -1,7 +1,7 @@
 """Release-readiness gate tests for PyPI Alpha distribution.
 
-Verifies package metadata, README policy, changelog presence, language guard
-patterns, and uv-first documentation before a PyPI Alpha release.
+Verifies package metadata, README policy, changelog presence, prose style guard
+through the docguard core, and uv-first documentation before a PyPI Alpha release.
 """
 
 from __future__ import annotations
@@ -10,6 +10,11 @@ import re
 from pathlib import Path
 
 import tomllib
+
+from docguard.config import load_docguard_configuration
+from docguard.markdown import parse_markdown_document
+from docguard.models import DocumentInspectionContext
+from docguard.rules import check_prose_style
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 PYPROJECT_PATH = REPOSITORY_ROOT / "pyproject.toml"
@@ -21,8 +26,6 @@ GITHUB_REPOSITORY_URL = "https://github.com/takuto-NA/docguard"
 CI_WORKFLOW_PATH = REPOSITORY_ROOT / ".github" / "workflows" / "ci.yml"
 PUBLISH_WORKFLOW_PATH = REPOSITORY_ROOT / ".github" / "workflows" / "publish.yml"
 
-# Required phase summary table header; "you" in this phrase is allowed.
-ALLOWED_README_PRONOUN_PHRASE = "What you can check"
 REPOSITORY_NAVIGATION_HEADING = "## Repository navigation"
 
 RELATIVE_DOCS_LINK_PATTERN = re.compile(r"\]\(docs/")
@@ -49,21 +52,6 @@ REQUIRED_PRE_PYPI_INSTALL_GUIDE_URL = (
 REQUIRED_TOOL_DOCGUARD_MARKER = "[tool.docguard]"
 REQUIRED_ALPHA_MARKER = "Alpha"
 
-MAX_STRONG_EMPHASIS_PER_DOCUMENT = 0
-
-PROHIBITED_PRONOUN_PATTERNS = (
-    re.compile(r"\byou\b", re.IGNORECASE),
-    re.compile(r"\byour\b", re.IGNORECASE),
-    re.compile(r"\bwe\b", re.IGNORECASE),
-    re.compile(r"\bour\b", re.IGNORECASE),
-)
-
-PROHIBITED_SLANG_PATTERNS = (
-    re.compile(r"\beasy\b", re.IGNORECASE),
-    re.compile(r"\bsimple\b", re.IGNORECASE),
-    re.compile(r"\bjust\b", re.IGNORECASE),
-)
-
 
 def extract_text_before_heading(document_text: str, heading: str) -> str:
     heading_start = document_text.find(heading)
@@ -88,44 +76,23 @@ def collect_missing_substrings(
     return missing_substrings
 
 
-def count_strong_emphasis_markers(document_text: str) -> int:
-    return document_text.count("**")
-
-
-def strip_markdown_links_and_urls(document_text: str) -> str:
-    text_without_links = re.sub(r"\[[^\]]*\]\([^)]*\)", "", document_text)
-    text_without_urls = re.sub(r"https?://\S+", "", text_without_links)
-    return text_without_urls
-
-
-def collect_language_guard_violations(document_text: str) -> list[str]:
-    violations: list[str] = []
-
-    strong_emphasis_count = count_strong_emphasis_markers(document_text)
-    if strong_emphasis_count > MAX_STRONG_EMPHASIS_PER_DOCUMENT:
-        violations.append(
-            f"contains {strong_emphasis_count} Markdown strong emphasis markers "
-            f"(limit {MAX_STRONG_EMPHASIS_PER_DOCUMENT})"
-        )
-
-    language_guard_text = strip_markdown_links_and_urls(document_text)
-    text_without_allowed_phrase = language_guard_text.replace(
-        ALLOWED_README_PRONOUN_PHRASE,
-        "",
+def collect_readme_prose_style_diagnostics():
+    configuration = load_docguard_configuration(
+        project_root=REPOSITORY_ROOT,
+        config_path=PYPROJECT_PATH,
+        cli_paths=tuple(),
     )
-    for prohibited_pronoun_pattern in PROHIBITED_PRONOUN_PATTERNS:
-        if prohibited_pronoun_pattern.search(text_without_allowed_phrase):
-            violations.append(
-                f"contains prohibited pronoun pattern: {prohibited_pronoun_pattern.pattern}"
-            )
-
-    for prohibited_slang_pattern in PROHIBITED_SLANG_PATTERNS:
-        if prohibited_slang_pattern.search(language_guard_text):
-            violations.append(
-                f"contains prohibited slang pattern: {prohibited_slang_pattern.pattern}"
-            )
-
-    return violations
+    parsed_document = parse_markdown_document(
+        README_PATH,
+        "README.md",
+    )
+    inspection_context = DocumentInspectionContext(
+        parsed_document=parsed_document,
+        document_type=None,
+        max_document_lines=configuration.max_document_lines,
+        max_section_lines=configuration.max_section_lines,
+    )
+    return check_prose_style(configuration, inspection_context)
 
 
 def test_pyproject_includes_project_urls() -> None:
@@ -212,13 +179,15 @@ def test_readme_includes_minimal_configuration_and_alpha_expectations() -> None:
     assert GITHUB_DOCS_LINK_PATTERN.search(readme_text) is not None
 
 
-def test_readme_passes_language_guard() -> None:
-    readme_text = README_PATH.read_text(encoding="utf-8")
-    violations = collect_language_guard_violations(readme_text)
+def test_readme_passes_prose_style_guard() -> None:
+    diagnostics = collect_readme_prose_style_diagnostics()
+    diagnostic_messages = [
+        f"{diagnostic.code} {diagnostic.message}" for diagnostic in diagnostics
+    ]
 
-    assert violations == [], (
-        "README failed language guard checks. "
-        f"Violations: {violations}"
+    assert diagnostics == [], (
+        "README failed prose style guard checks. "
+        f"Violations: {diagnostic_messages}"
     )
 
 

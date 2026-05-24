@@ -51,27 +51,27 @@ For development in this repository, see [README.md](../README.md#development).
 
 Follow these steps when creating or adopting docguard in a separate project.
 
-1. **Install docguard** — use [Install](#install). Add pytest when using the pytest plugin: `uv add --dev pytest`.
-2. **Add configuration** — start from the [Configuration](#configuration) example. For Phase 2 opt-in checks, see [organization-rules.md](organization-rules.md).
-3. **Run checks locally** — use [Scan Markdown from the CLI](#scan-markdown-from-the-cli) and [Run the same checks through pytest](#run-the-same-checks-through-pytest).
-4. **Add CI** — use the GitHub Actions pattern under [Add docguard to CI](#add-docguard-to-ci). Exit codes are documented in [Use predictable CI exit codes](#use-predictable-ci-exit-codes).
+1. Install docguard — use [Install](#install). Add pytest when using the pytest plugin: `uv add --dev pytest`.
+2. Add configuration — start from the [Configuration](#configuration) example. For Phase 2 opt-in checks, see [organization-rules.md](organization-rules.md).
+3. Run checks locally — use [Scan Markdown from the CLI](#scan-markdown-from-the-cli) and [Run the same checks through pytest](#run-the-same-checks-through-pytest).
+4. Add CI — use the GitHub Actions pattern under [Add docguard to CI](#add-docguard-to-ci). Exit codes are documented in [Use predictable CI exit codes](#use-predictable-ci-exit-codes).
 
 ## What you can do today
 
-Docguard treats Markdown as a maintainable repository asset, not just prose files. Run the same checks from the CLI, JSON output, or pytest.
+Docguard treats Markdown as a maintainable repository asset, not only prose files. Run the same checks from the CLI, JSON output, or pytest.
 
 | Phase | What you can check | Diagnostics | Typical default |
 |-------|-------------------|-------------|-----------------|
-| Core | Document and section size; typed document shape; index reachability | `DG-SIZE001`, `DG-SIZE002`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003` | on when configured |
+| Core | Document and section size; typed document shape; index reachability; prose style | `DG-SIZE001`, `DG-SIZE002`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003`, `DG-STYLE001`, `DG-STYLE002` | on when configured; prose style `warning` |
 | Phase 2 | Link structure between files: orphans and hub dead ends | `DG-ORG001`, `DG-ORG002` | opt-in, `warning` |
 | Phase 3 | Structure inside each file: mixed roles and heading level skips | `DG-SPLIT001`, `DG-FORMAT002` | opt-in, `warning` |
 | Duplicate guidance | Repeated commands, list guidance, or prose paragraphs across the scan scope; headings and paragraphs opt-in | `DG-SPLIT002` | opt-in, `warning` |
 
 Entry points are shared across all diagnostics. See [Scan Markdown from the CLI](#scan-markdown-from-the-cli) and [Run the same checks through pytest](#run-the-same-checks-through-pytest).
 
-Phase 2 details: [docs/organization-rules.md](organization-rules.md). Phase 3 details: [docs/structure-rules.md](structure-rules.md). Duplicate guidance details: [docs/structure-rules.md#detect-duplicate-guidance-dg-split002](structure-rules.md#detect-duplicate-guidance-dg-split002). UTF-8 and Japanese content: [Unicode and UTF-8 support](#unicode-and-utf-8-support).
+Phase 2 details: [docs/organization-rules.md](organization-rules.md). Phase 3 details: [docs/structure-rules.md](structure-rules.md). Prose style details: [docs/prose-style-rules.md](prose-style-rules.md). Duplicate guidance details: [docs/structure-rules.md#detect-duplicate-guidance-dg-split002](structure-rules.md#detect-duplicate-guidance-dg-split002). UTF-8 and Japanese content: [Unicode and UTF-8 support](#unicode-and-utf-8-support).
 
-This repository dogfoods docguard with a fixed **400-line document budget**; see [docs/dogfood.md](dogfood.md#what-you-can-rely-on-in-this-repository).
+This repository dogfoods docguard with a fixed 400-line document budget; see [docs/dogfood.md](dogfood.md#what-you-can-rely-on-in-this-repository).
 
 ## Scan Markdown from the CLI
 
@@ -112,14 +112,31 @@ If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration
 | `DG-ORG001` | Orphan document: zero incoming links from other in-scope Markdown files (opt-in) |
 | `DG-ORG002` | Missing outgoing links: hub document with zero outgoing links to in-scope Markdown files (opt-in) |
 | `DG-ORG003` | A document is not reachable from configured index files |
+| `DG-STYLE001` | Prose contains more strong emphasis pairs than `max_strong_emphasis_pairs` |
+| `DG-STYLE002` | Prose matches a prohibited pronoun or slang pattern |
 
 Each diagnostic includes a human-readable message, why-it-matters text, and an optional suggested next action such as a split target.
 
+## Detect prose style violations (always on)
+
+Prose style checks run on every scan without an opt-in flag. `DG-STYLE001` limits strong emphasis pairs in body prose (default limit `0`). `DG-STYLE002` flags built-in pronoun and slang patterns such as `you`, `easy`, or `just`. Code fences, headings, tables, glossary term lines, example dialogue sections, and typed documents such as ADRs are excluded.
+
+```toml
+[tool.docguard]
+max_strong_emphasis_pairs = 0
+
+[tool.docguard.severity]
+DG-STYLE001 = "warning"
+DG-STYLE002 = "warning"
+```
+
+Review warnings with `docguard docs/ --verbose`. Exclusions, example output, adoption notes, and self-test commands: [docs/prose-style-rules.md](prose-style-rules.md).
+
 ## Detect repeated prose paragraphs (opt-in)
 
-Default duplicate guidance (`code_block` and `list_item`) catches repeated commands and checklist bullets. It does **not** catch the same long narrative paragraph copy-pasted across multiple documents.
+Default duplicate guidance (`code_block` and `list_item`) catches repeated commands and checklist bullets. It does not catch the same long narrative paragraph copy-pasted across multiple documents.
 
-Add `paragraph` to `duplicate_guidance_kinds` when you want docguard to flag **exact-copy body prose** that appears in at least three in-scope documents and is at least 80 normalized characters long.
+Add `paragraph` to `duplicate_guidance_kinds` to have docguard flag exact-copy body prose that appears in at least three in-scope documents and is at least 80 normalized characters long.
 
 ```toml
 [tool.docguard]
@@ -149,7 +166,7 @@ A document may match at most one `document_types` entry. Overlapping globs are r
 
 When `require_index_reachability = true`, docguard builds a document link graph and flags documents that cannot be reached from any configured `index_files` entry inside the scanned scope.
 
-This catches documentation that exists in the repository but is easy to miss during review because nothing links to it.
+This catches documentation that exists in the repository but is likely to be missed during review because nothing links to it.
 
 ## Detailed rule guides
 
@@ -157,6 +174,7 @@ This catches documentation that exists in the repository but is easy to miss dur
 |-------|----------|
 | Phase 2 organization link rules | [docs/organization-rules.md](organization-rules.md) |
 | Phase 3 structure rules | [docs/structure-rules.md](structure-rules.md) |
+| Prose style rules | [docs/prose-style-rules.md](prose-style-rules.md) |
 | Dogfood, readiness, and self-test | [docs/dogfood.md](dogfood.md) |
 
 ## Run the same checks through pytest
@@ -287,6 +305,9 @@ require_heading_order_check = false
 require_duplicate_guidance_detection = false
 duplicate_guidance_kinds = ["code_block", "list_item"]
 allowed_duplicate_patterns = []
+max_strong_emphasis_pairs = 0
+allowed_prose_phrases = []
+extra_prohibited_prose_patterns = []
 hub_globs = []
 
 [[tool.docguard.document_types]]
@@ -315,6 +336,9 @@ Behavior notes:
 - duplicate guidance detection runs only when `require_duplicate_guidance_detection = true`
 - `duplicate_guidance_kinds` selects which atom kinds are checked; default is `code_block` and `list_item`. Add `heading` or `paragraph` to opt in.
 - `allowed_duplicate_patterns` suppresses intentional repeated normalized text matched by regular expressions within enabled kinds
+- prose style checks always run; `max_strong_emphasis_pairs` defaults to `0`; typed documents are excluded
+- `allowed_prose_phrases` suppresses built-in prohibited-pattern matches for intentional wording
+- `extra_prohibited_prose_patterns` adds case-insensitive regular expressions to `DG-STYLE002`
 - `experimental_rules_enabled = true` is reserved for future opt-in rules and currently has no effect
 
 When documentation exceeds the configured budget, split files instead of raising `max_document_lines`. See [docs/dogfood.md](dogfood.md) and [docs/adr/0006-document-budget-dogfood-gate.md](adr/0006-document-budget-dogfood-gate.md).

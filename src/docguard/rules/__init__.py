@@ -33,6 +33,11 @@ from docguard.duplicate_guidance import (
     collect_duplicate_guidance_groups,
     format_duplicate_occurrence_references,
 )
+from docguard.prose_style import (
+    ProseStyleCandidate,
+    check_prose_style as run_prose_style_checks,
+    collect_prose_style_candidates as collect_prose_style_candidate_groups,
+)
 from docguard.graph import (
     collect_hub_outgoing_violations,
     collect_orphan_candidates,
@@ -514,3 +519,17 @@ def collect_duplicate_guidance_candidates(
         configuration.allowed_duplicate_patterns,
         configuration.duplicate_guidance_kinds,
     )
+
+
+def check_prose_style(
+    configuration: DocguardConfiguration,
+    inspection_context: DocumentInspectionContext,
+) -> list[Diagnostic]:
+    return run_prose_style_checks(configuration, inspection_context)
+
+
+def collect_prose_style_candidates(
+    configuration: DocguardConfiguration,
+    document_contexts: tuple[DocumentInspectionContext, ...],
+) -> tuple[ProseStyleCandidate, ...]:
+    return collect_prose_style_candidate_groups(configuration, document_contexts)
