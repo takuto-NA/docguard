@@ -9,7 +9,7 @@ Two audiences, one dogfood setup:
 | Audience | What is available now |
 |----------|----------------------|
 | **Tool users** | Nine structure diagnostics across core, Phase 2 (links between files), and Phase 3 (structure inside each file). Same CLI, JSON, and pytest entry points as any project. |
-| **Maintainers of this documentation** | A fixed document budget, split pages by role, and automated gates that block config workarounds for size. |
+| **Maintainers of this documentation** | A fixed document budget, split pages by role, document responsibility boundaries, and automated gates that block config workarounds for size or README detail creep. |
 
 ### Tool capabilities
 
@@ -29,9 +29,32 @@ The document budget gate restored the intended behavior:
 
 Correct response when docs grow: add or extend focused pages such as [docs/organization-rules.md](organization-rules.md), [docs/structure-rules.md](structure-rules.md), or this page — not a higher `max_document_lines`.
 
+### Document responsibility boundaries
+
+When `README.md` repeated diagnostic catalogs, Phase 2/3 detail tables, and configuration prose, first-time readers could not tell which page was canonical. The document responsibility gate keeps each page in its lane and blocks README detail creep in tests.
+
+| Document | Responsibility |
+|----------|----------------|
+| `README.md` | Entry point: Quick start, one phase summary table, links to canonical pages |
+| `docs/usage.md` | Diagnostic catalog, output modes, configuration, CI exit codes, pytest |
+| `docs/organization-rules.md` | Phase 2 link-structure rules, examples, configuration |
+| `docs/structure-rules.md` | Phase 3 in-document structure rules, role families, configuration |
+| `docs/dogfood.md` | This repository's dogfood gates, impact tables, readiness checklists |
+
+README must stay a summary. Under `## What this tool checks` it may keep **one** phase summary table aligned with [docs/usage.md](usage.md#what-you-can-do-today). It must not add:
+
+- third-level detail headings (`### ...`)
+- full diagnostic catalog tables (`| Code | Check |` or `| Code | Check | Default |`)
+- Phase 2/3 rule explanations or configuration prose that belong in canonical pages
+- a `## Roadmap` heading for current-scope status text (use `## Status` or `## Current scope`)
+
+Correct response when README needs more detail: link to the canonical page — do not copy tables or rule explanations back into README.
+
+Automated gate: `tests/test_document_responsibilities.py`.
+
 Phase 2 and Phase 3 opt-in rules can be enabled against the current documentation scope without mass failures; see the impact tables below.
 
-**One-line summary:** docguard checks repository Markdown structure in three phases; this repository dogfoods those rules and enforces a fixed document budget in tests.
+**One-line summary:** docguard checks repository Markdown structure in three phases; this repository dogfoods those rules, enforces a fixed document budget, and blocks README detail creep in tests.
 
 ## Dogfood impact for Phase 2 rules
 
@@ -81,6 +104,18 @@ This repository keeps a **400-line global document budget** for in-scope non-ADR
 Automated gate: `tests/test_document_budget.py`.
 
 Full specification: [docs/adr/0006-document-budget-dogfood-gate.md](adr/0006-document-budget-dogfood-gate.md).
+
+## Document responsibility gate
+
+`README.md` must stay an entry-point summary. See [Document responsibility boundaries](#document-responsibility-boundaries) above for the responsibility table and README rules.
+
+Run the gate manually:
+
+```bash
+python -m pytest tests/test_document_responsibilities.py
+```
+
+Automated gate: `tests/test_document_responsibilities.py`.
 
 ## Self-test in this repository
 
@@ -136,5 +171,11 @@ Automated self-check tests live in `tests/test_dogfood.py`.
 - [x] `test_document_budget.py` green
 - [x] `docs/usage.md` split instead of raising global line limit
 - [x] Dogfood impact tables moved to this page
+
+## Document responsibility Readiness Checklist
+
+- [x] `README.md` trimmed to entry-point summary plus one phase table
+- [x] `test_document_responsibilities.py` green
+- [x] Document responsibility boundaries documented on this page
 
 See also: [docs/usage.md](usage.md).
