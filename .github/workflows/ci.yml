@@ -31,19 +31,20 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install --python "${{ matrix.python-version }}" -e ".[dev]"
+          uv venv --python "${{ matrix.python-version }}"
+          uv pip install -e ".[dev]"
 
       - name: Run pytest
-        run: uv run --python "${{ matrix.python-version }}" pytest
+        run: uv run pytest
 
       - name: Run docguard self-check
-        run: uv run --python "${{ matrix.python-version }}" docguard README.md CONTEXT.md docs/ --summary
+        run: uv run docguard README.md CONTEXT.md docs/ --summary
 
       - name: Build distributions
-        run: uv run --python "${{ matrix.python-version }}" python -m build
+        run: uv run python -m build
 
       - name: Check distributions
-        run: uv run --python "${{ matrix.python-version }}" python -m twine check dist/*
+        run: uv run python -m twine check dist/*
 
       - name: Run wheel smoke verification
-        run: uv run --python "${{ matrix.python-version }}" python scripts/wheel_smoke.py
+        run: uv run python scripts/wheel_smoke.py
