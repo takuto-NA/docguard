@@ -1,7 +1,8 @@
 """Dogfood gate tests for document responsibility boundaries.
 
-Ensures README stays an entry-point summary and does not absorb detailed
-reference responsibilities owned by docs/usage.md and phase-specific rule pages.
+Ensures major Markdown documents stay within declared responsibilities and do
+not absorb topics owned by other pages. Treats agent-authored responsibility
+drift as a hostile-change class.
 """
 
 from __future__ import annotations
@@ -10,6 +11,8 @@ import re
 from pathlib import Path
 
 README_RELATIVE_PATH = "README.md"
+DOGFOOD_RELATIVE_PATH = "docs/dogfood.md"
+RELEASE_READINESS_RELATIVE_PATH = "docs/release-readiness.md"
 WHAT_THIS_TOOL_CHECKS_HEADING = "## What this tool checks"
 
 # Any third-level heading under the summary section indicates leaked detail pages.
@@ -33,15 +36,45 @@ ALLOWED_README_STATUS_HEADINGS = ("## Status", "## Current scope")
 # README may keep one phase summary table aligned with docs/usage.md.
 REQUIRED_README_PHASE_SUMMARY_TABLE_HEADER = "| Phase | What you can check | Diagnostics | Typical default |"
 
+# Release planning belongs in docs/release-readiness.md, not docs/dogfood.md.
+FORBIDDEN_DOGFOOD_RELEASE_HEADINGS = (
+    "## Distribution roadmap",
+    "## Distribution readiness",
+)
+
+FORBIDDEN_DOGFOOD_RELEASE_MARKERS = (
+    "PyPI readiness",
+    "Stable readiness",
+    "Add release notes for user-facing changes",
+    "Add CI that runs the full pytest suite and the docguard self-check",
+    "Add a documentation language guard for user-facing pages",
+    "Add a wheel smoke test that installs the built package and runs `docguard --help`",
+    "Do not present the project as a stable package until the PyPI and compatibility items are complete",
+)
+
+REQUIRED_RELEASE_READINESS_HEADING = "## Distribution roadmap"
+
 
 def resolve_repository_root() -> Path:
     repository_root = Path(__file__).resolve().parents[1]
     return repository_root
 
 
+def read_document_text(relative_path: str) -> str:
+    document_path = resolve_repository_root() / relative_path
+    return document_path.read_text(encoding="utf-8")
+
+
 def read_readme_text() -> str:
-    readme_path = resolve_repository_root() / README_RELATIVE_PATH
-    return readme_path.read_text(encoding="utf-8")
+    return read_document_text(README_RELATIVE_PATH)
+
+
+def read_dogfood_text() -> str:
+    return read_document_text(DOGFOOD_RELATIVE_PATH)
+
+
+def read_release_readiness_text() -> str:
+    return read_document_text(RELEASE_READINESS_RELATIVE_PATH)
 
 
 def extract_section_after_heading(document_text: str, heading: str) -> str:
@@ -108,6 +141,17 @@ def collect_status_heading_violations(readme_text: str) -> list[str]:
     return violations
 
 
+def collect_dogfood_release_drift_violations(dogfood_text: str) -> list[str]:
+    violations: list[str] = []
+    for forbidden_heading in FORBIDDEN_DOGFOOD_RELEASE_HEADINGS:
+        if forbidden_heading in dogfood_text:
+            violations.append(f"contains release heading: {forbidden_heading}")
+    for forbidden_marker in FORBIDDEN_DOGFOOD_RELEASE_MARKERS:
+        if forbidden_marker in dogfood_text:
+            violations.append(f"contains release marker: {forbidden_marker}")
+    return violations
+
+
 def test_readme_does_not_include_summary_subheadings() -> None:
     readme_text = read_readme_text()
     forbidden_subheadings_found = collect_forbidden_summary_subheadings(readme_text)
@@ -159,4 +203,23 @@ def test_readme_includes_phase_summary_table() -> None:
     assert REQUIRED_README_PHASE_SUMMARY_TABLE_HEADER in what_this_tool_checks_section, (
         "README must include a single phase summary table under "
         f"'{WHAT_THIS_TOOL_CHECKS_HEADING}'."
+    )
+
+
+def test_dogfood_does_not_include_release_planning_material() -> None:
+    dogfood_text = read_dogfood_text()
+    release_drift_violations = collect_dogfood_release_drift_violations(dogfood_text)
+
+    assert release_drift_violations == [], (
+        "docs/dogfood.md must not include release planning material. "
+        "Move it to docs/release-readiness.md. "
+        f"Found: {release_drift_violations}"
+    )
+
+
+def test_release_readiness_owns_distribution_roadmap() -> None:
+    release_readiness_text = read_release_readiness_text()
+
+    assert REQUIRED_RELEASE_READINESS_HEADING in release_readiness_text, (
+        "docs/release-readiness.md must include the distribution roadmap heading."
     )

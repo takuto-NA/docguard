@@ -9,7 +9,7 @@ Two audiences, one dogfood setup:
 | Audience | What is available now |
 |----------|----------------------|
 | **Tool users** | Nine structure diagnostics across core, Phase 2 (links between files), and Phase 3 (structure inside each file). Same CLI, JSON, and pytest entry points as any project. |
-| **Maintainers of this documentation** | A fixed document budget, split pages by role, document responsibility boundaries, and automated gates that block config workarounds for size or README detail creep. |
+| **Maintainers of this documentation** | A fixed document budget, split pages by role, document responsibility boundaries, and automated gates that block config workarounds for size or document responsibility drift. |
 
 ### Tool capabilities
 
@@ -31,7 +31,7 @@ Correct response when docs grow: add or extend focused pages such as [docs/organ
 
 ### Document responsibility boundaries
 
-When `README.md` repeated diagnostic catalogs, Phase 2/3 detail tables, and configuration prose, first-time readers could not tell which page was canonical. The document responsibility gate keeps each page in its lane and blocks README detail creep in tests.
+When `README.md` repeated diagnostic catalogs, Phase 2/3 detail tables, and configuration prose, first-time readers could not tell which page was canonical. When release planning landed in this page instead of a dedicated release page, dogfood absorbed material outside its declared responsibility. The document responsibility gate keeps each page in its lane and blocks responsibility drift in tests.
 
 | Document | Responsibility |
 |----------|----------------|
@@ -40,6 +40,36 @@ When `README.md` repeated diagnostic catalogs, Phase 2/3 detail tables, and conf
 | `docs/organization-rules.md` | Phase 2 link-structure rules, examples, configuration |
 | `docs/structure-rules.md` | Phase 3 in-document structure rules, role families, configuration |
 | `docs/dogfood.md` | This repository's dogfood gates, impact tables, readiness checklists |
+| `docs/release-readiness.md` | Release and distribution milestones for Alpha, PyPI, and stable readiness |
+
+### What the document responsibility gate gives you
+
+This work did **not** add new docguard diagnostics. It added documentation structure and automated guards so maintainers can tell which page is canonical and CI can block responsibility drift.
+
+| Before | After |
+|--------|-------|
+| `README.md` repeated diagnostic catalogs, Phase 2/3 detail, and configuration prose | `README.md` is an entry point: Quick start, one phase summary table, links to canonical pages |
+| Release planning lived in `docs/dogfood.md` under a distribution heading | [docs/release-readiness.md](release-readiness.md) owns Alpha, PyPI, and stable milestones |
+| Only README detail creep was tested | `tests/test_document_responsibilities.py` also fails when dogfood absorbs release planning |
+| No shared term for the failure mode | [CONTEXT.md](../CONTEXT.md) defines **Document responsibility** and **Document responsibility drift**; [ADR 0007](adr/0007-document-responsibility-drift-guard.md) records the incident and rejected fixes |
+
+What CI blocks today (`tests/test_document_responsibilities.py`):
+
+| Document | Drift class blocked |
+|----------|---------------------|
+| `README.md` | third-level detail headings under `## What this tool checks`; full diagnostic catalog tables; Phase 2/3 rule or configuration prose copied from canonical pages; `## Roadmap` instead of `## Status` or `## Current scope` |
+| `docs/dogfood.md` | distribution-milestone headings; release markers such as PyPI milestone checklists, wheel smoke tests, CI requirements, or the future user-facing language guard |
+| `docs/release-readiness.md` | must own the distribution roadmap section so release planning has a single canonical page |
+
+Heading renames alone do not bypass these gates. If release content stays in dogfood, tests still fail.
+
+Correct responses when documentation needs more detail:
+
+- README needs diagnostic or configuration detail → link to [docs/usage.md](usage.md) or the phase rule page
+- dogfood needs distribution milestones → link to [docs/release-readiness.md](release-readiness.md)
+- release-readiness needs self-test commands → link to [Self-test in this repository](#self-test-in-this-repository) on this page
+
+Not in scope yet: the PyPI documentation language guard is recorded as a release-readiness requirement, not implemented as a docguard diagnostic.
 
 README must stay a summary. Under `## What this tool checks` it may keep **one** phase summary table aligned with [docs/usage.md](usage.md#what-you-can-do-today). It must not add:
 
@@ -54,7 +84,7 @@ Automated gate: `tests/test_document_responsibilities.py`.
 
 Phase 2 and Phase 3 opt-in rules can be enabled against the current documentation scope without mass failures; see the impact tables below.
 
-**One-line summary:** docguard checks repository Markdown structure in three phases; this repository dogfoods those rules, enforces a fixed document budget, and blocks README detail creep in tests.
+**One-line summary:** docguard checks repository Markdown structure in three phases; this repository dogfoods those rules, enforces a fixed document budget, and blocks document responsibility drift in tests.
 
 ## Dogfood impact for Phase 2 rules
 
@@ -62,18 +92,20 @@ If Phase 2 rules were enabled in this repository today:
 
 | Document | Incoming | Outgoing | Orphan candidate | Hub outgoing violation |
 |----------|----------|----------|------------------|------------------------|
-| `README.md` | none | 11 links | no (index excluded) | no |
-| `CONTEXT.md` | `README.md`, `docs/organization-rules.md`, `docs/structure-rules.md` | `docs/adr/0004-utf-8-markdown-encoding.md`, `docs/adr/0006-document-budget-dogfood-gate.md` | no | no (leaf) |
-| `docs/usage.md` | `README.md`, `docs/dogfood.md`, `docs/organization-rules.md`, `docs/structure-rules.md` | `docs/organization-rules.md`, `docs/structure-rules.md`, `docs/dogfood.md`, `docs/adr/0004-utf-8-markdown-encoding.md`, `docs/adr/0006-document-budget-dogfood-gate.md` | no | no (leaf) |
+| `README.md` | none | 13 links | no (index excluded) | no |
+| `CONTEXT.md` | `README.md`, `docs/dogfood.md`, `docs/organization-rules.md`, `docs/structure-rules.md` | `docs/adr/0004-utf-8-markdown-encoding.md`, `docs/adr/0006-document-budget-dogfood-gate.md`, `docs/adr/0007-document-responsibility-drift-guard.md` | no | no (leaf) |
+| `docs/usage.md` | `README.md`, `docs/dogfood.md`, `docs/organization-rules.md`, `docs/release-readiness.md`, `docs/structure-rules.md` | `docs/organization-rules.md`, `docs/structure-rules.md`, `docs/dogfood.md`, `docs/adr/0004-utf-8-markdown-encoding.md`, `docs/adr/0006-document-budget-dogfood-gate.md` | no | no (leaf) |
 | `docs/organization-rules.md` | `README.md`, `docs/usage.md`, `docs/dogfood.md` | `CONTEXT.md`, `docs/adr/0003-organization-link-rules.md`, `docs/dogfood.md`, `docs/usage.md` | no | no (leaf) |
 | `docs/structure-rules.md` | `README.md`, `docs/usage.md`, `docs/dogfood.md` | `CONTEXT.md`, `docs/adr/0005-phase3-structure-diagnostics.md`, `docs/dogfood.md`, `docs/usage.md` | no | no (leaf) |
-| `docs/dogfood.md` | `README.md`, `docs/organization-rules.md`, `docs/structure-rules.md`, `docs/usage.md` | `docs/organization-rules.md`, `docs/structure-rules.md`, `docs/adr/0006-document-budget-dogfood-gate.md`, `docs/usage.md` | no | no (leaf) |
+| `docs/dogfood.md` | `README.md`, `docs/adr/0007-document-responsibility-drift-guard.md`, `docs/organization-rules.md`, `docs/release-readiness.md`, `docs/structure-rules.md`, `docs/usage.md` | `CONTEXT.md`, `docs/organization-rules.md`, `docs/structure-rules.md`, `docs/adr/0006-document-budget-dogfood-gate.md`, `docs/adr/0007-document-responsibility-drift-guard.md`, `docs/release-readiness.md`, `docs/usage.md` | no | no (leaf) |
+| `docs/release-readiness.md` | `README.md`, `docs/dogfood.md` | `docs/adr/0007-document-responsibility-drift-guard.md`, `docs/dogfood.md`, `docs/usage.md` | no | no (leaf) |
 | `docs/adr/0001-cli-first-docguard.md` | `README.md` | none | no | no (leaf) |
 | `docs/adr/0002-structured-diagnostics-and-strict-config.md` | `README.md`, `docs/adr/0004-utf-8-markdown-encoding.md` | none | no | no (leaf) |
 | `docs/adr/0003-organization-link-rules.md` | `README.md`, `docs/organization-rules.md` | none | no | no (leaf) |
 | `docs/adr/0004-utf-8-markdown-encoding.md` | `README.md`, `CONTEXT.md`, `docs/usage.md` | `docs/adr/0002-structured-diagnostics-and-strict-config.md` | no | no (leaf) |
 | `docs/adr/0005-phase3-structure-diagnostics.md` | `README.md`, `docs/structure-rules.md` | none | no | no (leaf) |
 | `docs/adr/0006-document-budget-dogfood-gate.md` | `README.md`, `CONTEXT.md`, `docs/dogfood.md`, `docs/usage.md` | none | no | no (leaf) |
+| `docs/adr/0007-document-responsibility-drift-guard.md` | `README.md`, `CONTEXT.md`, `docs/dogfood.md`, `docs/release-readiness.md` | `docs/dogfood.md` | no | no (leaf) |
 
 Expected candidate counts: **0 orphan**, **0 hub outgoing violations**.
 
@@ -91,6 +123,7 @@ If Phase 3 rules were enabled in this repository today:
 | `docs/organization-rules.md` | no | no |
 | `docs/structure-rules.md` | no | no |
 | `docs/dogfood.md` | no | no |
+| `docs/release-readiness.md` | no | no |
 | `docs/adr/*.md` | no (typed; excluded from SPLIT001) | no |
 
 Expected candidate counts: **0 mixed role**, **0 heading skip**.
@@ -107,7 +140,7 @@ Full specification: [docs/adr/0006-document-budget-dogfood-gate.md](adr/0006-doc
 
 ## Document responsibility gate
 
-`README.md` must stay an entry-point summary. See [Document responsibility boundaries](#document-responsibility-boundaries) above for the responsibility table and README rules.
+`README.md` must stay an entry-point summary. `docs/dogfood.md` must not absorb release planning or distribution milestones. See [What the document responsibility gate gives you](#what-the-document-responsibility-gate-gives-you) and [Document responsibility boundaries](#document-responsibility-boundaries) above for outcomes, the responsibility table, and README rules.
 
 Run the gate manually:
 
@@ -146,6 +179,8 @@ python -m pytest
 
 Automated self-check tests live in `tests/test_dogfood.py`.
 
+Release and distribution readiness requirements live in [docs/release-readiness.md](release-readiness.md).
+
 ## Phase 2 Readiness Checklist
 
 - [x] ADR 0003 accepted
@@ -174,8 +209,10 @@ Automated self-check tests live in `tests/test_dogfood.py`.
 
 ## Document responsibility Readiness Checklist
 
+- [x] ADR 0007 accepted
 - [x] `README.md` trimmed to entry-point summary plus one phase table
 - [x] `test_document_responsibilities.py` green
 - [x] Document responsibility boundaries documented on this page
+- [x] Release planning moved to [docs/release-readiness.md](release-readiness.md)
 
-See also: [docs/usage.md](usage.md).
+See also: [docs/usage.md](usage.md), [docs/release-readiness.md](release-readiness.md).

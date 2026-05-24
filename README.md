@@ -41,7 +41,8 @@ See [docs/usage.md](docs/usage.md#what-you-can-do-today) for the full diagnostic
 - [docs/usage.md](docs/usage.md) — capabilities, configuration, and entry point
 - [docs/organization-rules.md](docs/organization-rules.md) — Phase 2 organization link rules
 - [docs/structure-rules.md](docs/structure-rules.md) — Phase 3 structure rules
-- [docs/dogfood.md](docs/dogfood.md) — self-test, readiness, document budget gate, and document responsibility boundaries
+- [docs/dogfood.md](docs/dogfood.md) — self-test, readiness, document budget gate, document responsibility boundaries, and what the responsibility gate gives you
+- [docs/release-readiness.md](docs/release-readiness.md) — Alpha, PyPI, and stable release readiness
 - [CONTEXT.md](CONTEXT.md) — domain glossary
 - [docs/adr/0001-cli-first-docguard.md](docs/adr/0001-cli-first-docguard.md)
 - [docs/adr/0002-structured-diagnostics-and-strict-config.md](docs/adr/0002-structured-diagnostics-and-strict-config.md)
@@ -49,7 +50,8 @@ See [docs/usage.md](docs/usage.md#what-you-can-do-today) for the full diagnostic
 - [docs/adr/0004-utf-8-markdown-encoding.md](docs/adr/0004-utf-8-markdown-encoding.md)
 - [docs/adr/0005-phase3-structure-diagnostics.md](docs/adr/0005-phase3-structure-diagnostics.md)
 - [docs/adr/0006-document-budget-dogfood-gate.md](docs/adr/0006-document-budget-dogfood-gate.md)
+- [docs/adr/0007-document-responsibility-drift-guard.md](docs/adr/0007-document-responsibility-drift-guard.md)
 
 ## Status
 
-Phase 3 structure diagnostics (`DG-SPLIT001`, `DG-FORMAT002`) are implemented. Document budget dogfood gate is documented in [docs/dogfood.md](docs/dogfood.md).
+Phase 3 structure diagnostics (`DG-SPLIT001`, `DG-FORMAT002`) are implemented. Document budget and document responsibility are documented in [docs/dogfood.md](docs/dogfood.md#what-the-document-responsibility-gate-gives-you). Release readiness is documented in [docs/release-readiness.md](docs/release-readiness.md).

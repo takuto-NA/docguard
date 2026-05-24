@@ -73,6 +73,15 @@ A repository-owned size limit that keeps documentation maintainable; exceeding i
 _Avoid_: max lines bump, configuration workaround
 See [docs/adr/0006-document-budget-dogfood-gate.md](docs/adr/0006-document-budget-dogfood-gate.md).
 
+**Document responsibility**:
+A declared ownership boundary for what a document is allowed to explain in detail.
+_Avoid_: page role, doc type, content area
+
+**Document responsibility drift**:
+A documentation failure mode where a document absorbs topics outside its declared responsibility because the material is nearby or convenient to edit.
+_Avoid_: doc bloat, scope creep, content overlap
+See [docs/adr/0007-document-responsibility-drift-guard.md](docs/adr/0007-document-responsibility-drift-guard.md).
+
 ## Example dialogue
 
 **Developer**: This ADR is flagged as unreachable from index.
