@@ -20,7 +20,7 @@ Resolved decisions:
 - PyPI users rely on a self-contained README with GitHub absolute links; docs are not bundled in the wheel.
 - Documentation and release verification standardize on uv-first workflows; pip remains supported.
 - Publish is manual via GitHub Actions `workflow_dispatch` with PyPI Trusted Publishing.
-- TestPyPI dry-run uses [`.github/workflows/publish-testpypi.yml`](../.github/workflows/publish-testpypi.yml) before production upload.
+- TestPyPI dry-run uses [`.github/workflows/publish-testpypi.yml`](../.github/workflows/publish-testpypi.yml) before production upload (optional; skipped for `0.2.0`).
 
 Checklist:
 
@@ -36,14 +36,14 @@ Checklist:
 Operator prerequisites before first upload:
 
 - [x] Configure production PyPI Trusted Publishing: `docguard-structure` / `publish.yml` / `pypi` environment.
-- [ ] Configure TestPyPI Trusted Publishing: `docguard-structure` / `publish-testpypi.yml` / `testpypi` environment (after workflow is on `main`).
-- [ ] Create GitHub environments `pypi` and `testpypi` if not present.
-- [ ] Run CI green on `main`, then trigger TestPyPI publish workflow.
-- [ ] Verify install from TestPyPI (see below).
-- [ ] Tag `v0.2.0`, create GitHub Release, trigger production publish workflow.
-- [ ] Verify `pip install docguard-structure` from production PyPI.
+- [ ] Configure TestPyPI Trusted Publishing: `docguard-structure` / `publish-testpypi.yml` / `testpypi` environment (deferred; skipped for `0.2.0`).
+- [x] Create GitHub environment `pypi`.
+- [ ] Create GitHub environment `testpypi` (deferred; skipped for `0.2.0`).
+- [x] Run CI green on `main`, then trigger production publish workflow.
+- [x] Verify `pip install docguard-structure` from production PyPI.
+- [x] Tag `v0.2.0`, create GitHub Release.
 
-TestPyPI install verification:
+TestPyPI install verification (optional, not run for `0.2.0`):
 
 ```bash
 uv pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "docguard-structure==0.2.0"
@@ -52,12 +52,12 @@ docguard --help
 
 Production install verification: see [docs/usage.md](usage.md#from-pypi).
 
-First production upload checklist:
+First production upload checklist (`0.2.0`):
 
-- [ ] TestPyPI install verified.
-- [ ] `v0.2.0` tag pushed and GitHub Release published.
-- [ ] Production publish workflow succeeded.
-- [ ] [pypi.org/project/docguard-structure](https://pypi.org/project/docguard-structure/) shows `0.2.0`.
+- [x] TestPyPI skipped for first release (Trusted Publishing verified on production PyPI instead).
+- [x] `v0.2.0` tag pushed and [GitHub Release](https://github.com/takuto-NA/docguard/releases/tag/v0.2.0) published.
+- [x] Production publish workflow succeeded.
+- [x] [pypi.org/project/docguard-structure/0.2.0](https://pypi.org/project/docguard-structure/0.2.0/) published.
 
 ### 3. Stable readiness
 
