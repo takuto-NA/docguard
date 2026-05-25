@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "docguard"
+name = "docguard-structure"
 dynamic = ["version"]
 description = "CLI-first Markdown structure checker for repositories"
 readme = "README.md"
@@ -33,6 +33,7 @@ Documentation = "https://github.com/takuto-NA/docguard#readme"
 Repository = "https://github.com/takuto-NA/docguard"
 Issues = "https://github.com/takuto-NA/docguard/issues"
 Changelog = "https://github.com/takuto-NA/docguard/blob/main/CHANGELOG.md"
+PyPI = "https://pypi.org/project/docguard-structure/"
 
 [project.optional-dependencies]
 dev = [

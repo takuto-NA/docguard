@@ -38,3 +38,5 @@ Alternatives rejected:
 - Release notes live in `CHANGELOG.md`; distribution milestones stay in `docs/release-readiness.md`.
 - First PyPI upload requires operator setup of PyPI Trusted Publishing outside the repository.
 - Stable readiness remains a separate milestone with explicit compatibility commitments.
+
+Distribution name `docguard` was superseded by **`docguard-structure`**; see [docs/adr/0013-pypi-distribution-name-docguard-structure.md](0013-pypi-distribution-name-docguard-structure.md).

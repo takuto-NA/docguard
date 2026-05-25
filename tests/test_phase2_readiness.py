@@ -60,7 +60,9 @@ EXPECTED_REPOSITORY_INCOMING_LINKS = {
     "docs/prose-style-rules.md": frozenset(
         {"README.md", "docs/dogfood.md", "docs/usage.md"}
     ),
-    "docs/release-readiness.md": frozenset({"README.md", "docs/dogfood.md"}),
+    "docs/release-readiness.md": frozenset(
+        {"README.md", "docs/adr/0013-pypi-distribution-name-docguard-structure.md", "docs/dogfood.md"}
+    ),
     "docs/adr/0001-cli-first-docguard.md": frozenset({"README.md"}),
     "docs/adr/0002-structured-diagnostics-and-strict-config.md": frozenset(
         {"README.md", "docs/adr/0004-utf-8-markdown-encoding.md"}
@@ -81,7 +83,7 @@ EXPECTED_REPOSITORY_INCOMING_LINKS = {
         {"README.md", "CONTEXT.md", "docs/dogfood.md", "docs/release-readiness.md"}
     ),
     "docs/adr/0008-pypi-alpha-distribution.md": frozenset(
-        {"README.md", "docs/release-readiness.md"}
+        {"README.md", "docs/adr/0013-pypi-distribution-name-docguard-structure.md", "docs/release-readiness.md"}
     ),
     "docs/adr/0009-duplicate-guidance-diagnostic.md": frozenset(
         {
@@ -113,6 +115,9 @@ EXPECTED_REPOSITORY_INCOMING_LINKS = {
     "docs/adr/0012-prose-style-diagnostics.md": frozenset(
         {"README.md", "CONTEXT.md", "docs/prose-style-rules.md"}
     ),
+    "docs/adr/0013-pypi-distribution-name-docguard-structure.md": frozenset(
+        {"README.md", "docs/adr/0008-pypi-alpha-distribution.md", "docs/release-readiness.md"}
+    ),
 }
 
 EXPECTED_REPOSITORY_OUTGOING_LINKS = {
@@ -136,6 +141,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
             "docs/adr/0010-duplicate-guidance-kind-scope.md",
             "docs/adr/0011-duplicate-prose-paragraph-guidance.md",
             "docs/adr/0012-prose-style-diagnostics.md",
+            "docs/adr/0013-pypi-distribution-name-docguard-structure.md",
             "docs/prose-style-rules.md",
         }
     ),
@@ -204,6 +210,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
         {
             "docs/adr/0007-document-responsibility-drift-guard.md",
             "docs/adr/0008-pypi-alpha-distribution.md",
+            "docs/adr/0013-pypi-distribution-name-docguard-structure.md",
             "docs/dogfood.md",
             "docs/usage.md",
         }
@@ -219,7 +226,9 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
     "docs/adr/0007-document-responsibility-drift-guard.md": frozenset(
         {"docs/dogfood.md"}
     ),
-    "docs/adr/0008-pypi-alpha-distribution.md": frozenset(),
+    "docs/adr/0008-pypi-alpha-distribution.md": frozenset(
+        {"docs/adr/0013-pypi-distribution-name-docguard-structure.md"}
+    ),
     "docs/adr/0009-duplicate-guidance-diagnostic.md": frozenset(
         {"docs/adr/0010-duplicate-guidance-kind-scope.md", "docs/adr/0011-duplicate-prose-paragraph-guidance.md"}
     ),
@@ -237,6 +246,9 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
         }
     ),
     "docs/adr/0012-prose-style-diagnostics.md": frozenset(),
+    "docs/adr/0013-pypi-distribution-name-docguard-structure.md": frozenset(
+        {"docs/adr/0008-pypi-alpha-distribution.md", "docs/release-readiness.md"}
+    ),
 }
 
 EXPECTED_ORPHAN_CANDIDATES = frozenset()

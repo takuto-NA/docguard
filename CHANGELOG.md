@@ -8,11 +8,14 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-25
+
 ### Added
 
 - Prose style diagnostics `DG-STYLE001` (excess strong emphasis) and `DG-STYLE002` (prohibited prose patterns), always on with default `warning` severity.
 - Configuration keys `max_strong_emphasis_pairs`, `allowed_prose_phrases`, and `extra_prohibited_prose_patterns`.
 - [docs/prose-style-rules.md](docs/prose-style-rules.md) and [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md).
+- First PyPI release as **`docguard-structure`** (CLI and import remain `docguard`). See [docs/adr/0013-pypi-distribution-name-docguard-structure.md](docs/adr/0013-pypi-distribution-name-docguard-structure.md).
 
 ### Changed
 
@@ -30,6 +33,7 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 - Pytest plugin entry point (`pytest --docguard`, `pytest --docguard-only`).
 - Typed document support via `[tool.docguard.document_types]` (ADR example included).
 - UTF-8 Markdown encoding requirement with Japanese path and heading support.
-- PyPI Alpha distribution as `docguard` with uv-first documentation and pip-compatible wheels.
+- PyPI Alpha distribution planning with uv-first documentation and pip-compatible wheels.
 
+[0.2.0]: https://github.com/takuto-NA/docguard/releases/tag/v0.2.0
 [0.1.0]: https://github.com/takuto-NA/docguard/releases/tag/v0.1.0

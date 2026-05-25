@@ -6,7 +6,7 @@ Docguard helps teams keep documentation from growing too large, becoming unreach
 
 ## Quick start
 
-When `docguard` is on PyPI, install with `uv add docguard`, then run `uv run docguard docs/ --summary`. Equivalent with pip: `pip install docguard`. Until the first PyPI release, use the Git-based install steps in the [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#before-pypi-publication).
+Install from PyPI as **`docguard-structure`** (CLI command remains `docguard`; this is not the unrelated [docguard-cli](https://pypi.org/project/docguard-cli/) package). Use `uv add docguard-structure`, then run `uv run docguard docs/ --summary`. Equivalent with pip: `pip install docguard-structure`. Git-based install: [usage guide — Install from Git](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#install-from-git).
 
 Configure `[tool.docguard]` in `pyproject.toml` using the [configuration example](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#configuration). Full install commands, pytest integration, and exit codes: [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 
@@ -77,3 +77,4 @@ Relative links for clone checkouts and docguard reachability checks:
 - [docs/adr/0010-duplicate-guidance-kind-scope.md](docs/adr/0010-duplicate-guidance-kind-scope.md)
 - [docs/adr/0011-duplicate-prose-paragraph-guidance.md](docs/adr/0011-duplicate-prose-paragraph-guidance.md)
 - [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md)
+- [docs/adr/0013-pypi-distribution-name-docguard-structure.md](docs/adr/0013-pypi-distribution-name-docguard-structure.md)

@@ -25,6 +25,12 @@ GITHUB_REPOSITORY_URL = "https://github.com/takuto-NA/docguard"
 
 CI_WORKFLOW_PATH = REPOSITORY_ROOT / ".github" / "workflows" / "ci.yml"
 PUBLISH_WORKFLOW_PATH = REPOSITORY_ROOT / ".github" / "workflows" / "publish.yml"
+PUBLISH_TESTPYPI_WORKFLOW_PATH = (
+    REPOSITORY_ROOT / ".github" / "workflows" / "publish-testpypi.yml"
+)
+
+PYPI_DISTRIBUTION_NAME = "docguard-structure"
+PYPI_PROJECT_URL = f"https://pypi.org/project/{PYPI_DISTRIBUTION_NAME}/"
 
 REPOSITORY_NAVIGATION_HEADING = "## Repository navigation"
 
@@ -34,7 +40,7 @@ GITHUB_DOCS_LINK_PATTERN = re.compile(
 )
 
 REQUIRED_UV_CONSUMER_COMMANDS = (
-    "uv add docguard",
+    f"uv add {PYPI_DISTRIBUTION_NAME}",
     "uv run docguard",
 )
 
@@ -43,10 +49,10 @@ REQUIRED_UV_CONTRIBUTOR_COMMANDS = (
     "uv run pytest",
 )
 
-REQUIRED_PIP_ALTERNATIVE_COMMAND = "pip install docguard"
+REQUIRED_PIP_ALTERNATIVE_COMMAND = f"pip install {PYPI_DISTRIBUTION_NAME}"
 
-REQUIRED_PRE_PYPI_INSTALL_GUIDE_URL = (
-    f"{GITHUB_REPOSITORY_URL}/blob/main/docs/usage.md#before-pypi-publication"
+REQUIRED_GIT_INSTALL_GUIDE_URL = (
+    f"{GITHUB_REPOSITORY_URL}/blob/main/docs/usage.md#install-from-git"
 )
 
 REQUIRED_TOOL_DOCGUARD_MARKER = "[tool.docguard]"
@@ -95,6 +101,27 @@ def collect_readme_prose_style_diagnostics():
     return check_prose_style(configuration, inspection_context)
 
 
+def test_pyproject_distribution_name_matches_pypi_project() -> None:
+    pyproject_data = load_pyproject_data()
+    project_name = pyproject_data.get("project", {}).get("name")
+
+    assert project_name == PYPI_DISTRIBUTION_NAME
+
+
+def test_pyproject_includes_pypi_project_url() -> None:
+    pyproject_data = load_pyproject_data()
+    project_urls = pyproject_data.get("project", {}).get("urls", {})
+
+    assert project_urls.get("PyPI") == PYPI_PROJECT_URL
+
+
+def test_package_version_matches_changelog_release() -> None:
+    from docguard import __version__
+
+    changelog_text = CHANGELOG_PATH.read_text(encoding="utf-8")
+    assert f"## [{__version__}]" in changelog_text or f"## {__version__}" in changelog_text
+
+
 def test_pyproject_includes_project_urls() -> None:
     pyproject_data = load_pyproject_data()
     project_urls = pyproject_data.get("project", {}).get("urls", {})
@@ -119,6 +146,7 @@ def test_changelog_includes_initial_alpha_version() -> None:
 
     changelog_text = CHANGELOG_PATH.read_text(encoding="utf-8")
     assert "## [0.1.0]" in changelog_text or "## 0.1.0" in changelog_text
+    assert "## [0.2.0]" in changelog_text or "## 0.2.0" in changelog_text
     assert "Alpha" in changelog_text
 
 
@@ -160,15 +188,15 @@ def test_readme_documents_uv_first_workflow() -> None:
         f"Missing: {missing_contributor_commands}"
     )
     assert REQUIRED_PIP_ALTERNATIVE_COMMAND in readme_text
-    assert readme_text.index("uv add docguard") < readme_text.index(
+    assert readme_text.index(f"uv add {PYPI_DISTRIBUTION_NAME}") < readme_text.index(
         REQUIRED_PIP_ALTERNATIVE_COMMAND
     ), "README must show uv commands before pip alternatives."
 
 
-def test_readme_links_to_pre_pypi_install_guide() -> None:
+def test_readme_links_to_git_install_guide() -> None:
     readme_text = README_PATH.read_text(encoding="utf-8")
 
-    assert REQUIRED_PRE_PYPI_INSTALL_GUIDE_URL in readme_text
+    assert REQUIRED_GIT_INSTALL_GUIDE_URL in readme_text
 
 
 def test_readme_includes_minimal_configuration_and_alpha_expectations() -> None:
@@ -211,3 +239,17 @@ def test_publish_workflow_is_manual_dispatch_only() -> None:
     assert "id-token: write" in publish_workflow_text
     assert "pypa/gh-action-pypi-publish" in publish_workflow_text
     assert "push:" not in publish_workflow_text.split("on:", maxsplit=1)[-1].split("jobs:", maxsplit=1)[0]
+
+
+def test_publish_testpypi_workflow_is_manual_dispatch_with_testpypi_url() -> None:
+    assert PUBLISH_TESTPYPI_WORKFLOW_PATH.is_file(), (
+        "TestPyPI publish workflow must exist for first PyPI release."
+    )
+
+    publish_testpypi_workflow_text = PUBLISH_TESTPYPI_WORKFLOW_PATH.read_text(
+        encoding="utf-8"
+    )
+    assert "workflow_dispatch" in publish_testpypi_workflow_text
+    assert "environment: testpypi" in publish_testpypi_workflow_text
+    assert "test.pypi.org/legacy/" in publish_testpypi_workflow_text
+    assert "pypa/gh-action-pypi-publish" in publish_testpypi_workflow_text

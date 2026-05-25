@@ -12,8 +12,9 @@ from pathlib import Path
 USAGE_RELATIVE_PATH = "docs/usage.md"
 
 INSTALL_HEADING = "## Install"
-BEFORE_PYPI_PUBLICATION_HEADING = "### Before PyPI publication"
+INSTALL_FROM_GIT_HEADING = "### Install from Git"
 USE_IN_ANOTHER_REPOSITORY_HEADING = "## Use in another repository"
+PYPI_DISTRIBUTION_NAME = "docguard-structure"
 PRE_PYPI_GIT_REPOSITORY_URL = "git+https://github.com/takuto-NA/docguard.git"
 WHAT_YOU_CAN_DO_HEADING = "## What you can do today"
 SCAN_CLI_HEADING = "## Scan Markdown from the CLI"
@@ -107,11 +108,11 @@ def test_use_in_another_repository_links_to_install_without_install_blocks() -> 
     assert "[Install](#install)" in adoption_section
     assert count_fenced_blocks_containing_all_markers(
         adoption_section,
-        ("uv add docguard",),
+        (f"uv add {PYPI_DISTRIBUTION_NAME}",),
     ) == 0
     assert count_fenced_blocks_containing_all_markers(
         adoption_section,
-        ("pip install docguard",),
+        (f"pip install {PYPI_DISTRIBUTION_NAME}",),
     ) == 0
 
 
@@ -125,15 +126,15 @@ def test_usage_has_one_canonical_install_section() -> None:
 
     assert count_fenced_blocks_containing_all_markers(
         install_section,
-        ("uv add docguard", "uv run docguard docs/ --summary"),
+        (f"uv add {PYPI_DISTRIBUTION_NAME}", "uv run docguard docs/ --summary"),
     ) == 1
     assert count_fenced_blocks_containing_all_markers(
         install_section,
-        ("pip install docguard", "docguard docs/ --summary"),
+        (f"pip install {PYPI_DISTRIBUTION_NAME}", "docguard docs/ --summary"),
     ) == 1
 
 
-def test_install_section_documents_pre_pypi_uv_add_from_git() -> None:
+def test_install_section_documents_git_uv_add_from_git() -> None:
     usage_text = read_usage_text()
     install_section = extract_section_between_headings(
         usage_text,
@@ -141,17 +142,17 @@ def test_install_section_documents_pre_pypi_uv_add_from_git() -> None:
         USE_IN_ANOTHER_REPOSITORY_HEADING,
     )
 
-    assert BEFORE_PYPI_PUBLICATION_HEADING in install_section
+    assert INSTALL_FROM_GIT_HEADING in install_section
     assert count_fenced_blocks_containing_all_markers(
         install_section,
         (
-            f'docguard @ {PRE_PYPI_GIT_REPOSITORY_URL}',
+            f'{PYPI_DISTRIBUTION_NAME} @ {PRE_PYPI_GIT_REPOSITORY_URL}',
             "uv run docguard docs/ --summary",
         ),
     ) == 1
 
 
-def test_install_section_documents_pre_pypi_uvx_from_git() -> None:
+def test_install_section_documents_git_uvx_from_git() -> None:
     usage_text = read_usage_text()
     install_section = extract_section_between_headings(
         usage_text,
@@ -165,7 +166,7 @@ def test_install_section_documents_pre_pypi_uvx_from_git() -> None:
     ) == 1
 
 
-def test_install_section_documents_pre_pypi_uv_pip_from_git() -> None:
+def test_install_section_documents_git_uv_pip_from_git() -> None:
     usage_text = read_usage_text()
     install_section = extract_section_between_headings(
         usage_text,
