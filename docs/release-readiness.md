@@ -4,7 +4,7 @@ This page records distribution milestones for docguard. It is separate from [doc
 
 ## Distribution roadmap
 
-Docguard is ready for Alpha source distribution from the repository and for PyPI Alpha publication after manual approval. See [docs/adr/0008-pypi-alpha-distribution.md](adr/0008-pypi-alpha-distribution.md) for distribution decisions and [docs/adr/0013-pypi-distribution-name-docguard-structure.md](adr/0013-pypi-distribution-name-docguard-structure.md) for the PyPI distribution name.
+Docguard is published on PyPI as `docguard-structure` 0.2.0 (Alpha). This page records distribution milestones and operator history. See [docs/adr/0008-pypi-alpha-distribution.md](adr/0008-pypi-alpha-distribution.md) for distribution decisions and [docs/adr/0013-pypi-distribution-name-docguard-structure.md](adr/0013-pypi-distribution-name-docguard-structure.md) for the PyPI distribution name.
 
 ### 1. Alpha source distribution
 
