@@ -80,7 +80,7 @@ docguard --format json         # machine-readable output for CI
 pytest --docguard              # one pytest item per Markdown file
 ```
 
-Example output (`DG-ORG001` as a warning):
+Example output for `DG-ORG001` as a warning:
 
 ```text
 FAILED docs/orphan.md::docguard

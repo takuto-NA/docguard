@@ -8,7 +8,9 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 
 ## [Unreleased]
 
-## [0.3.0] - 2026-05-28
+### Changed
+
+- `DG-STYLE002` now flags parenthetical punctuation in body prose after masking Markdown links, image links, bare URLs, and inline code. Half-width `()` and full-width `（）` in remaining body text are prohibited.
 
 ### Breaking
 

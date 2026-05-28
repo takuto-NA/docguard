@@ -21,10 +21,11 @@ Typed documents such as ADRs use bold numbered decision lists by convention. Pro
 2. **Run prose style checks on every scan** with default `warning` severity.
 3. **`DG-STYLE001` counts closed strong emphasis pairs in prose lines** against `max_strong_emphasis_pairs` (default `0`).
 4. **`DG-STYLE002` matches built-in prohibited pronoun and slang patterns** plus optional `extra_prohibited_prose_patterns`, with `allowed_prose_phrases` escape hatches.
-5. **Exclude code fences, headings, YAML front matter, Markdown table rows, glossary term lines (`**Term**:`), and content under `## Example dialogue`.**
-6. **Skip prose style checks for documents matching `document_types`.**
-7. **Enable both diagnostics as `error` in this repository's dogfood configuration.**
-8. **Replace the release gate emphasis and regex logic with the shared core** in `tests/test_release_readiness.py`.
+5. **`DG-STYLE002` also flags parenthetical punctuation** in prose after masking Markdown links, image links, bare URLs, and inline code. Half-width `()` and full-width `（）` in remaining body text are prohibited.
+6. **Exclude code fences, headings, YAML front matter, Markdown table rows, glossary term lines (`**Term**:`), and content under `## Example dialogue`.**
+7. **Skip prose style checks for documents matching `document_types`.**
+8. **Enable both diagnostics as `error` in this repository's dogfood configuration.**
+9. **Replace the release gate emphasis and regex logic with the shared core** in `tests/test_release_readiness.py`.
 
 Future prose-style rules (emoji density, list cadence, and similar) ship as separate `DG-STYLE*` codes.
 

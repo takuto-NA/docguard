@@ -44,7 +44,7 @@ Docguard 0.3.0 is a breaking Alpha update. If the check exits with code `2`, fir
 
 ### Install from Git
 
-Add as a project dependency (recommended):
+Add as a project dependency. Recommended:
 
 ```bash
 uv add "docguard-structure @ git+https://github.com/takuto-NA/docguard.git"
@@ -139,19 +139,19 @@ Strict baseline at a glance:
 | `DG-ORG002` | Missing outgoing links: hub document with zero outgoing links to in-scope Markdown files (opt-in) |
 | `DG-ORG003` | A document is not reachable from configured index files |
 | `DG-STYLE001` | Prose contains more strong emphasis pairs than `max_strong_emphasis_pairs` |
-| `DG-STYLE002` | Prose matches a prohibited pronoun or slang pattern |
+| `DG-STYLE002` | Prose matches a prohibited pronoun, slang, or parenthetical punctuation pattern |
 
 Each diagnostic includes a human-readable message, why-it-matters text, and an optional suggested next action such as a split target.
 
 ## Detect prose style violations (always on)
 
-Prose style checks run on every scan without an opt-in flag. `DG-STYLE001` limits strong emphasis pairs in body prose (default limit `0`). `DG-STYLE002` flags built-in pronoun and slang patterns such as `you`, `easy`, or `just`. Code fences, headings, tables, glossary term lines, example dialogue sections, and typed documents such as ADRs are excluded.
+Prose style checks run on every scan without an opt-in flag. `DG-STYLE001` limits strong emphasis pairs in body prose; default limit is `0`. `DG-STYLE002` flags built-in pronoun and slang patterns such as `you`, `easy`, or `just`, and parenthetical punctuation in body prose after masking Markdown syntax. Code fences, headings, tables, glossary term lines, example dialogue sections, and typed documents such as ADRs are excluded.
 
 The strict baseline treats prose style diagnostics as `error`. Relax a prose setting only through `[[tool.docguard.relaxations]]` with a concrete reason. Exclusions, example output, adoption notes, and self-test commands: [docs/prose-style-rules.md](prose-style-rules.md).
 
 ## Detect repeated prose paragraphs (opt-in)
 
-Default duplicate guidance (`code_block` and `list_item`) catches repeated commands and checklist bullets. It does not catch the same long narrative paragraph copy-pasted across multiple documents.
+Default duplicate guidance for `code_block` and `list_item` catches repeated commands and checklist bullets. It does not catch the same long narrative paragraph copy-pasted across multiple documents.
 
 Add `paragraph` to `duplicate_guidance_kinds` to have docguard flag exact-copy body prose that appears in at least three in-scope documents and is at least 80 normalized characters long.
 

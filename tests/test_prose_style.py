@@ -159,6 +159,94 @@ def test_allowed_prose_phrase_suppresses_prohibited_pattern() -> None:
     assert matched_patterns == tuple()
 
 
+PARENTHETICAL_PUNCTUATION_PATTERN = r"[()（）]"
+
+
+def assert_parenthetical_pattern_matches(line_text: str) -> None:
+    matched_patterns = find_prohibited_prose_pattern_matches(
+        line_text,
+        allowed_prose_phrases=tuple(),
+        extra_prohibited_prose_patterns=tuple(),
+    )
+    assert matched_patterns != tuple()
+    assert any(
+        PARENTHETICAL_PUNCTUATION_PATTERN in matched_pattern
+        for matched_pattern in matched_patterns
+    )
+
+
+def assert_parenthetical_pattern_does_not_match(line_text: str) -> None:
+    matched_patterns = find_prohibited_prose_pattern_matches(
+        line_text,
+        allowed_prose_phrases=tuple(),
+        extra_prohibited_prose_patterns=tuple(),
+    )
+    assert not any(
+        PARENTHETICAL_PUNCTUATION_PATTERN in matched_pattern
+        for matched_pattern in matched_patterns
+    )
+
+
+@pytest.mark.parametrize(
+    "line_text",
+    [
+        "Release status (Alpha).",
+        "Release status （Alpha）.",
+    ],
+)
+def test_parenthetical_punctuation_in_prose_is_prohibited(line_text: str) -> None:
+    assert_parenthetical_pattern_matches(line_text)
+
+
+def test_parenthetical_punctuation_in_plain_prose_is_not_prohibited() -> None:
+    assert_parenthetical_pattern_does_not_match("Release status Alpha.")
+
+
+def test_parenthetical_punctuation_does_not_match_inline_code() -> None:
+    assert_parenthetical_pattern_does_not_match(
+        "Use `command(option)` for the shell example."
+    )
+
+
+def test_parenthetical_punctuation_does_not_match_markdown_link() -> None:
+    assert_parenthetical_pattern_does_not_match("See [usage](docs/usage.md).")
+
+
+def test_parenthetical_punctuation_does_not_match_markdown_image_link() -> None:
+    assert_parenthetical_pattern_does_not_match("See ![diagram](docs/diagram.png).")
+
+
+def test_parenthetical_punctuation_does_not_match_bare_url() -> None:
+    assert_parenthetical_pattern_does_not_match(
+        "See https://example.com/path(option) for details."
+    )
+
+
+def test_parenthetical_punctuation_does_not_match_markdown_link_with_url_parentheses() -> None:
+    assert_parenthetical_pattern_does_not_match(
+        "See [spec](https://example.com/path(option))."
+    )
+
+
+def test_allowed_prose_phrase_suppresses_parenthetical_punctuation() -> None:
+    matched_patterns = find_prohibited_prose_pattern_matches(
+        "Release status (Alpha).",
+        allowed_prose_phrases=("Release status (Alpha)",),
+        extra_prohibited_prose_patterns=tuple(),
+    )
+    assert matched_patterns == tuple()
+
+
+def test_check_prose_style_reports_parenthetical_punctuation() -> None:
+    inspection_context = build_inspection_context("Release status (Alpha).\n")
+    configuration = build_configuration()
+    diagnostics = check_prose_style(configuration, inspection_context)
+    assert any(
+        diagnostic.code == DIAGNOSTIC_CODE_PROHIBITED_PROSE_PATTERN
+        for diagnostic in diagnostics
+    )
+
+
 def test_check_prose_style_reports_excess_strong_emphasis() -> None:
     inspection_context = build_inspection_context("Plain **bold** prose.\n")
     configuration = build_configuration(max_strong_emphasis_pairs=0)

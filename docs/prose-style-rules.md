@@ -9,7 +9,7 @@ Prose style is not a general Markdown formatter. It does not validate heading sp
 | Capability | Diagnostic | Configuration |
 |------------|------------|---------------|
 | Limit strong emphasis in prose | `DG-STYLE001` | `max_strong_emphasis_pairs` (default `0`) |
-| Flag prohibited pronoun and slang patterns | `DG-STYLE002` | built-in patterns; optional `extra_prohibited_prose_patterns` and `allowed_prose_phrases` |
+| Flag prohibited pronoun, slang, and parenthetical punctuation patterns | `DG-STYLE002` | built-in patterns; optional `extra_prohibited_prose_patterns` and `allowed_prose_phrases` |
 | Fail CI on either rule | both | strict baseline severity is `"error"` |
 
 Entry points: same as other rules — `docguard`, `--format json`, `pytest --docguard`.
@@ -27,7 +27,7 @@ Docguard inspects prose lines only. The following are excluded:
 
 Inline code segments do not contribute to strong emphasis pair counts.
 
-Documents matching `document_types` (such as ADRs) skip prose style checks entirely.
+Documents matching `document_types`, such as ADRs, skip prose style checks entirely.
 
 ## Detect excess strong emphasis (`DG-STYLE001`)
 
@@ -48,7 +48,7 @@ Raise the limit only as a reasoned relaxation when adopting docguard against leg
 
 ## Detect prohibited prose patterns (`DG-STYLE002`)
 
-What it finds: built-in matches for direct address (`you`, `your`, `we`, `our`) and casual filler (`easy`, `simple`, `just`) in prose lines after removing Markdown links and bare URLs.
+What it finds: built-in matches for direct address, namely `you`, `your`, `we`, and `our`, and casual filler, namely `easy`, `simple`, and `just`, in prose lines after masking Markdown links, image links, bare URLs, and inline code. Parenthetical punctuation in remaining body text is also prohibited.
 
 Typical fix: rewrite in neutral documentation voice.
 
@@ -89,9 +89,9 @@ DG-STYLE002 prohibited prose pattern
   Prohibited prose pattern matched at line 12: \beasy\b
 
 Why this matters:
-  Direct address and casual filler words make repository documentation sound promotional or conversational instead of precise and maintainable.
+  Direct address, casual filler words, and parenthetical asides make repository documentation sound promotional or conversational instead of precise and maintainable.
 
-Rewrite the sentence in neutral documentation voice, or add an allowed_prose_phrases entry when the wording is intentional.
+Rewrite the sentence in neutral documentation voice without parenthetical asides, or add an allowed_prose_phrases entry when the wording is intentional.
 ```
 
 ## In this repository

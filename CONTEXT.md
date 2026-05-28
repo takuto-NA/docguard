@@ -57,7 +57,7 @@ Markdown files must be UTF-8. UTF-8 with BOM is accepted. Non-UTF-8 files fail w
 _Avoid_: charset, code page, Shift_JIS
 
 **Document role family**:
-A built-in category (`narrative`, `decision`, `reference`, or `operations`) inferred from level-2 section heading text.
+A built-in category, namely `narrative`, `decision`, `reference`, or `operations`, inferred from level-2 section heading text.
 _Avoid_: document type, template section
 
 **Mixed document roles**:
@@ -65,7 +65,7 @@ An untyped document whose level-2 headings match two or more document role famil
 _Avoid_: missing required heading, document too long
 
 **Heading level skip**:
-A heading more than one level deeper than the previous heading in document order (for example, H2 followed by H4).
+A heading more than one level deeper than the previous heading in document order, for example H2 followed by H4.
 _Avoid_: missing required heading, wrong section order
 
 **Document budget**:
@@ -104,8 +104,13 @@ _Avoid_: copy-paste docs, repeated examples, duplicate setup blocks
 See [docs/adr/0009-duplicate-guidance-diagnostic.md](docs/adr/0009-duplicate-guidance-diagnostic.md), [docs/adr/0010-duplicate-guidance-kind-scope.md](docs/adr/0010-duplicate-guidance-kind-scope.md), [docs/adr/0011-duplicate-prose-paragraph-guidance.md](docs/adr/0011-duplicate-prose-paragraph-guidance.md).
 
 **Prose style violation**:
-Excess Markdown strong emphasis or prohibited conversational phrasing in body prose. Checked by `DG-STYLE001` and `DG-STYLE002`; typed documents are excluded.
-_Avoid_: AI-like text, formatting error, lint
+Excess Markdown strong emphasis or prohibited conversational phrasing in body prose, including parenthetical asides that are not part of Markdown syntax. Checked by `DG-STYLE001` and `DG-STYLE002`; typed documents are excluded.
+_Avoid_: AI-like text, formatting error, lint, parenthetical aside
+See [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md).
+
+**Prohibited parenthetical punctuation**:
+Half-width `()` or full-width `（）` used as a non-Markdown aside in body prose.
+_Avoid_: parenthesis, bracket aside, supplementary note
 See [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md).
 
 **Strong emphasis pair**:

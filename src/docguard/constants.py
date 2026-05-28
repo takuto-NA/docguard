@@ -117,15 +117,16 @@ WHY_EXCESS_STRONG_EMPHASIS = (
     "decorative wording that makes documentation harder to scan."
 )
 WHY_PROHIBITED_PROSE_PATTERN = (
-    "Direct address and casual filler words make repository documentation sound "
-    "promotional or conversational instead of precise and maintainable."
+    "Direct address, casual filler words, and parenthetical asides make repository "
+    "documentation sound promotional or conversational instead of precise and "
+    "maintainable."
 )
 SUGGESTION_EXCESS_STRONG_EMPHASIS = (
     "Remove strong emphasis from prose or rewrite the sentence in plain text."
 )
 SUGGESTION_PROHIBITED_PROSE_PATTERN = (
-    "Rewrite the sentence in neutral documentation voice, or add an "
-    "allowed_prose_phrases entry when the wording is intentional."
+    "Rewrite the sentence in neutral documentation voice without parenthetical "
+    "asides, or add an allowed_prose_phrases entry when the wording is intentional."
 )
 
 DEFAULT_MAX_STRONG_EMPHASIS_PAIRS = 0

@@ -54,7 +54,7 @@ This work did not add new docguard diagnostics. It added documentation structure
 | Only README detail creep was tested | `tests/test_document_responsibilities.py` also fails when dogfood absorbs release planning |
 | No shared term for the failure mode | [CONTEXT.md](../CONTEXT.md) defines Document responsibility and Document responsibility drift; [ADR 0007](adr/0007-document-responsibility-drift-guard.md) records the incident and rejected fixes |
 
-What CI blocks today (`tests/test_document_responsibilities.py`):
+What `tests/test_document_responsibilities.py` blocks today:
 
 | Document | Drift class blocked |
 |----------|---------------------|
@@ -74,10 +74,10 @@ Prose style diagnostics run on every scan. The PyPI README gate reuses the same 
 
 README must stay a summary. Under `## What this tool checks` it may keep one phase summary table aligned with [docs/usage.md](usage.md#what-you-can-do-today). It must not add:
 
-- third-level detail headings (`### ...`)
-- full diagnostic catalog tables (`| Code | Check |` or `| Code | Check | Default |`)
+- third-level detail headings such as `### ...`
+- full diagnostic catalog tables such as `| Code | Check |` or `| Code | Check | Default |`
 - Phase 2/3 rule explanations or configuration prose that belong in canonical pages
-- a `## Roadmap` heading for current-scope status text (use `## Status` or `## Current scope`)
+- a `## Roadmap` heading for current-scope status text; use `## Status` or `## Current scope` instead
 
 Correct response when README needs more detail: link to the canonical page — do not copy tables or rule explanations back into README.
 
@@ -202,7 +202,7 @@ Configured checks:
 
 - all scoped documents must be reachable from `README.md`
 - global line limit is 300 lines from the strict baseline
-- prose style diagnostics (`DG-STYLE001`, `DG-STYLE002`) run as strict-baseline `error`
+- prose style diagnostics `DG-STYLE001` and `DG-STYLE002` run as strict-baseline `error`
 - untyped non-index documents must have at least 20 lines
 - ADRs must include `Status`, `Context`, `Decision`, and `Consequences`
 - ADRs must include YAML front matter keys `status` and `date`

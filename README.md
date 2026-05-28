@@ -6,7 +6,7 @@ Docguard helps teams keep documentation from growing too large, becoming unreach
 
 ## Quick start
 
-Install from PyPI as `docguard-structure` (CLI command remains `docguard`; this is not the unrelated [docguard-cli](https://pypi.org/project/docguard-cli/) package). Use `uv add docguard-structure`, then run `uv run docguard --summary`. Existing uv users can upgrade with `uv add --upgrade docguard-structure`; see [Update an existing uv install](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#update-an-existing-uv-install). Equivalent with pip: `pip install docguard-structure`. Git-based install: [usage guide — Install from Git](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#install-from-git).
+Install from PyPI as `docguard-structure`. The CLI command remains `docguard`. This is not the unrelated [docguard-cli](https://pypi.org/project/docguard-cli/) package. Use `uv add docguard-structure`, then run `uv run docguard --summary`. Existing uv users can upgrade with `uv add --upgrade docguard-structure`; see [Update an existing uv install](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#update-an-existing-uv-install). Equivalent with pip: `pip install docguard-structure`. Git-based install: [usage guide — Install from Git](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#install-from-git).
 
 Run `docguard init` for a starter `[tool.docguard]` snippet, or use the strict baseline without configuration. Full install commands, configuration, pytest integration, and exit codes: [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 
@@ -16,7 +16,7 @@ docguard --summary
 
 ## What this tool checks
 
-Docguard focuses on document structure and repository health. Prose style checks (`DG-STYLE001`, `DG-STYLE002`) flag decorative strong emphasis and conversational phrasing in body text; they are not a general Markdown formatter.
+Docguard focuses on document structure and repository health. Prose style checks `DG-STYLE001` and `DG-STYLE002` flag decorative strong emphasis and conversational phrasing in body text; they are not a general Markdown formatter.
 
 With no configuration, docguard applies the strict baseline: scan `README.md`, `CONTEXT.md`, and `docs`; require reachability from `README.md`; enforce 300-line documents, 120-line sections, and a 20-line floor for untyped non-index documents; and fail duplicate guidance plus prose style diagnostics as errors. Any relaxation from that baseline must be recorded in `[[tool.docguard.relaxations]]` with a reason.
 
@@ -52,7 +52,7 @@ uv run docguard README.md CONTEXT.md docs/ --summary
 
 ## Status
 
-Alpha (`Development Status :: 3 - Alpha`). Configuration keys, diagnostic JSON fields, and rule defaults may change; breaking changes are recorded in [CHANGELOG.md](https://github.com/takuto-NA/docguard/blob/main/CHANGELOG.md). Exit codes and existing diagnostic meanings are preserved where practical.
+Alpha release with Trove classifier `Development Status :: 3 - Alpha`. Configuration keys, diagnostic JSON fields, and rule defaults may change; breaking changes are recorded in [CHANGELOG.md](https://github.com/takuto-NA/docguard/blob/main/CHANGELOG.md). Exit codes and existing diagnostic meanings are preserved where practical.
 
 Docguard 0.3.0 uses a strict baseline by default. Relaxations require `[[tool.docguard.relaxations]]` entries with reasons. Release readiness is documented in [docs/release-readiness.md](https://github.com/takuto-NA/docguard/blob/main/docs/release-readiness.md).
 

@@ -1,6 +1,6 @@
 # Structure rules (Phase 3)
 
-Phase 3 adds two opt-in structure checks. They inspect heading patterns inside each document (not link structure like Phase 2).
+Phase 3 adds two opt-in structure checks. They inspect heading patterns inside each document, not link structure like Phase 2.
 
 Both rules default to off and to `warning` severity. Turn them on when early signals are needed before documents grow large enough to fail `DG-SIZE001`.
 
@@ -24,7 +24,7 @@ pytest --docguard
 
 ## Role families for `DG-SPLIT001`
 
-Docguard classifies level-2 headings only (`## ...`) into four built-in role families. English and representative Japanese keywords are supported.
+Docguard classifies level-2 headings only, written as `## ...`, into four built-in role families. English and representative Japanese keywords are supported.
 
 | Role family | Example heading text |
 |-------------|----------------------|
@@ -33,7 +33,7 @@ Docguard classifies level-2 headings only (`## ...`) into four built-in role fam
 | `reference` | API, Configuration, 仕様, 設定 |
 | `operations` | Deployment, Runbook, 運用, デプロイ |
 
-When two or more families match across level-2 headings, docguard reports one `DG-SPLIT001` warning per document. Documents matching `document_types` (such as ADRs) are never checked for mixed roles.
+When two or more families match across level-2 headings, docguard reports one `DG-SPLIT001` warning per document. Documents matching `document_types`, such as ADRs, are never checked for mixed roles.
 
 ## How Phase 3 differs from other checks
 
@@ -53,7 +53,7 @@ Mixed roles and missing required headings are not the same. `DG-FORMAT001` check
 
 ## Detect mixed document roles (`DG-SPLIT001`)
 
-What it finds: untyped documents whose level-2 headings match two or more built-in role families (`narrative`, `decision`, `reference`, `operations`).
+What it finds: untyped documents whose level-2 headings match two or more built-in role families, namely `narrative`, `decision`, `reference`, and `operations`.
 
 Typical fix: split the document by major topic so each file covers one concern.
 
@@ -126,7 +126,7 @@ The loader must reject packages above 12288 bytes until chunked transfer is veri
 
 docguard reports one `DG-SPLIT002` duplicate paragraph group and lists the file paths.
 
-Typical fix: keep one canonical narrative section (for example a gate definition or postmortem) and replace copies elsewhere with a relative link.
+Typical fix: keep one canonical narrative section, for example a gate definition or postmortem, and replace copies elsewhere with a relative link.
 
 ### What paragraph does not detect
 
@@ -140,7 +140,7 @@ Typical fix: keep one canonical narrative section (for example a gate definition
 
 Semantic near-duplicates still require manual review or a future rule. See [docs/adr/0011-duplicate-prose-paragraph-guidance.md](adr/0011-duplicate-prose-paragraph-guidance.md).
 
-Typical fix (all kinds): keep one canonical install, CLI, configuration, exit-code, or narrative section and link to it elsewhere. For intentional template headings, leave `heading` out of `duplicate_guidance_kinds` or add an `allowed_duplicate_patterns` entry when heading detection is enabled.
+Typical fix for all kinds: keep one canonical install, CLI, configuration, exit-code, or narrative section and link to it elsewhere. For intentional template headings, leave `heading` out of `duplicate_guidance_kinds` or add an `allowed_duplicate_patterns` entry when heading detection is enabled.
 
 Default duplicate guidance is already enabled in the strict baseline:
 

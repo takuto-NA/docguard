@@ -28,10 +28,15 @@ CLOSED_STRONG_EMPHASIS_PATTERN = re.compile(r"\*\*(.+?)\*\*")
 GLOSSARY_TERM_LINE_PATTERN = re.compile(r"^\*\*[^*]+\*\*:")
 INLINE_CODE_SEGMENT_PATTERN = re.compile(r"`[^`\n]+`")
 INLINE_CODE_DOUBLE_TICK_PATTERN = re.compile(r"``.+?``")
-MARKDOWN_LINK_PATTERN = re.compile(r"\[[^\]]*\]\([^)]*\)")
+MARKDOWN_LINK_PATTERN = re.compile(
+    r"!\[[^\]]*\]\((?:[^()]|\([^()]*\))*\)|\[[^\]]*\]\((?:[^()]|\([^()]*\))*\)"
+)
 BARE_URL_PATTERN = re.compile(r"https?://\S+")
 EXAMPLE_DIALOGUE_HEADING_TEXT = "example dialogue"
 
+DEFAULT_PROHIBITED_PARENTHETICAL_PUNCTUATION_PATTERNS = (
+    re.compile(r"[()（）]"),
+)
 DEFAULT_PROHIBITED_PRONOUN_PATTERNS = (
     re.compile(r"\byou\b", re.IGNORECASE),
     re.compile(r"\byour\b", re.IGNORECASE),
@@ -166,9 +171,10 @@ def count_document_strong_emphasis_pairs(prose_lines: tuple[ProseLine, ...]) -> 
     return sum(count_strong_emphasis_pairs(prose_line.line_text) for prose_line in prose_lines)
 
 
-def strip_markdown_links_and_urls(line_text: str) -> str:
-    text_without_links = MARKDOWN_LINK_PATTERN.sub("", line_text)
-    return BARE_URL_PATTERN.sub("", text_without_links)
+def mask_markdown_syntax_for_prose_patterns(line_text: str) -> str:
+    text_with_masked_links = MARKDOWN_LINK_PATTERN.sub("MARKDOWN_LINK", line_text)
+    text_with_masked_urls = BARE_URL_PATTERN.sub("BARE_URL", text_with_masked_links)
+    return mask_inline_code_segments(text_with_masked_urls)
 
 
 def build_allowed_prose_phrase_text(line_text: str, allowed_prose_phrases: tuple[str, ...]) -> str:
@@ -192,8 +198,7 @@ def find_prohibited_prose_pattern_matches(
     allowed_prose_phrases: tuple[str, ...],
     extra_prohibited_prose_patterns: tuple[re.Pattern[str], ...],
 ) -> tuple[str, ...]:
-    language_guard_text = strip_markdown_links_and_urls(line_text)
-    language_guard_text = strip_inline_code_segments(language_guard_text)
+    language_guard_text = mask_markdown_syntax_for_prose_patterns(line_text)
     language_guard_text = build_allowed_prose_phrase_text(
         language_guard_text,
         allowed_prose_phrases,
@@ -202,6 +207,7 @@ def find_prohibited_prose_pattern_matches(
     all_patterns = (
         *DEFAULT_PROHIBITED_PRONOUN_PATTERNS,
         *DEFAULT_PROHIBITED_SLANG_PATTERNS,
+        *DEFAULT_PROHIBITED_PARENTHETICAL_PUNCTUATION_PATTERNS,
         *extra_prohibited_prose_patterns,
     )
     for prohibited_pattern in all_patterns:
