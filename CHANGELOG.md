@@ -6,7 +6,7 @@ All notable user-facing changes to docguard are documented in this file.
 
 Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defaults may change between releases. Breaking changes are listed under each version. Exit codes (`0` success, `1` diagnostic failure, `2` configuration failure) and existing diagnostic code meanings are preserved where practical.
 
-## [Unreleased]
+## [0.4.0] - 2026-05-28
 
 ### Added
 
@@ -58,6 +58,7 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 - UTF-8 Markdown encoding requirement with Japanese path and heading support.
 - PyPI Alpha distribution planning with uv-first documentation and pip-compatible wheels.
 
+[0.4.0]: https://github.com/takuto-NA/docguard/releases/tag/v0.4.0
 [0.3.0]: https://github.com/takuto-NA/docguard/releases/tag/v0.3.0
 [0.2.0]: https://github.com/takuto-NA/docguard/releases/tag/v0.2.0
 [0.1.0]: https://github.com/takuto-NA/docguard/releases/tag/v0.1.0

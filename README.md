@@ -54,7 +54,7 @@ uv run docguard README.md CONTEXT.md docs/ --summary
 
 Alpha release with Trove classifier `Development Status :: 3 - Alpha`. Configuration keys, diagnostic JSON fields, and rule defaults may change; breaking changes are recorded in [CHANGELOG.md](https://github.com/takuto-NA/docguard/blob/main/CHANGELOG.md). Exit codes and existing diagnostic meanings are preserved where practical.
 
-Docguard 0.3.0 uses a strict baseline by default. Relaxations require `[[tool.docguard.relaxations]]` entries with reasons. Release readiness is documented in [docs/release-readiness.md](https://github.com/takuto-NA/docguard/blob/main/docs/release-readiness.md).
+Docguard uses a strict baseline by default. Relaxations require `[[tool.docguard.relaxations]]` entries with reasons. Release readiness is documented in [docs/release-readiness.md](https://github.com/takuto-NA/docguard/blob/main/docs/release-readiness.md).
 
 ## Repository navigation
 

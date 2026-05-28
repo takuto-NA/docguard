@@ -4,7 +4,7 @@ This page records distribution milestones for docguard. It is separate from [doc
 
 ## Distribution roadmap
 
-Docguard is published on PyPI as `docguard-structure` 0.3.0 Alpha release. This page records distribution milestones and operator history. See [docs/adr/0008-pypi-alpha-distribution.md](adr/0008-pypi-alpha-distribution.md) for distribution decisions and [docs/adr/0013-pypi-distribution-name-docguard-structure.md](adr/0013-pypi-distribution-name-docguard-structure.md) for the PyPI distribution name.
+Docguard is published on PyPI as `docguard-structure` 0.4.0 Alpha release. This page records distribution milestones and operator history. See [docs/adr/0008-pypi-alpha-distribution.md](adr/0008-pypi-alpha-distribution.md) for distribution decisions and [docs/adr/0013-pypi-distribution-name-docguard-structure.md](adr/0013-pypi-distribution-name-docguard-structure.md) for the PyPI distribution name.
 
 ### 1. Alpha source distribution
 
@@ -26,7 +26,7 @@ Checklist:
 
 - [x] ADR 0008 accepted.
 - [x] ADR 0013 accepted for distribution name.
-- [x] Release notes in `CHANGELOG.md` for `0.2.0` and `0.3.0`.
+- [x] Release notes in `CHANGELOG.md` for `0.2.0`, `0.3.0`, and `0.4.0`.
 - [x] CI runs full pytest, docguard self-check, build, twine check, and wheel smoke on Python 3.11–3.13.
 - [x] Repository prose style guard for user-facing pages through docguard core in `tests/test_release_readiness.py`.
 - [x] Repository documentation style guard for user-facing pages through docguard core in `tests/test_release_readiness.py`.
@@ -66,6 +66,13 @@ Production upload checklist for `0.3.0`:
 - [x] `v0.3.0` tag pushed and [GitHub Release](https://github.com/takuto-NA/docguard/releases/tag/v0.3.0) published.
 - [x] Production publish workflow succeeded.
 - [x] [pypi.org/project/docguard-structure/0.3.0](https://pypi.org/project/docguard-structure/0.3.0/) published.
+
+Production upload checklist for `0.4.0`:
+
+- [x] 0.4.0 release branch verified on the full test suite and docguard self-check.
+- [x] `v0.4.0` tag pushed and [GitHub Release](https://github.com/takuto-NA/docguard/releases/tag/v0.4.0) published.
+- [x] 0.4.0 production workflow completed.
+- [x] [pypi.org/project/docguard-structure/0.4.0](https://pypi.org/project/docguard-structure/0.4.0/) published.
 
 ### 3. Stable readiness
 
