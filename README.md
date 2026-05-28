@@ -16,13 +16,13 @@ docguard --summary
 
 ## What this tool checks
 
-Docguard focuses on document structure and repository health. Prose style checks `DG-STYLE001` and `DG-STYLE002` flag decorative strong emphasis, conversational phrasing, and parenthetical asides in body text; they are not a general Markdown formatter.
+Docguard focuses on document structure and repository health. Prose style checks `DG-STYLE001` and `DG-STYLE002` flag decorative strong emphasis, conversational phrasing, and parenthetical asides in body text. `DG-STYLE003` flags forbidden documentation expressions in headings, prose, and table headers. These checks are not a general Markdown formatter.
 
-With no configuration, docguard applies the strict baseline: scan `README.md`, `CONTEXT.md`, and `docs`; require reachability from `README.md`; enforce 300-line documents, 120-line sections, and a 20-line floor for untyped non-index documents; and fail duplicate guidance plus prose style diagnostics as errors. Any relaxation from that baseline must be recorded in `[[tool.docguard.relaxations]]` with a reason.
+With no configuration, docguard applies the strict baseline: scan `README.md`, `CONTEXT.md`, and `docs`; require reachability from `README.md`; enforce 300-line documents, 120-line sections, and a 20-line floor for untyped non-index documents; and fail duplicate guidance plus prose and documentation style diagnostics as errors. Any relaxation from that baseline must be recorded in `[[tool.docguard.relaxations]]` with a reason.
 
 | Phase | What you can check | Diagnostics | Typical default |
 |-------|-------------------|-------------|-----------------|
-| Core | Document and section size; stub detection; typed document shape; index reachability; prose style | `DG-SIZE001`, `DG-SIZE002`, `DG-SIZE003`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003`, `DG-STYLE001`, `DG-STYLE002` | strict baseline, `error` |
+| Core | Document and section size; stub detection; typed document shape; index reachability; prose and documentation style | `DG-SIZE001`, `DG-SIZE002`, `DG-SIZE003`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003`, `DG-STYLE001`, `DG-STYLE002`, `DG-STYLE003` | strict baseline, `error` |
 | Phase 2 | Link structure between files: orphans and hub dead ends | `DG-ORG001`, `DG-ORG002` | opt-in, `warning` |
 | Phase 3 | Structure inside each file: mixed roles and heading level skips | `DG-SPLIT001`, `DG-FORMAT002` | opt-in, `warning` |
 | Duplicate guidance | Repeated commands, list guidance, or prose paragraphs across the scan scope; headings and paragraphs opt-in | `DG-SPLIT002` | strict baseline, `error` |
@@ -81,3 +81,4 @@ Relative links for clone checkouts and docguard reachability checks:
 - [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md)
 - [docs/adr/0013-pypi-distribution-name-docguard-structure.md](docs/adr/0013-pypi-distribution-name-docguard-structure.md)
 - [docs/adr/0014-strict-baseline-and-policy-relaxations.md](docs/adr/0014-strict-baseline-and-policy-relaxations.md)
+- [docs/adr/0015-forbidden-documentation-expressions.md](docs/adr/0015-forbidden-documentation-expressions.md)

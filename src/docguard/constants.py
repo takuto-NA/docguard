@@ -26,6 +26,7 @@ DIAGNOSTIC_CODE_MIXED_DOCUMENT_ROLES = "DG-SPLIT001"
 DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE = "DG-SPLIT002"
 DIAGNOSTIC_CODE_EXCESS_STRONG_EMPHASIS = "DG-STYLE001"
 DIAGNOSTIC_CODE_PROHIBITED_PROSE_PATTERN = "DG-STYLE002"
+DIAGNOSTIC_CODE_FORBIDDEN_DOCUMENTATION_EXPRESSION = "DG-STYLE003"
 DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX = "DG-ORG003"
 DIAGNOSTIC_CODE_ORPHAN_DOCUMENT = "DG-ORG001"
 DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS = "DG-ORG002"
@@ -41,6 +42,7 @@ DIAGNOSTIC_TITLES: dict[str, str] = {
     DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE: "duplicate guidance",
     DIAGNOSTIC_CODE_EXCESS_STRONG_EMPHASIS: "excess strong emphasis",
     DIAGNOSTIC_CODE_PROHIBITED_PROSE_PATTERN: "prohibited prose pattern",
+    DIAGNOSTIC_CODE_FORBIDDEN_DOCUMENTATION_EXPRESSION: "forbidden documentation expression",
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX: "unreachable from index",
     DIAGNOSTIC_CODE_ORPHAN_DOCUMENT: "orphan document",
     DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS: "missing outgoing links",
@@ -128,6 +130,16 @@ SUGGESTION_PROHIBITED_PROSE_PATTERN = (
     "Rewrite the sentence in neutral documentation voice without parenthetical "
     "asides, or add an allowed_prose_phrases entry when the wording is intentional."
 )
+WHY_FORBIDDEN_DOCUMENTATION_EXPRESSION = (
+    "Conversational headings, vague section titles, and informal table labels "
+    "make repository documentation harder to scan and harder to keep consistent "
+    "across teams."
+)
+SUGGESTION_FORBIDDEN_DOCUMENTATION_EXPRESSION = (
+    "Rewrite the heading, prose, or table label in neutral documentation voice, "
+    "or add an allowed_documentation_style_phrases entry when the wording is "
+    "intentional."
+)
 
 DEFAULT_MAX_STRONG_EMPHASIS_PAIRS = 0
 
@@ -142,6 +154,7 @@ DEFAULT_SEVERITIES: dict[str, str] = {
     DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE: "error",
     DIAGNOSTIC_CODE_EXCESS_STRONG_EMPHASIS: "error",
     DIAGNOSTIC_CODE_PROHIBITED_PROSE_PATTERN: "error",
+    DIAGNOSTIC_CODE_FORBIDDEN_DOCUMENTATION_EXPRESSION: "error",
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX: "error",
     DIAGNOSTIC_CODE_ORPHAN_DOCUMENT: "warning",
     DIAGNOSTIC_CODE_MISSING_OUTGOING_LINKS: "warning",

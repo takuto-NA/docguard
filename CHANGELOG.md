@@ -8,6 +8,12 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 
 ## [Unreleased]
 
+### Added
+
+- `DG-STYLE003` flags forbidden documentation expressions in headings, body prose, and Markdown table header cells. Typed documents such as ADRs are included.
+- Configuration keys `allowed_documentation_style_phrases` and `extra_prohibited_documentation_style_patterns`.
+- [docs/adr/0015-forbidden-documentation-expressions.md](docs/adr/0015-forbidden-documentation-expressions.md).
+
 ### Changed
 
 - `DG-STYLE002` now flags parenthetical punctuation in body prose after masking Markdown links, image links, bare URLs, and inline code. Half-width `()` and full-width `（）` in remaining body text are prohibited.

@@ -29,6 +29,7 @@ Checklist:
 - [x] Release notes in `CHANGELOG.md` for `0.2.0` and `0.3.0`.
 - [x] CI runs full pytest, docguard self-check, build, twine check, and wheel smoke on Python 3.11–3.13.
 - [x] Repository prose style guard for user-facing pages through docguard core in `tests/test_release_readiness.py`.
+- [x] Repository documentation style guard for user-facing pages through docguard core in `tests/test_release_readiness.py`.
 - [x] Wheel smoke test installs the built wheel and runs `docguard --help` plus installed pytest plugin discovery.
 - [x] Manual publish workflow configured for PyPI Trusted Publishing in `publish.yml`.
 - [x] TestPyPI publish workflow configured in `publish-testpypi.yml`.

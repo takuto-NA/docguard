@@ -70,6 +70,8 @@ class DocguardConfiguration:
     max_strong_emphasis_pairs: int
     allowed_prose_phrases: tuple[str, ...]
     extra_prohibited_prose_patterns: tuple[str, ...]
+    allowed_documentation_style_phrases: tuple[str, ...]
+    extra_prohibited_documentation_style_patterns: tuple[str, ...]
     hub_globs: tuple[str, ...]
     severities: dict[str, str]
     document_types: tuple[DocumentTypeConfiguration, ...]

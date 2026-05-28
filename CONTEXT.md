@@ -104,13 +104,8 @@ _Avoid_: copy-paste docs, repeated examples, duplicate setup blocks
 See [docs/adr/0009-duplicate-guidance-diagnostic.md](docs/adr/0009-duplicate-guidance-diagnostic.md), [docs/adr/0010-duplicate-guidance-kind-scope.md](docs/adr/0010-duplicate-guidance-kind-scope.md), [docs/adr/0011-duplicate-prose-paragraph-guidance.md](docs/adr/0011-duplicate-prose-paragraph-guidance.md).
 
 **Prose style violation**:
-Excess Markdown strong emphasis or prohibited conversational phrasing in body prose, including parenthetical asides that are not part of Markdown syntax. Checked by `DG-STYLE001` and `DG-STYLE002`; typed documents are excluded.
+Excess Markdown strong emphasis or prohibited conversational phrasing in body prose, including half-width `()` or full-width `（）` asides after masking Markdown syntax. Checked by `DG-STYLE001` and `DG-STYLE002`; typed documents are excluded.
 _Avoid_: AI-like text, formatting error, lint, parenthetical aside
-See [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md).
-
-**Prohibited parenthetical punctuation**:
-Half-width `()` or full-width `（）` used as a non-Markdown aside in body prose.
-_Avoid_: parenthesis, bracket aside, supplementary note
 See [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md).
 
 **Strong emphasis pair**:
@@ -120,6 +115,11 @@ _Avoid_: bold marker count, asterisk count
 **Prose line**:
 A non-empty line that is not a code fence, heading, front matter line, table row, glossary term definition line, or part of the example dialogue section.
 _Avoid_: body text, paragraph
+
+**Forbidden documentation expression**:
+A ranked conversational or vague phrase in a heading, prose line, or table header cell. Checked by `DG-STYLE003`; typed documents are included.
+_Avoid_: colloquial phrase, slang, conversational heading
+See [docs/adr/0015-forbidden-documentation-expressions.md](docs/adr/0015-forbidden-documentation-expressions.md).
 
 ## Example dialogue
 

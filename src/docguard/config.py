@@ -52,6 +52,8 @@ ALLOWED_TOP_LEVEL_KEYS = {
     "max_strong_emphasis_pairs",
     "allowed_prose_phrases",
     "extra_prohibited_prose_patterns",
+    "allowed_documentation_style_phrases",
+    "extra_prohibited_documentation_style_patterns",
     "hub_globs",
     "severity",
     "document_types",
@@ -73,6 +75,7 @@ RELAXATION_REASON_MINIMUM_LENGTH = 20
 RELAXATION_PARAMETERS = {
     "allowed_duplicate_patterns",
     "allowed_prose_phrases",
+    "allowed_documentation_style_phrases",
     "duplicate_guidance_kinds",
     "max_document_lines",
     "max_section_lines",
@@ -183,6 +186,19 @@ def validate_extra_prohibited_prose_patterns(
         except re.error as error:
             raise ConfigurationError(
                 f"Invalid extra_prohibited_prose_patterns regex: {pattern_text}"
+            ) from error
+
+
+def validate_extra_prohibited_documentation_style_patterns(
+    extra_prohibited_documentation_style_patterns: tuple[str, ...],
+) -> None:
+    for pattern_text in extra_prohibited_documentation_style_patterns:
+        try:
+            re.compile(pattern_text, re.IGNORECASE)
+        except re.error as error:
+            raise ConfigurationError(
+                "Invalid extra_prohibited_documentation_style_patterns regex: "
+                f"{pattern_text}"
             ) from error
 
 
@@ -324,6 +340,8 @@ def build_strict_baseline_configuration(
         max_strong_emphasis_pairs=DEFAULT_MAX_STRONG_EMPHASIS_PAIRS,
         allowed_prose_phrases=tuple(),
         extra_prohibited_prose_patterns=tuple(),
+        allowed_documentation_style_phrases=tuple(),
+        extra_prohibited_documentation_style_patterns=tuple(),
         hub_globs=tuple(),
         severities=dict(DEFAULT_SEVERITIES),
         document_types=(
@@ -530,6 +548,10 @@ def validate_direct_relaxations(
         baseline_configuration.require_duplicate_guidance_detection,
     )
     validate_direct_string_list_relaxation(raw_configuration, "allowed_prose_phrases")
+    validate_direct_string_list_relaxation(
+        raw_configuration,
+        "allowed_documentation_style_phrases",
+    )
     validate_direct_string_list_relaxation(raw_configuration, "allowed_duplicate_patterns")
     validate_direct_duplicate_guidance_kinds(raw_configuration)
     validate_direct_severity_relaxations(raw_configuration)
@@ -582,6 +604,14 @@ def apply_relaxation(
         return replace(
             configuration,
             allowed_prose_phrases=require_string_list(raw_value, parameter_name),
+        )
+    if parameter_name == "allowed_documentation_style_phrases":
+        return replace(
+            configuration,
+            allowed_documentation_style_phrases=require_string_list(
+                raw_value,
+                parameter_name,
+            ),
         )
     if parameter_name == "allowed_duplicate_patterns":
         allowed_duplicate_patterns = require_string_list(raw_value, parameter_name)
@@ -683,6 +713,17 @@ def parse_docguard_configuration(
         "extra_prohibited_prose_patterns",
     )
     validate_extra_prohibited_prose_patterns(extra_prohibited_prose_patterns)
+    allowed_documentation_style_phrases = require_string_list(
+        raw_configuration.get("allowed_documentation_style_phrases"),
+        "allowed_documentation_style_phrases",
+    )
+    extra_prohibited_documentation_style_patterns = require_string_list(
+        raw_configuration.get("extra_prohibited_documentation_style_patterns"),
+        "extra_prohibited_documentation_style_patterns",
+    )
+    validate_extra_prohibited_documentation_style_patterns(
+        extra_prohibited_documentation_style_patterns
+    )
 
     direct_configuration = DocguardConfiguration(
         project_root=project_root,
@@ -769,6 +810,10 @@ def parse_docguard_configuration(
         ),
         allowed_prose_phrases=allowed_prose_phrases,
         extra_prohibited_prose_patterns=extra_prohibited_prose_patterns,
+        allowed_documentation_style_phrases=allowed_documentation_style_phrases,
+        extra_prohibited_documentation_style_patterns=(
+            extra_prohibited_documentation_style_patterns
+        ),
         hub_globs=require_string_list(
             raw_configuration.get("hub_globs"),
             "hub_globs",

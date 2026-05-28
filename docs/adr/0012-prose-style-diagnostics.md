@@ -27,7 +27,7 @@ Typed documents such as ADRs use bold numbered decision lists by convention. Pro
 8. **Enable both diagnostics as `error` in this repository's dogfood configuration.**
 9. **Replace the release gate emphasis and regex logic with the shared core** in `tests/test_release_readiness.py`.
 
-Future prose-style rules (emoji density, list cadence, and similar) ship as separate `DG-STYLE*` codes.
+Future prose-style rules (emoji density, list cadence, and similar) ship as separate `DG-STYLE*` codes. Forbidden documentation expressions ship as `DG-STYLE003`; see [docs/adr/0015-forbidden-documentation-expressions.md](0015-forbidden-documentation-expressions.md).
 
 Alternatives rejected:
 

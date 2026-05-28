@@ -78,7 +78,7 @@ Docguard treats Markdown as a maintainable repository asset, not only prose file
 
 | Phase | What you can check | Diagnostics | Typical default |
 |-------|-------------------|-------------|-----------------|
-| Core | Document and section size; stub detection; typed document shape; index reachability; prose style | `DG-SIZE001`, `DG-SIZE002`, `DG-SIZE003`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003`, `DG-STYLE001`, `DG-STYLE002` | strict baseline, `error` |
+| Core | Document and section size; stub detection; typed document shape; index reachability; prose and documentation style | `DG-SIZE001`, `DG-SIZE002`, `DG-SIZE003`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003`, `DG-STYLE001`, `DG-STYLE002`, `DG-STYLE003` | strict baseline, `error` |
 | Phase 2 | Link structure between files: orphans and hub dead ends | `DG-ORG001`, `DG-ORG002` | opt-in, `warning` |
 | Phase 3 | Structure inside each file: mixed roles and heading level skips | `DG-SPLIT001`, `DG-FORMAT002` | opt-in, `warning` |
 | Duplicate guidance | Repeated commands, list guidance, or prose paragraphs across the scan scope; headings and paragraphs opt-in | `DG-SPLIT002` | strict baseline, `error` |
@@ -140,14 +140,13 @@ Strict baseline at a glance:
 | `DG-ORG003` | A document is not reachable from configured index files |
 | `DG-STYLE001` | Prose contains more strong emphasis pairs than `max_strong_emphasis_pairs` |
 | `DG-STYLE002` | Prose matches a prohibited pronoun, slang, or parenthetical punctuation pattern |
+| `DG-STYLE003` | Heading, prose, or table header matches a forbidden documentation expression |
 
 Each diagnostic includes a human-readable message, why-it-matters text, and an optional suggested next action such as a split target.
 
 ## Detect prose style violations (always on)
 
-Prose style checks run on every scan without an opt-in flag. `DG-STYLE001` limits strong emphasis pairs in body prose; default limit is `0`. `DG-STYLE002` flags built-in pronoun and slang patterns such as `you`, `easy`, or `just`, and parenthetical punctuation in body prose after masking Markdown syntax. Code fences, headings, tables, glossary term lines, example dialogue sections, and typed documents such as ADRs are excluded.
-
-The strict baseline treats prose style diagnostics as `error`. Relax a prose setting only through `[[tool.docguard.relaxations]]` with a concrete reason. Exclusions, example output, adoption notes, and self-test commands: [docs/prose-style-rules.md](prose-style-rules.md).
+Prose style checks run on every scan without an opt-in flag. `DG-STYLE001` limits strong emphasis pairs in body prose; default limit is `0`. `DG-STYLE002` flags built-in pronoun and slang patterns such as `you`, `easy`, or `just`, and parenthetical punctuation in body prose after masking Markdown syntax. Code fences, headings, tables, glossary term lines, example dialogue sections, and typed documents such as ADRs are excluded from `DG-STYLE001` and `DG-STYLE002`. `DG-STYLE003` flags forbidden documentation expressions in headings, body prose, and table header cells, including typed ADRs. All three run as strict-baseline `error`; details in [docs/prose-style-rules.md](prose-style-rules.md).
 
 ## Detect repeated prose paragraphs (opt-in)
 
@@ -263,7 +262,7 @@ Strict baseline defaults:
 
 - `max_document_lines = 300`, `max_section_lines = 120`, `min_document_lines = 20`
 - `require_index_reachability = true`, `require_duplicate_guidance_detection = true`
-- `DG-SPLIT002`, `DG-STYLE001`, `DG-STYLE002`, and `DG-SIZE003` are `error`
+- `DG-SPLIT002`, `DG-STYLE001`, `DG-STYLE002`, `DG-STYLE003`, and `DG-SIZE003` are `error`
 - Phase 2 orphan/hub checks and Phase 3 mixed-role/heading checks remain opt-in
 
 Relaxations must be explicit and reasoned:
@@ -290,9 +289,9 @@ Behavior notes:
 - mixed-role detection runs only when `require_mixed_role_detection = true`; typed documents are excluded
 - heading order checks run only when `require_heading_order_check = true`
 - duplicate guidance detection is on by default; `duplicate_guidance_kinds` defaults to `code_block` and `list_item`. Add `heading` or `paragraph` to opt in.
-- `allowed_duplicate_patterns` and `allowed_prose_phrases` are relaxations because they suppress diagnostics
-- prose style checks always run; typed documents are excluded
-- `extra_prohibited_prose_patterns` adds case-insensitive regular expressions to `DG-STYLE002`
+- `allowed_duplicate_patterns`, `allowed_prose_phrases`, and `allowed_documentation_style_phrases` are relaxations because they suppress diagnostics
+- prose and documentation style checks always run; typed documents are excluded from `DG-STYLE001`/`DG-STYLE002` and included in `DG-STYLE003`
+- `extra_prohibited_prose_patterns` and `extra_prohibited_documentation_style_patterns` add case-insensitive regular expressions
 - `experimental_rules_enabled = true` is reserved for future opt-in rules and currently has no effect
 
 When documentation exceeds the configured budget, split files instead of raising `max_document_lines`. See [docs/dogfood.md](dogfood.md) and [docs/adr/0006-document-budget-dogfood-gate.md](adr/0006-document-budget-dogfood-gate.md).

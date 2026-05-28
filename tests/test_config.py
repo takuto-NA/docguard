@@ -36,6 +36,7 @@ def test_strict_baseline_uses_cli_paths(temporary_project_directory: Path) -> No
     assert configuration.require_duplicate_guidance_detection is True
     assert configuration.severities["DG-SPLIT002"] == "error"
     assert configuration.severities["DG-STYLE001"] == "error"
+    assert configuration.severities["DG-STYLE003"] == "error"
 
 
 def test_empty_docguard_table_uses_strict_baseline(

@@ -324,6 +324,8 @@ def test_run_docguard_checks_includes_prose_style_diagnostics(tmp_path: Path) ->
         max_strong_emphasis_pairs=0,
         allowed_prose_phrases=tuple(),
         extra_prohibited_prose_patterns=tuple(),
+        allowed_documentation_style_phrases=tuple(),
+        extra_prohibited_documentation_style_patterns=tuple(),
         hub_globs=tuple(),
         severities={},
         document_types=tuple(),

@@ -170,6 +170,12 @@ Expected candidate counts: 0 strong emphasis violations, 0 prohibited pattern vi
 
 Automated gate: `tests/test_prose_style_readiness.py`.
 
+## Dogfood impact for documentation style
+
+With `DG-STYLE003` enabled as `error`, expected forbidden-expression candidate count is 0 across `README.md`, `CONTEXT.md`, and `docs/**`, including typed ADRs.
+
+Automated gate: `tests/test_documentation_style_readiness.py`.
+
 ## Document budget gate
 
 This repository keeps a 300-line global document budget for in-scope non-ADR Markdown. Untyped non-index documents must also stay at or above the 20-line document floor so refactor leftovers do not linger as stub pages. ADRs remain under the existing 160-line typed budget. When documentation grows, split files instead of raising `max_document_lines`.
@@ -203,6 +209,7 @@ Configured checks:
 - all scoped documents must be reachable from `README.md`
 - global line limit is 300 lines from the strict baseline
 - prose style diagnostics `DG-STYLE001` and `DG-STYLE002` run as strict-baseline `error`
+- documentation style diagnostic `DG-STYLE003` runs as strict-baseline `error`
 - untyped non-index documents must have at least 20 lines
 - ADRs must include `Status`, `Context`, `Decision`, and `Consequences`
 - ADRs must include YAML front matter keys `status` and `date`
@@ -214,7 +221,7 @@ uv run docguard README.md CONTEXT.md docs/ --summary
 uv run docguard README.md CONTEXT.md docs/ --quiet
 uv run docguard README.md CONTEXT.md docs/ --verbose
 uv run docguard README.md CONTEXT.md docs/ --format json
-uv run pytest tests/test_dogfood.py tests/test_prose_style_readiness.py tests/test_prose_style.py tests/test_release_readiness.py::test_readme_passes_prose_style_guard
+uv run pytest tests/test_dogfood.py tests/test_prose_style_readiness.py tests/test_prose_style.py tests/test_documentation_style_readiness.py tests/test_documentation_style.py tests/test_release_readiness.py::test_readme_passes_prose_style_guard tests/test_release_readiness.py::test_readme_passes_documentation_style_guard
 uv run pytest --docguard
 uv run pytest --docguard-only
 uv run pytest
@@ -272,5 +279,11 @@ Release and distribution readiness requirements live in [docs/release-readiness.
 - [x] `test_prose_style_readiness.py` green
 - [x] Prose style impact table documented on this page
 - [x] PyPI README gate reuses docguard core prose style checks
+
+## Documentation style Readiness Checklist
+
+- [x] ADR 0015 accepted
+- [x] `test_documentation_style.py` and `test_documentation_style_readiness.py` green
+- [x] PyPI README gate reuses docguard core documentation style checks
 
 See also: [docs/usage.md](usage.md), [docs/release-readiness.md](release-readiness.md).

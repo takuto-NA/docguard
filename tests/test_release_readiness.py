@@ -1,7 +1,8 @@
 """Release-readiness gate tests for PyPI Alpha distribution.
 
-Verifies package metadata, README policy, changelog presence, prose style guard
-through the docguard core, and uv-first documentation before a PyPI Alpha release.
+Verifies package metadata, README policy, changelog presence, prose and
+documentation style guards through the docguard core, and uv-first
+documentation before a PyPI Alpha release.
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ import tomllib
 from docguard.config import load_docguard_configuration
 from docguard.markdown import parse_markdown_document
 from docguard.models import DocumentInspectionContext
-from docguard.rules import check_prose_style
+from docguard.rules import check_documentation_style, check_prose_style
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 PYPROJECT_PATH = REPOSITORY_ROOT / "pyproject.toml"
@@ -215,6 +216,37 @@ def test_readme_passes_prose_style_guard() -> None:
 
     assert diagnostics == [], (
         "README failed prose style guard checks. "
+        f"Violations: {diagnostic_messages}"
+    )
+
+
+def collect_readme_documentation_style_diagnostics():
+    configuration = load_docguard_configuration(
+        project_root=REPOSITORY_ROOT,
+        config_path=PYPROJECT_PATH,
+        cli_paths=tuple(),
+    )
+    parsed_document = parse_markdown_document(
+        README_PATH,
+        "README.md",
+    )
+    inspection_context = DocumentInspectionContext(
+        parsed_document=parsed_document,
+        document_type=None,
+        max_document_lines=configuration.max_document_lines,
+        max_section_lines=configuration.max_section_lines,
+    )
+    return check_documentation_style(configuration, inspection_context)
+
+
+def test_readme_passes_documentation_style_guard() -> None:
+    diagnostics = collect_readme_documentation_style_diagnostics()
+    diagnostic_messages = [
+        f"{diagnostic.code} {diagnostic.message}" for diagnostic in diagnostics
+    ]
+
+    assert diagnostics == [], (
+        "README failed documentation style guard checks. "
         f"Violations: {diagnostic_messages}"
     )
 
