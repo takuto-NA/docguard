@@ -21,7 +21,7 @@ The raw cleanup ranking mixes high-confidence structural patterns with context-d
 2. **Inspect headings, body prose, and Markdown table header cells.**
 3. **Apply `DG-STYLE003` to typed documents such as ADRs.**
 4. **Keep `DG-STYLE001` and `DG-STYLE002` unchanged and body-prose scoped.**
-5. **Ship a ranked built-in manifest for all 27 source expressions with enforcement status:**
+5. **Ship a ranked built-in manifest for the 27 source expressions plus general colloquial phrases with enforcement status:**
    - `active` and `scoped` entries are checked by default
    - `candidate` entries are documented only until a precise pattern is approved
 6. **Use source-scoped matching.** Example: heading ` — ` subtitles are checked in headings only, not in body prose that legitimately uses em dashes.
@@ -39,4 +39,6 @@ Alternatives rejected:
 
 - Repository documentation can enforce formal heading and table-label style without rewriting ADR decision lists under `DG-STYLE001`.
 - External adopters may need `allowed_documentation_style_phrases` relaxations during migration.
+- General colloquial phrases such as `ざっくり`, `とりあえず`, `ちょっと`, `いい感じ`, `便利`, `簡単`, and `おすすめ` are active built-ins because they are broad documentation voice issues and current dogfood docs have no matching usage.
+- ChatGPT-style vague phrasing such as `筋が良い`, `結論から言うと`, `こうです。`, `本命`, `重い`, `非常に`, `核心`, and deictic words such as `ここ`, `この`, `それ`, `こう`, `その`, and `あの` are active built-ins for the same reason.
 - Future expression additions should update the ranked manifest and its completeness test before changing enforcement status.

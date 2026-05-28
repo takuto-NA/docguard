@@ -190,6 +190,111 @@ def test_candidate_phrases_are_not_detected_by_default() -> None:
     assert matches == tuple()
 
 
+@pytest.mark.parametrize(
+    ("line_text", "expected_label"),
+    [
+        ("ざっくり概要を確認する。", "ざっくり phrase"),
+        ("とりあえず設定を追加する。", "とりあえず phrase"),
+        ("まずは README を確認する。", "まずは phrase"),
+        ("ちょっと長い手順です。", "ちょっと phrase"),
+        ("大体の構成を説明する。", "だいたい phrase"),
+        ("かなり大きいファイルです。", "かなり phrase"),
+        ("いい感じに整える。", "いい感じ phrase"),
+        ("分かりやすい説明を追加する。", "わかりやすい phrase"),
+        ("便利な使い方を示す。", "便利 phrase"),
+        ("簡単な導入手順です。", "簡単 phrase"),
+        ("おすすめの設定です。", "おすすめ phrase"),
+        ("コマンドを実行してみる。", "してみる phrase"),
+        ("設定を保存しておく。", "しておく phrase"),
+        ("不要な説明が増えてしまう。", "してしまう phrase"),
+        ("トラブルシューティングを確認する。", "トラブルシューティング phrase"),
+    ],
+)
+def test_general_colloquial_phrases_are_detected(
+    line_text: str,
+    expected_label: str,
+) -> None:
+    markdown_text = f"""# Title
+
+{line_text}
+"""
+    parsed_document = build_parsed_document(markdown_text)
+    inspection_targets = extract_documentation_style_inspection_targets(parsed_document)
+    prose_targets = [
+        target
+        for target in inspection_targets
+        if target.source_kind is DocumentationStyleSourceKind.PROSE
+    ]
+    matches = find_forbidden_documentation_expression_matches(
+        prose_targets[0],
+        allowed_documentation_style_phrases=tuple(),
+        extra_prohibited_documentation_style_patterns=tuple(),
+    )
+    assert any(match.rule.label == expected_label for match in matches)
+
+
+def test_general_colloquial_phrases_do_not_match_inline_code() -> None:
+    markdown_text = """# Title
+
+Use `とりあえず` as a fixture token only.
+"""
+    parsed_document = build_parsed_document(markdown_text)
+    inspection_targets = extract_documentation_style_inspection_targets(parsed_document)
+    prose_targets = [
+        target
+        for target in inspection_targets
+        if target.source_kind is DocumentationStyleSourceKind.PROSE
+    ]
+    matches = find_forbidden_documentation_expression_matches(
+        prose_targets[0],
+        allowed_documentation_style_phrases=tuple(),
+        extra_prohibited_documentation_style_patterns=tuple(),
+    )
+    assert matches == tuple()
+
+
+@pytest.mark.parametrize(
+    ("line_text", "expected_label"),
+    [
+        ("この案は筋が良いです。", "筋が良い phrase"),
+        ("プロセスが死ぬ場合があります。", "死ぬ phrase"),
+        ("強い制約を追加する。", "強い or 弱い phrase"),
+        ("移行コストが痛いです。", "痛い phrase"),
+        ("この設定が効く条件です。", "効く phrase"),
+        ("結論から言うと、設定を追加します。", "結論から言うと phrase"),
+        ("こうです。", "abrupt です construction"),
+        ("です。", "abrupt です construction"),
+        ("設定するのがよいです。", "abrupt です construction"),
+        ("その設定を追加する。", "deictic pronoun phrase"),
+        ("本命の案を採用する。", "本命 or 正本 phrase"),
+        ("処理が重いです。", "重い phrase"),
+        ("非常に大きい変更です。", "excessive adverb phrase"),
+        ("核心の処理を変更する。", "核心 or 中核 phrase"),
+    ],
+)
+def test_chatgpt_style_forbidden_phrases_are_detected(
+    line_text: str,
+    expected_label: str,
+) -> None:
+    markdown_text = f"""# Title
+
+{line_text}
+"""
+    parsed_document = build_parsed_document(markdown_text)
+    inspection_targets = extract_documentation_style_inspection_targets(parsed_document)
+    prose_targets = [
+        target
+        for target in inspection_targets
+        if target.source_kind is DocumentationStyleSourceKind.PROSE
+    ]
+    matches = find_forbidden_documentation_expression_matches(
+        prose_targets[0],
+        allowed_documentation_style_phrases=tuple(),
+        extra_prohibited_documentation_style_patterns=tuple(),
+    )
+    assert any(match.rule.label == expected_label for match in matches)
+
+
 def test_allowed_documentation_style_phrase_suppresses_match() -> None:
     markdown_text = """# Title
 

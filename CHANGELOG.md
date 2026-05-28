@@ -10,7 +10,7 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 
 ### Added
 
-- `DG-STYLE003` flags forbidden documentation expressions in headings, body prose, and Markdown table header cells. Typed documents such as ADRs are included.
+- `DG-STYLE003` flags forbidden documentation expressions, general Japanese colloquial phrases, deictic words, and ChatGPT-style vague phrasing in headings, body prose, and Markdown table header cells. Typed documents such as ADRs are included.
 - Configuration keys `allowed_documentation_style_phrases` and `extra_prohibited_documentation_style_patterns`.
 - [docs/adr/0015-forbidden-documentation-expressions.md](docs/adr/0015-forbidden-documentation-expressions.md).
 

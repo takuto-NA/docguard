@@ -73,7 +73,7 @@ Invalid regular expressions fail configuration loading.
 
 ## Detect forbidden documentation expressions (`DG-STYLE003`)
 
-What it finds: ranked forbidden documentation expressions in headings, body prose, and Markdown table header cells. Built-in rules cover high-confidence patterns such as heading ` — ` subtitles, full-width heading subtitles `（…）`, conversational Japanese section titles, table headers such as `以前` or `現在`, and prose lines starting with `責務:`.
+What it finds: ranked forbidden documentation expressions in headings, body prose, and Markdown table header cells. Built-in rules cover high-confidence patterns such as heading ` — ` subtitles, full-width heading subtitles `（…）`, conversational Japanese section titles, table headers such as `以前` or `現在`, prose lines starting with `責務:`, and general colloquial phrases such as `ざっくり`, `とりあえず`, `ちょっと`, `いい感じ`, `便利`, `簡単`, and `おすすめ`. They also cover ChatGPT-style vague phrasing such as `筋が良い`, `結論から言うと`, `こうです。`, `本命`, `重い`, `非常に`, `核心`, and deictic words such as `ここ`, `この`, `それ`, `こう`, `その`, and `あの`.
 
 Typical fix: rewrite the heading, prose, or table label in neutral documentation voice using the recommended replacement shown in the diagnostic message.
 

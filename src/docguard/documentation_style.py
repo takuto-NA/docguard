@@ -24,7 +24,7 @@ from docguard.prose_style import (
     resolve_front_matter_end_line_index,
 )
 
-EXPECTED_RANKED_EXPRESSION_COUNT = 27
+EXPECTED_RANKED_EXPRESSION_COUNT = 54
 
 
 class DocumentationStyleSourceKind(str, Enum):
@@ -95,6 +95,35 @@ PROSE_MATOME_JSON_PATTERN = re.compile(r"まとめ JSON")
 PROSE_KAMO_SHIMASEN_PATTERN = re.compile(r"構いません")
 PROSE_TRUE_KADOUKA_PATTERN = re.compile(r"`True`かどうか")
 PROSE_RESPONSIBILITY_PREFIX_PATTERN = re.compile(r"^\s*責務:\s*")
+GENERAL_ZAKKURI_PATTERN = re.compile(r"ざっくり")
+GENERAL_TORIAEZU_PATTERN = re.compile(r"とりあえず")
+GENERAL_MAZUWA_PATTERN = re.compile(r"まずは")
+GENERAL_CHOTTO_PATTERN = re.compile(r"ちょっと")
+GENERAL_DAITAI_PATTERN = re.compile(r"(?:だいたい|大体)")
+GENERAL_KANARI_PATTERN = re.compile(r"かなり")
+GENERAL_II_KANJI_PATTERN = re.compile(r"いい感じ")
+GENERAL_WAKARIYASUI_PATTERN = re.compile(r"(?:わかりやすい|分かりやすい)")
+GENERAL_BENRI_PATTERN = re.compile(r"便利")
+GENERAL_KANTAN_PATTERN = re.compile(r"簡単")
+GENERAL_OSUSUME_PATTERN = re.compile(r"おすすめ")
+GENERAL_SHITE_MIRU_PATTERN = re.compile(r"してみる")
+GENERAL_SHITE_OKU_PATTERN = re.compile(r"しておく")
+GENERAL_SHITE_SHIMAU_PATTERN = re.compile(r"(?:して|て)しまう")
+GENERAL_TROUBLESHOOTING_PATTERN = re.compile(r"トラブルシューティング")
+CHATGPT_STYLE_SUGA_YOI_PATTERN = re.compile(r"筋が(?:良|よ)い")
+CHATGPT_STYLE_SHINU_PATTERN = re.compile(r"死ぬ")
+CHATGPT_STYLE_STRONG_WEAK_PATTERN = re.compile(r"(?:強い|弱い)")
+CHATGPT_STYLE_ITAI_PATTERN = re.compile(r"痛い")
+CHATGPT_STYLE_KIKU_PATTERN = re.compile(r"効く")
+CHATGPT_STYLE_CONCLUSION_PREFIX_PATTERN = re.compile(r"結論から言うと")
+CHATGPT_STYLE_DESU_CONSTRUCTION_PATTERN = re.compile(
+    r"(?:こうです[。.]|^\s*です[。.]|のがよいです)"
+)
+CHATGPT_STYLE_DEICTIC_PATTERN = re.compile(r"(?:ここ|この|それ|こう|その|あの)")
+CHATGPT_STYLE_HONMEI_SEIHON_PATTERN = re.compile(r"(?:本命|正本)")
+CHATGPT_STYLE_OMOI_PATTERN = re.compile(r"重い")
+CHATGPT_STYLE_EXCESSIVE_ADVERB_PATTERN = re.compile(r"(?:とても|非常に|すぎる)")
+CHATGPT_STYLE_CORE_WORDING_PATTERN = re.compile(r"(?:核心|中核)")
 
 
 DEFAULT_FORBIDDEN_DOCUMENTATION_EXPRESSION_RULES: tuple[ForbiddenDocumentationExpressionRule, ...] = (
@@ -368,6 +397,268 @@ DEFAULT_FORBIDDEN_DOCUMENTATION_EXPRESSION_RULES: tuple[ForbiddenDocumentationEx
         source_scopes=frozenset({DocumentationStyleSourceKind.HEADING}),
         enforcement_status=EnforcementStatus.ACTIVE,
         pattern=HEADING_PARALLEL_SLASH_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=28,
+        label="ざっくり phrase",
+        recommended_replacement="Use a precise scope or summary phrase.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_ZAKKURI_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=29,
+        label="とりあえず phrase",
+        recommended_replacement="State the required first action directly.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_TORIAEZU_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=30,
+        label="まずは phrase",
+        recommended_replacement="Use 初期手順 or a direct action label.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_MAZUWA_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=31,
+        label="ちょっと phrase",
+        recommended_replacement="Remove the casual degree word or use a measurable qualifier.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_CHOTTO_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=32,
+        label="だいたい phrase",
+        recommended_replacement="Use approximate values or explicit uncertainty.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_DAITAI_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=33,
+        label="かなり phrase",
+        recommended_replacement="Use a measurable qualifier or remove the vague degree word.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_KANARI_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=34,
+        label="いい感じ phrase",
+        recommended_replacement="Describe the concrete expected state.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_II_KANJI_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=35,
+        label="わかりやすい phrase",
+        recommended_replacement="Describe the readability property or remove the subjective claim.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_WAKARIYASUI_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=36,
+        label="便利 phrase",
+        recommended_replacement="Describe the concrete operational benefit.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_BENRI_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=37,
+        label="簡単 phrase",
+        recommended_replacement="Describe the actual number of steps or required operation.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_KANTAN_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=38,
+        label="おすすめ phrase",
+        recommended_replacement="Use 推奨 only when a normative recommendation is intended.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_OSUSUME_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=39,
+        label="してみる phrase",
+        recommended_replacement="Use 実行する or a direct action.",
+        source_scopes=frozenset({DocumentationStyleSourceKind.PROSE}),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_SHITE_MIRU_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=40,
+        label="しておく phrase",
+        recommended_replacement="Use 準備する, 保存する, or the exact required action.",
+        source_scopes=frozenset({DocumentationStyleSourceKind.PROSE}),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_SHITE_OKU_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=41,
+        label="してしまう phrase",
+        recommended_replacement="Use a direct description of the resulting state.",
+        source_scopes=frozenset({DocumentationStyleSourceKind.PROSE}),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_SHITE_SHIMAU_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=42,
+        label="トラブルシューティング phrase",
+        recommended_replacement="Use 障害切り分け.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=GENERAL_TROUBLESHOOTING_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=43,
+        label="筋が良い phrase",
+        recommended_replacement="State the concrete reason the approach is appropriate.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_SUGA_YOI_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=44,
+        label="死ぬ phrase",
+        recommended_replacement="Use 停止する, 失敗する, or the exact failure mode.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_SHINU_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=45,
+        label="強い or 弱い phrase",
+        recommended_replacement="Use a specific property such as strict, permissive, high risk, or low risk.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_STRONG_WEAK_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=46,
+        label="痛い phrase",
+        recommended_replacement="Describe the concrete cost, failure, or operational impact.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_ITAI_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=47,
+        label="効く phrase",
+        recommended_replacement="Use 有効, 抑制する, or the exact observed effect.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_KIKU_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=48,
+        label="結論から言うと phrase",
+        recommended_replacement="Start with the conclusion directly without a conversational preface.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_CONCLUSION_PREFIX_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=49,
+        label="abrupt です construction",
+        recommended_replacement="Use a complete technical sentence or direct statement.",
+        source_scopes=frozenset({DocumentationStyleSourceKind.PROSE}),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_DESU_CONSTRUCTION_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=50,
+        label="deictic pronoun phrase",
+        recommended_replacement="Name the concrete subject instead of using ここ, この, それ, こう, その, or あの.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_DEICTIC_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=51,
+        label="本命 or 正本 phrase",
+        recommended_replacement="Use 推奨案, canonical document, or the exact selected artifact.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_HONMEI_SEIHON_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=52,
+        label="重い phrase",
+        recommended_replacement="Use a measurable cost such as expensive, slow, or high overhead.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_OMOI_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=53,
+        label="excessive adverb phrase",
+        recommended_replacement="Remove the adverb or replace it with a measurable qualifier.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_EXCESSIVE_ADVERB_PATTERN,
+    ),
+    ForbiddenDocumentationExpressionRule(
+        rank=54,
+        label="核心 or 中核 phrase",
+        recommended_replacement="Name the specific component, requirement, or decision.",
+        source_scopes=frozenset(
+            {DocumentationStyleSourceKind.HEADING, DocumentationStyleSourceKind.PROSE}
+        ),
+        enforcement_status=EnforcementStatus.ACTIVE,
+        pattern=CHATGPT_STYLE_CORE_WORDING_PATTERN,
     ),
 )
 
