@@ -1,6 +1,6 @@
 # Prose style rules
 
-Prose style checks run on every docguard scan. They complement structure diagnostics by flagging decorative strong emphasis and conversational phrasing in body prose.
+Prose style checks run on every docguard scan. They complement structure diagnostics by flagging decorative strong emphasis, conversational phrasing, and parenthetical asides in body prose.
 
 Prose style is not a general Markdown formatter. It does not validate heading spelling, list markers, or link syntax.
 

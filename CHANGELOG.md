@@ -12,6 +12,8 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 
 - `DG-STYLE002` now flags parenthetical punctuation in body prose after masking Markdown links, image links, bare URLs, and inline code. Half-width `()` and full-width `（）` in remaining body text are prohibited.
 
+## [0.3.0] - 2026-05-28
+
 ### Breaking
 
 - Replaced the lenient zero-config fallback with a strict baseline that scans `README.md`, `CONTEXT.md`, and `docs`; requires index reachability from `README.md`; enables duplicate guidance detection; enforces 300-line documents; and treats duplicate guidance plus prose style diagnostics as errors.

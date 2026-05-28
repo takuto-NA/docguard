@@ -146,11 +146,6 @@ def extract_prose_lines(parsed_document: ParsedMarkdownDocument) -> tuple[ProseL
     return tuple(prose_lines)
 
 
-def strip_inline_code_segments(line_text: str) -> str:
-    text_without_double_tick_code = INLINE_CODE_DOUBLE_TICK_PATTERN.sub("", line_text)
-    return INLINE_CODE_SEGMENT_PATTERN.sub("", text_without_double_tick_code)
-
-
 def mask_inline_code_segments(line_text: str) -> str:
     text_with_masked_double_tick_code = INLINE_CODE_DOUBLE_TICK_PATTERN.sub(
         "INLINE_CODE",

@@ -16,7 +16,7 @@ docguard --summary
 
 ## What this tool checks
 
-Docguard focuses on document structure and repository health. Prose style checks `DG-STYLE001` and `DG-STYLE002` flag decorative strong emphasis and conversational phrasing in body text; they are not a general Markdown formatter.
+Docguard focuses on document structure and repository health. Prose style checks `DG-STYLE001` and `DG-STYLE002` flag decorative strong emphasis, conversational phrasing, and parenthetical asides in body text; they are not a general Markdown formatter.
 
 With no configuration, docguard applies the strict baseline: scan `README.md`, `CONTEXT.md`, and `docs`; require reachability from `README.md`; enforce 300-line documents, 120-line sections, and a 20-line floor for untyped non-index documents; and fail duplicate guidance plus prose style diagnostics as errors. Any relaxation from that baseline must be recorded in `[[tool.docguard.relaxations]]` with a reason.
 
