@@ -73,6 +73,22 @@ A repository-owned size limit that keeps documentation maintainable; exceeding i
 _Avoid_: max lines bump, configuration workaround
 See [docs/adr/0006-document-budget-dogfood-gate.md](docs/adr/0006-document-budget-dogfood-gate.md).
 
+**Strict baseline**:
+The built-in default policy applied when no `[tool.docguard]` table exists or when it is empty. It replaces the former lenient zero-config defaults and is not relaxable except through documented policy relaxations.
+_Avoid_: zero-config, default config, implicit settings
+
+**Policy relaxation**:
+An explicit, reasoned exception that makes docguard less strict than the strict baseline for one parameter. Relaxations are recorded only in `[[tool.docguard.relaxations]]`; direct pyproject keys that loosen policy are rejected.
+_Avoid_: override, config tweak, limit bump
+
+**Document floor**:
+The minimum line count for an untyped in-scope document. Documents below the floor are treated as refactor leftovers or stub pages that should be merged into a canonical document instead of kept as separate files.
+_Avoid_: min lines, tiny doc rule, stub threshold
+
+**Stub document**:
+An untyped Markdown file that is too short to stand alone as maintainable documentation, often left behind after a split or refactor.
+_Avoid_: orphan page, placeholder, empty doc
+
 **Document responsibility**:
 A declared ownership boundary for what a document is allowed to explain in detail.
 _Avoid_: page role, doc type, content area
@@ -108,3 +124,7 @@ _Avoid_: body text, paragraph
 **Maintainer**: No. Orphan means nothing links to it. Unreachable means it is not on a path from an index file. A document can be unreachable without being an orphan if it is part of a linked cluster that is not connected to any index.
 **Developer**: Why would a hub document fail a check?
 **Maintainer**: Docguard warns when a hub document has no outgoing links to other in-scope Markdown files. That usually means the navigation entry point is a dead end.
+**Developer**: A page in `docs/` is only twelve lines after we moved content elsewhere. Why is that an error?
+**Maintainer**: Untyped documents below the document floor are stub documents. Merge them into the canonical page they point at or delete them. Index files listed in `index_files` and typed documents such as ADRs are excluded because short entry points and decision records are expected there.
+**Developer**: Can we lower the floor for one legacy folder?
+**Maintainer**: Only through a policy relaxation with a written reason in `[[tool.docguard.relaxations]]`. Direct `min_document_lines` in `[tool.docguard]` is rejected.

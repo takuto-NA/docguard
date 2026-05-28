@@ -24,7 +24,7 @@ The document budget gate restored the intended behavior:
 | Before | After |
 |--------|-------|
 | One large `docs/usage.md` | `usage.md` is a concise entry point; Phase 2, Phase 3, and dogfood details live in focused pages |
-| `max_document_lines = 530` | Global budget is 400 lines again (ADRs: 160) |
+| `max_document_lines = 530` | Strict baseline budget is 300 lines (ADRs: 160) |
 | Size pressure could be bypassed by editing config | `tests/test_document_budget.py` fails on config inflation or oversized in-scope files |
 
 Correct response when docs grow: add or extend focused pages such as [docs/organization-rules.md](organization-rules.md), [docs/structure-rules.md](structure-rules.md), or this page — not a higher `max_document_lines`.
@@ -172,7 +172,7 @@ Automated gate: `tests/test_prose_style_readiness.py`.
 
 ## Document budget gate
 
-This repository keeps a 400-line global document budget for in-scope non-ADR Markdown. ADRs remain under the existing 160-line typed budget. When documentation grows, split files instead of raising `max_document_lines`.
+This repository keeps a 300-line global document budget for in-scope non-ADR Markdown. Untyped non-index documents must also stay at or above the 20-line document floor so refactor leftovers do not linger as stub pages. ADRs remain under the existing 160-line typed budget. When documentation grows, split files instead of raising `max_document_lines`.
 
 Automated gate: `tests/test_document_budget.py`.
 
@@ -201,8 +201,9 @@ Configured scope in `pyproject.toml`:
 Configured checks:
 
 - all scoped documents must be reachable from `README.md`
-- global line limit is 400 lines (`max_document_lines` in `pyproject.toml`)
-- prose style diagnostics (`DG-STYLE001`, `DG-STYLE002`) run as `error` in this repository
+- global line limit is 300 lines from the strict baseline
+- prose style diagnostics (`DG-STYLE001`, `DG-STYLE002`) run as strict-baseline `error`
+- untyped non-index documents must have at least 20 lines
 - ADRs must include `Status`, `Context`, `Decision`, and `Consequences`
 - ADRs must include YAML front matter keys `status` and `date`
 

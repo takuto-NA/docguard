@@ -18,7 +18,7 @@ Trusted Publishing for production PyPI was registered successfully as **`docguar
 ## Decision
 
 1. **Publish to PyPI as `docguard-structure==0.2.0`** (first public upload).
-2. **Keep the CLI command and Python import package as `docguard`.** Users run `pip install docguard-structure` then `docguard docs/ --summary`.
+2. **Keep the CLI command and Python import package as `docguard`.** Users run `pip install docguard-structure` then `docguard --summary`.
 3. **Record the distribution name in release docs and install guides.** Do not rename the GitHub repository or tool brand.
 4. **Supersede ADR 0008 item 1** (PyPI package name `docguard`) for distribution naming only. Other ADR 0008 decisions (Alpha status, uv-first docs, manual publish, README policy) remain in force.
 

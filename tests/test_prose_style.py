@@ -129,6 +129,7 @@ Body without emphasis.
 def test_inline_code_strong_emphasis_is_ignored() -> None:
     assert count_strong_emphasis_pairs("Use `--quiet` not **bold**") == 1
     assert count_strong_emphasis_pairs("Default is `**warning**` severity") == 0
+    assert count_strong_emphasis_pairs("Install **`docguard-structure`**") == 1
 
 
 def test_prohibited_pattern_does_not_match_inline_code_token() -> None:
@@ -222,6 +223,7 @@ def test_run_docguard_checks_includes_prose_style_diagnostics(tmp_path: Path) ->
         ignore_globs=tuple(),
         max_document_lines=400,
         max_section_lines=120,
+        min_document_lines=0,
         index_files=tuple(),
         require_index_reachability=False,
         require_orphan_detection=False,

@@ -12,7 +12,32 @@ from docguard.discovery import discover_documents
 
 
 def write_pyproject(project_root: Path, contents: str) -> None:
-    (project_root / "pyproject.toml").write_text(contents, encoding="utf-8")
+    appended_relaxations = []
+    if "parameter = \"min_document_lines\"" not in contents:
+        appended_relaxations.append(
+            """
+[[tool.docguard.relaxations]]
+parameter = "min_document_lines"
+value = 0
+reason = "Focused graph tests do not exercise document floor diagnostics."
+"""
+        )
+    if (
+        "require_index_reachability = true" not in contents
+        and "parameter = \"require_index_reachability\"" not in contents
+    ):
+        appended_relaxations.append(
+            """
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused graph tests isolate link graph behavior."
+"""
+        )
+    (project_root / "pyproject.toml").write_text(
+        contents + "".join(appended_relaxations),
+        encoding="utf-8",
+    )
 
 
 def test_build_document_graph_tracks_outgoing_and_incoming_links(
@@ -118,7 +143,6 @@ def test_build_document_graph_marks_all_documents_reachable_when_disabled(
         """
 [tool.docguard]
 paths = ["docs"]
-require_index_reachability = false
 """,
     )
     configuration = load_docguard_configuration(

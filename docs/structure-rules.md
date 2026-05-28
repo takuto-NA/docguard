@@ -16,9 +16,9 @@ Both rules default to off and to `warning` severity. Turn them on when early sig
 Entry points: same as other rules — `docguard`, `--format json`, `pytest --docguard`.
 
 ```bash
-docguard docs/
-docguard docs/ --verbose       # review warnings
-docguard docs/ --format json
+docguard
+docguard --verbose       # review warnings
+docguard --format json
 pytest --docguard
 ```
 
@@ -142,13 +142,12 @@ Semantic near-duplicates still require manual review or a future rule. See [docs
 
 Typical fix (all kinds): keep one canonical install, CLI, configuration, exit-code, or narrative section and link to it elsewhere. For intentional template headings, leave `heading` out of `duplicate_guidance_kinds` or add an `allowed_duplicate_patterns` entry when heading detection is enabled.
 
-Enable default kinds:
+Default duplicate guidance is already enabled in the strict baseline:
 
 ```toml
 [tool.docguard]
 require_duplicate_guidance_detection = true
 duplicate_guidance_kinds = ["code_block", "list_item"]
-allowed_duplicate_patterns = []
 ```
 
 Heading duplicates are opt-in:
@@ -163,21 +162,15 @@ Prose paragraph duplicates are opt-in:
 duplicate_guidance_kinds = ["code_block", "list_item", "paragraph"]
 ```
 
-Paragraph-only detection:
-
-```toml
-duplicate_guidance_kinds = ["paragraph"]
-```
-
 Paragraph detection uses normalized exact text equality, not semantic similarity. It ignores fenced code, headings, list items, Markdown table rows, YAML front matter, and paragraphs shorter than 80 characters. A duplicate paragraph must appear at least three times across the scan scope.
 
 Review locally:
 
 ```bash
-docguard docs/ --verbose
+docguard --verbose
 ```
 
-Use `allowed_duplicate_patterns` only for intentional repeated normalized text within enabled kinds, not to hide accidental command duplication.
+Use `allowed_duplicate_patterns` only as a reasoned relaxation for intentional repeated normalized text within enabled kinds, not to hide accidental command duplication.
 
 Full specification: [docs/adr/0009-duplicate-guidance-diagnostic.md](adr/0009-duplicate-guidance-diagnostic.md), [docs/adr/0010-duplicate-guidance-kind-scope.md](adr/0010-duplicate-guidance-kind-scope.md), [docs/adr/0011-duplicate-prose-paragraph-guidance.md](adr/0011-duplicate-prose-paragraph-guidance.md).
 

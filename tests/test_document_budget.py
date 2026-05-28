@@ -9,7 +9,8 @@ from docguard.discovery import discover_documents
 
 # Fixed repository dogfood ceiling (ADR 0006). Intentionally not tied to
 # DEFAULT_MAX_DOCUMENT_LINES so product default changes cannot weaken this gate.
-REPOSITORY_GLOBAL_DOCUMENT_BUDGET_LINES = 400
+REPOSITORY_GLOBAL_DOCUMENT_BUDGET_LINES = 300
+REPOSITORY_UNTYPED_DOCUMENT_FLOOR_LINES = 20
 
 
 def resolve_repository_root() -> Path:
@@ -61,3 +62,25 @@ def test_in_scope_documents_respect_configured_budgets() -> None:
         )
 
     assert budget_violations == []
+
+
+def test_untyped_in_scope_documents_respect_document_floor() -> None:
+    configuration, document_contexts = load_repository_document_contexts()
+    index_files = set(configuration.index_files)
+
+    floor_violations: list[str] = []
+    for inspection_context in document_contexts:
+        if inspection_context.document_type is not None:
+            continue
+        document_path = inspection_context.parsed_document.repository_relative_path
+        if document_path in index_files:
+            continue
+        physical_line_count = inspection_context.parsed_document.physical_line_count
+        if physical_line_count >= REPOSITORY_UNTYPED_DOCUMENT_FLOOR_LINES:
+            continue
+        floor_violations.append(
+            f"{document_path}: {physical_line_count} lines below floor "
+            f"{REPOSITORY_UNTYPED_DOCUMENT_FLOOR_LINES}"
+        )
+
+    assert floor_violations == []

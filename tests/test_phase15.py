@@ -33,7 +33,33 @@ def build_subprocess_environment() -> dict[str, str]:
 
 
 def write_pyproject(project_root: Path, contents: str) -> None:
-    (project_root / "pyproject.toml").write_text(contents, encoding="utf-8")
+    appended_relaxations = []
+    if "[tool.docguard]" in contents and "parameter = \"min_document_lines\"" not in contents:
+        appended_relaxations.append(
+            """
+[[tool.docguard.relaxations]]
+parameter = "min_document_lines"
+value = 0
+reason = "Focused Phase 1.5 tests do not exercise document floor diagnostics."
+"""
+        )
+    if (
+        "[tool.docguard]" in contents
+        and "require_index_reachability = true" not in contents
+        and "parameter = \"require_index_reachability\"" not in contents
+    ):
+        appended_relaxations.append(
+            """
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused Phase 1.5 tests isolate CLI behavior."
+"""
+        )
+    (project_root / "pyproject.toml").write_text(
+        contents + "".join(appended_relaxations),
+        encoding="utf-8",
+    )
 
 
 def test_cli_summary_prints_checked_document_count_on_success(

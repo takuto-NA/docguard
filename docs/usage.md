@@ -10,21 +10,37 @@ Docguard is intentionally different from markdownlint or Prettier. Those tools f
 
 ```bash
 uv add docguard-structure
-uv run docguard docs/ --summary
+uv run docguard --summary
 ```
 
 Equivalent with pip:
 
 ```bash
 pip install docguard-structure
-docguard docs/ --summary
+docguard --summary
 ```
-
-Run once without adding a dependency:
 
 ```bash
-uvx --from docguard-structure docguard docs/ --summary
+uvx --from docguard-structure docguard --summary
 ```
+
+### Update an existing uv install
+
+If the project already added docguard with `uv add docguard-structure`, upgrade the dependency and then run the strict baseline check:
+
+```bash
+uv add --upgrade docguard-structure
+uv run docguard --summary
+```
+
+To pin the 0.3 series explicitly:
+
+```bash
+uv add "docguard-structure==0.3.0"
+uv run docguard --summary
+```
+
+Docguard 0.3.0 is a breaking Alpha update. If the check exits with code `2`, first verify that `README.md` is in scope when index reachability is enabled, and move any looser settings such as severity downgrades or larger line limits into `[[tool.docguard.relaxations]]` with a reason.
 
 ### Install from Git
 
@@ -32,7 +48,7 @@ Add as a project dependency (recommended):
 
 ```bash
 uv add "docguard-structure @ git+https://github.com/takuto-NA/docguard.git"
-uv run docguard docs/ --summary
+uv run docguard --summary
 ```
 
 Install into the active environment:
@@ -41,10 +57,8 @@ Install into the active environment:
 uv pip install "git+https://github.com/takuto-NA/docguard.git"
 ```
 
-Run once without adding a dependency:
-
 ```bash
-uvx --from "git+https://github.com/takuto-NA/docguard.git" docguard docs/ --summary
+uvx --from "git+https://github.com/takuto-NA/docguard.git" docguard --summary
 ```
 
 For development in this repository, see [README.md](../README.md#development).
@@ -64,29 +78,38 @@ Docguard treats Markdown as a maintainable repository asset, not only prose file
 
 | Phase | What you can check | Diagnostics | Typical default |
 |-------|-------------------|-------------|-----------------|
-| Core | Document and section size; typed document shape; index reachability; prose style | `DG-SIZE001`, `DG-SIZE002`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003`, `DG-STYLE001`, `DG-STYLE002` | on when configured; prose style `warning` |
+| Core | Document and section size; stub detection; typed document shape; index reachability; prose style | `DG-SIZE001`, `DG-SIZE002`, `DG-SIZE003`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003`, `DG-STYLE001`, `DG-STYLE002` | strict baseline, `error` |
 | Phase 2 | Link structure between files: orphans and hub dead ends | `DG-ORG001`, `DG-ORG002` | opt-in, `warning` |
 | Phase 3 | Structure inside each file: mixed roles and heading level skips | `DG-SPLIT001`, `DG-FORMAT002` | opt-in, `warning` |
-| Duplicate guidance | Repeated commands, list guidance, or prose paragraphs across the scan scope; headings and paragraphs opt-in | `DG-SPLIT002` | opt-in, `warning` |
+| Duplicate guidance | Repeated commands, list guidance, or prose paragraphs across the scan scope; headings and paragraphs opt-in | `DG-SPLIT002` | strict baseline, `error` |
 
 Entry points are shared across all diagnostics. See [Scan Markdown from the CLI](#scan-markdown-from-the-cli) and [Run the same checks through pytest](#run-the-same-checks-through-pytest).
 
 Phase 2 details: [docs/organization-rules.md](organization-rules.md). Phase 3 details: [docs/structure-rules.md](structure-rules.md). Prose style details: [docs/prose-style-rules.md](prose-style-rules.md). Duplicate guidance details: [docs/structure-rules.md#detect-duplicate-guidance-dg-split002](structure-rules.md#detect-duplicate-guidance-dg-split002). UTF-8 and Japanese content: [Unicode and UTF-8 support](#unicode-and-utf-8-support).
 
-This repository dogfoods docguard with a fixed 400-line document budget; see [docs/dogfood.md](dogfood.md#what-you-can-rely-on-in-this-repository).
+This repository dogfoods docguard with a fixed 300-line document budget; see [docs/dogfood.md](dogfood.md#what-you-can-rely-on-in-this-repository).
 
 ## Scan Markdown from the CLI
 
 ```bash
-docguard docs/ --summary            # recommended for local use
-docguard docs/                      # silent when no diagnostics (CI-friendly default)
-docguard docs/ --quiet              # silent on success, including warnings
+docguard --summary                  # recommended for local use
+docguard                            # silent when no diagnostics (CI-friendly default)
+docguard --quiet                    # silent on success, including warnings
 docguard README.md docs/            # explicit paths override configured paths
-docguard docs/ --format json        # machine-readable output for CI
-docguard docs/ --verbose            # success summary or non-error diagnostics
+docguard --format json              # machine-readable output for CI
+docguard --verbose                  # success summary or non-error diagnostics
 ```
 
-If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration. Otherwise it scans `docs/` with size limits and a built-in ADR document type for `adr/*.md`.
+If `pyproject.toml` has no `[tool.docguard]`, or the table is empty, docguard uses the strict baseline: scan `README.md`, `CONTEXT.md`, and `docs`; require reachability from `README.md`; enforce 300-line documents, 120-line sections, and a 20-line floor for untyped non-index documents.
+
+Strict baseline at a glance:
+
+- scope: `README.md`, `CONTEXT.md`, `docs`
+- navigation: `README.md` is the index file and unreachable documents fail
+- size: documents over 300 lines, sections over 120 lines, and untyped non-index documents under 20 lines fail
+- enabled by default: duplicate guidance, prose style, ADR shape, ADR front matter
+- still opt-in: orphan detection, hub outgoing-link checks, mixed-role detection, heading-level skips
+- relaxation rule: looser settings require `[[tool.docguard.relaxations]]` with `parameter`, `value`, and `reason`
 
 ## Output modes
 
@@ -94,11 +117,11 @@ If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration
 |------|------------------------|-------------|
 | default | silent if no diagnostics; **warnings print** if present | CI when warnings should surface |
 | `--quiet` | silent on success, **including warnings** | CI or scripts that want exit-code-only success |
-| `--summary` | one summary line if **no diagnostics** | local daily check |
+| `--summary` | summary and active policy if **no diagnostics** | local daily check |
 | `--verbose` | summary + non-error diagnostics | warning triage |
 | `--format json` | JSON payload always | machine-readable CI |
 
-`--summary` prints a one-line success summary only when there are no diagnostics. If warnings are present, use `--verbose` to review them. `--quiet` cannot be combined with `--summary` or `--verbose`. `--format json` ignores `--quiet`. `--verbose` cannot be used with `--format json`.
+`--summary` prints a success summary and policy line only when there are no diagnostics. If warnings are present, use `--verbose` to review them. `--quiet` cannot be combined with `--summary` or `--verbose`. `--format json` ignores `--quiet`. `--verbose` cannot be used with `--format json`.
 
 ## Enforce diagnostics
 
@@ -106,6 +129,7 @@ If `pyproject.toml` contains `[tool.docguard]`, docguard uses that configuration
 |------|----------------|
 | `DG-SIZE001` | Whole document exceeds the line limit |
 | `DG-SIZE002` | A heading section exceeds the line limit |
+| `DG-SIZE003` | An untyped non-index document is below the document floor |
 | `DG-FORMAT001` | A typed document is missing a required heading |
 | `DG-FORMAT002` | A heading skips one or more levels (opt-in) |
 | `DG-FORMAT003` | A typed document is missing YAML front matter or a required key |
@@ -123,16 +147,7 @@ Each diagnostic includes a human-readable message, why-it-matters text, and an o
 
 Prose style checks run on every scan without an opt-in flag. `DG-STYLE001` limits strong emphasis pairs in body prose (default limit `0`). `DG-STYLE002` flags built-in pronoun and slang patterns such as `you`, `easy`, or `just`. Code fences, headings, tables, glossary term lines, example dialogue sections, and typed documents such as ADRs are excluded.
 
-```toml
-[tool.docguard]
-max_strong_emphasis_pairs = 0
-
-[tool.docguard.severity]
-DG-STYLE001 = "warning"
-DG-STYLE002 = "warning"
-```
-
-Review warnings with `docguard docs/ --verbose`. Exclusions, example output, adoption notes, and self-test commands: [docs/prose-style-rules.md](prose-style-rules.md).
+The strict baseline treats prose style diagnostics as `error`. Relax a prose setting only through `[[tool.docguard.relaxations]]` with a concrete reason. Exclusions, example output, adoption notes, and self-test commands: [docs/prose-style-rules.md](prose-style-rules.md).
 
 ## Detect repeated prose paragraphs (opt-in)
 
@@ -146,13 +161,7 @@ require_duplicate_guidance_detection = true
 duplicate_guidance_kinds = ["code_block", "list_item", "paragraph"]
 ```
 
-| Detects | Does not detect |
-|---------|-----------------|
-| Same gate explanation paragraph in three files | Paraphrased wording of the same decision |
-| Same postmortem narrative copied into multiple handoff docs | Numeric duplication that lives only in tables |
-| Same roadmap paragraph repeated verbatim | Duplication that appears in only two files |
-
-Review warnings with `docguard docs/ --verbose`. Full kind matrix, thresholds, and exclusions: [docs/structure-rules.md#detect-duplicate-guidance-dg-split002](structure-rules.md#detect-duplicate-guidance-dg-split002).
+Review duplicate guidance with `docguard --verbose` when downgraded during migration. Full kind matrix, thresholds, exclusions, and examples: [docs/structure-rules.md#detect-duplicate-guidance-dg-split002](structure-rules.md#detect-duplicate-guidance-dg-split002).
 
 ## Define typed documents
 
@@ -198,11 +207,13 @@ Each Markdown document becomes one pytest item named like `docs/architecture.md:
 
 Warnings do not fail a run. Exit code `2` failures are pre-diagnostic: invalid configuration is rejected before scanning, and non-UTF-8 Markdown files fail during discovery with a clear message instead of a traceback.
 
-Severity can be overridden per diagnostic code:
+Severity can be tightened directly or relaxed with a reason:
 
 ```toml
-[tool.docguard.severity]
-DG-SIZE001 = "warning"
+[[tool.docguard.relaxations]]
+parameter = "severity.DG-SIZE001"
+value = "warning"
+reason = "Legacy documents need a temporary migration window while pages are split."
 ```
 
 Supported values are `error`, `warning`, and `experimental`. Only `error` fails a run.
@@ -214,7 +225,7 @@ Example GitHub Actions step after installing from PyPI:
 ```yaml
 - uses: astral-sh/setup-uv@v5
 - run: uv pip install docguard-structure
-- run: uv run docguard docs/ --format json
+- run: uv run docguard --format json
 ```
 
 For Git-based CI install, use the steps in [Install from Git](#install-from-git) instead of `uv pip install docguard-structure`.
@@ -223,94 +234,21 @@ Use exit code `1` for diagnostic failures and `2` for configuration failures. Se
 
 ## Unicode and UTF-8 support
 
-Docguard officially supports UTF-8 Markdown. Teams can use Japanese or other non-ASCII content in documents, configuration, and file paths without hitting tracebacks.
-
-See [docs/adr/0004-utf-8-markdown-encoding.md](adr/0004-utf-8-markdown-encoding.md) for the encoding contract.
-
-### What you can do
-
-| Capability | Example |
-|------------|---------|
-| Scan Japanese Markdown | `## 概要`, body text, and paths such as `docs/設計.md` |
-| Use Japanese in configuration | `required_headings = ["概要", "背景"]` |
-| Import docguard as a library | `from docguard.runner import run_docguard_from_paths` |
-| Fail safely on non-UTF-8 input | Shift_JIS files fail during discovery instead of a traceback |
-| Preserve CJK in JSON output | Diagnostic messages keep characters such as `概要` |
-| Read UTF-8 with BOM | BOM is stripped automatically through `utf-8-sig` |
-| Get useful split suggestions for CJK headings | `## 概要` / `## 背景` → `section-3.md`, `section-6.md` |
-
-CLI, pytest, and library entry points share the same behavior. Use [Scan Markdown from the CLI](#scan-markdown-from-the-cli), [Run the same checks through pytest](#run-the-same-checks-through-pytest), or `run_docguard_from_paths()`.
-
-### Encoding rules
-
-- Markdown files must be UTF-8. Files without a BOM are preferred; UTF-8 with BOM is also accepted.
-- Non-UTF-8 files such as Shift_JIS fail during discovery instead of producing a traceback. See [Use predictable CI exit codes](#use-predictable-ci-exit-codes).
-- Diagnostic messages stay in English.
-- Document paths, heading names, and configuration values may contain Unicode characters.
-
-Example with Japanese required headings:
-
-```toml
-[[tool.docguard.document_types]]
-name = "guide"
-glob = "docs/guide/*.md"
-required_headings = ["概要", "背景"]
-```
-
-Example split suggestion for a Japanese document:
-
-```text
-Suggested split:
-  - docs/notes/section-3.md
-  - docs/notes/section-6.md
-```
-
-Non-ASCII headings use `section-{line_number}` when a Latin slug cannot be generated.
-
-### Not supported yet
-
-- Automatic detection of Shift_JIS or other legacy encodings
-- Localized diagnostic messages (English only; Unicode content in paths and headings is fine)
-
-Automated coverage lives in `tests/test_unicode_support.py`.
+Docguard reads Markdown as UTF-8 with optional BOM. Japanese headings, paths, and configuration values are supported; non-UTF-8 files fail during discovery with exit code `2`. Non-ASCII split suggestions fall back to `section-{line_number}` when a Latin slug cannot be generated. See [ADR 0004](adr/0004-utf-8-markdown-encoding.md); coverage lives in `tests/test_unicode_support.py`.
 
 ## Phase 1.5 UX and reliability
 
-These improvements are part of the current release even though the CLI surface looks the same.
-
-- Output flag combinations: [Output modes](#output-modes)
-- Exit code meanings: [Use predictable CI exit codes](#use-predictable-ci-exit-codes)
-
-Additional behaviors:
-
-- `--docguard-only` runs only docguard items in pytest
-- document title headings (`# ...`) are not treated as section-size targets when lower-level headings exist
-- JSON output includes `checked_document_count`
-- when both `--verbose` and `--summary` are provided, `--verbose` takes precedence
+Reliability details: output flag combinations live in [Output modes](#output-modes), exit code meanings live in [Use predictable CI exit codes](#use-predictable-ci-exit-codes), `--docguard-only` runs only docguard pytest items, JSON includes `checked_document_count`, and `--verbose` takes precedence over `--summary`.
 
 ## Configuration
 
-Configure docguard in `pyproject.toml`:
+Run `docguard init` to print a strict-baseline starter snippet, then keep only project-specific scope and document type entries in `pyproject.toml`:
 
 ```toml
 [tool.docguard]
-paths = ["docs", "adr", "README.md"]
+paths = ["README.md", "CONTEXT.md", "docs"]
 ignore_globs = ["docs/archive/**", "docs/generated/**"]
-max_document_lines = 400
-max_section_lines = 120
-index_files = ["README.md", "docs/index.md"]
-require_index_reachability = true
-require_orphan_detection = false
-require_hub_outgoing_links = false
-require_mixed_role_detection = false
-require_heading_order_check = false
-require_duplicate_guidance_detection = false
-duplicate_guidance_kinds = ["code_block", "list_item"]
-allowed_duplicate_patterns = []
-max_strong_emphasis_pairs = 0
-allowed_prose_phrases = []
-extra_prohibited_prose_patterns = []
-hub_globs = []
+index_files = ["README.md"]
 
 [[tool.docguard.document_types]]
 name = "adr"
@@ -321,11 +259,27 @@ max_document_lines = 160
 max_section_lines = 60
 ```
 
+Strict baseline defaults:
+
+- `max_document_lines = 300`, `max_section_lines = 120`, `min_document_lines = 20`
+- `require_index_reachability = true`, `require_duplicate_guidance_detection = true`
+- `DG-SPLIT002`, `DG-STYLE001`, `DG-STYLE002`, and `DG-SIZE003` are `error`
+- Phase 2 orphan/hub checks and Phase 3 mixed-role/heading checks remain opt-in
+
+Relaxations must be explicit and reasoned:
+
+```toml
+[[tool.docguard.relaxations]]
+parameter = "max_document_lines"
+value = 400
+reason = "Legacy docs need a temporary migration window while pages are split."
+```
+
 Behavior notes:
 
-- CLI paths override configured `paths`
+- CLI paths override configured `paths`; include the configured index file when reachability is enabled
 - ignored files are excluded from diagnostics and reachability graphs
-- index reachability is checked only when `require_index_reachability = true`
+- direct config values may keep or tighten the strict baseline; looser values require `[[tool.docguard.relaxations]]`
 - missing or out-of-project CLI paths fail with exit code `2` — see [Use predictable CI exit codes](#use-predictable-ci-exit-codes)
 - explicit CLI paths must point to Markdown files or directories containing Markdown
 - configured paths that do not exist yet are skipped silently
@@ -335,46 +289,10 @@ Behavior notes:
 - when `require_hub_outgoing_links = true` but no hub documents are in scope, docguard reports no diagnostics
 - mixed-role detection runs only when `require_mixed_role_detection = true`; typed documents are excluded
 - heading order checks run only when `require_heading_order_check = true`
-- duplicate guidance detection runs only when `require_duplicate_guidance_detection = true`
-- `duplicate_guidance_kinds` selects which atom kinds are checked; default is `code_block` and `list_item`. Add `heading` or `paragraph` to opt in.
-- `allowed_duplicate_patterns` suppresses intentional repeated normalized text matched by regular expressions within enabled kinds
-- prose style checks always run; `max_strong_emphasis_pairs` defaults to `0`; typed documents are excluded
-- `allowed_prose_phrases` suppresses built-in prohibited-pattern matches for intentional wording
+- duplicate guidance detection is on by default; `duplicate_guidance_kinds` defaults to `code_block` and `list_item`. Add `heading` or `paragraph` to opt in.
+- `allowed_duplicate_patterns` and `allowed_prose_phrases` are relaxations because they suppress diagnostics
+- prose style checks always run; typed documents are excluded
 - `extra_prohibited_prose_patterns` adds case-insensitive regular expressions to `DG-STYLE002`
 - `experimental_rules_enabled = true` is reserved for future opt-in rules and currently has no effect
 
 When documentation exceeds the configured budget, split files instead of raising `max_document_lines`. See [docs/dogfood.md](dogfood.md) and [docs/adr/0006-document-budget-dogfood-gate.md](adr/0006-document-budget-dogfood-gate.md).
-
-## Example output
-
-Document size diagnostic:
-
-```text
-FAILED docs/architecture.md::docguard
-
-DG-SIZE001 document too long
-  docs/architecture.md has 812 lines.
-  Limit: 400 lines.
-
-Why this matters:
-  Large Markdown files tend to mix overview, decisions, implementation details, and operations.
-
-Suggested split:
-  - docs/architecture/overview.md
-  - docs/architecture/runtime-model.md
-```
-
-Duplicate paragraph guidance (with `duplicate_guidance_kinds` including `paragraph`):
-
-```text
-WARNING docs/handoff.md::docguard
-
-DG-SPLIT002 duplicate guidance
-  Duplicate paragraph guidance appears 3 times (docs/handoff.md:42, docs/baseline-matrix.md:88, docs/phase6.md:15).
-
-Why this matters:
-  Repeated commands, headings, list guidance, or prose paragraphs make maintenance instructions harder to keep consistent without a clear canonical owner.
-
-Suggested next action:
-  Consolidate repeated guidance into one canonical section and link to it elsewhere.
-```

@@ -6,7 +6,12 @@ import json
 from dataclasses import asdict
 
 from docguard.constants import DIAGNOSTIC_TITLES
-from docguard.diagnostics import Diagnostic, DiagnosticRunResult, SeverityLevel
+from docguard.diagnostics import (
+    Diagnostic,
+    DiagnosticPolicySummary,
+    DiagnosticRunResult,
+    SeverityLevel,
+)
 
 
 def format_document_diagnostics_human(
@@ -81,9 +86,30 @@ def format_run_result_json(run_result: DiagnosticRunResult) -> str:
 
 def format_run_summary(run_result: DiagnosticRunResult) -> str:
     diagnostic_count = len(run_result.diagnostics)
-    return (
+    summary_line = (
         f"Checked {run_result.checked_document_count} documents. "
         f"Found {diagnostic_count} diagnostics."
+    )
+    if run_result.policy_summary is None:
+        return summary_line
+    return f"{summary_line}\n{format_policy_summary(run_result.policy_summary)}"
+
+
+def format_enabled_flag(enabled: bool) -> str:
+    return "on" if enabled else "off"
+
+
+def format_policy_summary(policy_summary: DiagnosticPolicySummary) -> str:
+    return (
+        f"Policy: {policy_summary.name} "
+        f"(max document {policy_summary.max_document_lines}, "
+        f"min document {policy_summary.min_document_lines}, "
+        f"max section {policy_summary.max_section_lines}, "
+        "index reachability "
+        f"{format_enabled_flag(policy_summary.require_index_reachability)}, "
+        "duplicate guidance "
+        f"{format_enabled_flag(policy_summary.require_duplicate_guidance_detection)}, "
+        f"{policy_summary.relaxation_count} relaxations)."
     )
 
 

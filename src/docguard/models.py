@@ -57,6 +57,7 @@ class DocguardConfiguration:
     ignore_globs: tuple[str, ...]
     max_document_lines: int
     max_section_lines: int
+    min_document_lines: int
     index_files: tuple[str, ...]
     require_index_reachability: bool
     require_orphan_detection: bool
@@ -72,6 +73,8 @@ class DocguardConfiguration:
     hub_globs: tuple[str, ...]
     severities: dict[str, str]
     document_types: tuple[DocumentTypeConfiguration, ...]
+    policy_name: str = "strict baseline"
+    relaxation_count: int = 0
     experimental_rules_enabled: bool = False
     validate_explicit_paths: bool = False
 

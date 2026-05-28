@@ -25,6 +25,26 @@ OUTPUT_FORMAT_HUMAN = "human"
 OUTPUT_FORMAT_JSON = "json"
 
 
+INIT_SNIPPET = """[tool.docguard]
+paths = ["README.md", "CONTEXT.md", "docs"]
+index_files = ["README.md"]
+
+[[tool.docguard.document_types]]
+name = "adr"
+glob = "docs/adr/*.md"
+required_headings = ["Status", "Context", "Decision", "Consequences"]
+required_front_matter_keys = ["status", "date"]
+max_document_lines = 160
+max_section_lines = 60
+
+# To relax the strict baseline, add entries like this with a concrete reason:
+# [[tool.docguard.relaxations]]
+# parameter = "max_document_lines"
+# value = 400
+# reason = "Legacy docs need a temporary migration window."
+"""
+
+
 def build_argument_parser() -> argparse.ArgumentParser:
     argument_parser = argparse.ArgumentParser(
         prog="docguard",
@@ -70,6 +90,13 @@ def build_argument_parser() -> argparse.ArgumentParser:
     return argument_parser
 
 
+def run_init_command(arguments: list[str]) -> int:
+    if arguments:
+        raise SystemExit("docguard init does not accept options yet.")
+    print(INIT_SNIPPET.rstrip())
+    return EXIT_CODE_SUCCESS
+
+
 def resolve_project_root(config_path: Path | None) -> Path:
     if config_path is not None:
         return config_path.parent.resolve()
@@ -80,8 +107,12 @@ def resolve_project_root(config_path: Path | None) -> Path:
 
 
 def main(argv: list[str] | None = None) -> int:
+    raw_arguments = list(sys.argv[1:] if argv is None else argv)
+    if raw_arguments[:1] == ["init"]:
+        return run_init_command(raw_arguments[1:])
+
     argument_parser = build_argument_parser()
-    arguments = argument_parser.parse_args(argv)
+    arguments = argument_parser.parse_args(raw_arguments)
 
     if arguments.verbose and arguments.format == OUTPUT_FORMAT_JSON:
         argument_parser.error("--verbose cannot be used with --format json")

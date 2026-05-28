@@ -4,7 +4,7 @@ This page records distribution milestones for docguard. It is separate from [doc
 
 ## Distribution roadmap
 
-Docguard is published on PyPI as `docguard-structure` 0.2.0 (Alpha). This page records distribution milestones and operator history. See [docs/adr/0008-pypi-alpha-distribution.md](adr/0008-pypi-alpha-distribution.md) for distribution decisions and [docs/adr/0013-pypi-distribution-name-docguard-structure.md](adr/0013-pypi-distribution-name-docguard-structure.md) for the PyPI distribution name.
+Docguard is published on PyPI as `docguard-structure` 0.2.0 (Alpha). The next Alpha release is 0.3.0 for strict baseline adoption. This page records distribution milestones and operator history. See [docs/adr/0008-pypi-alpha-distribution.md](adr/0008-pypi-alpha-distribution.md) for distribution decisions and [docs/adr/0013-pypi-distribution-name-docguard-structure.md](adr/0013-pypi-distribution-name-docguard-structure.md) for the PyPI distribution name.
 
 ### 1. Alpha source distribution
 
@@ -16,7 +16,7 @@ Docguard is published on PyPI as `docguard-structure` 0.2.0 (Alpha). This page r
 
 Resolved decisions:
 
-- PyPI distribution name is **`docguard-structure`** (CLI and import remain `docguard`).
+- PyPI distribution name is `docguard-structure` (CLI and import remain `docguard`).
 - PyPI users rely on a self-contained README with GitHub absolute links; docs are not bundled in the wheel.
 - Documentation and release verification standardize on uv-first workflows; pip remains supported.
 - Publish is manual via GitHub Actions `workflow_dispatch` with PyPI Trusted Publishing.

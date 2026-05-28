@@ -28,10 +28,22 @@ class Diagnostic:
 
 
 @dataclass(frozen=True)
+class DiagnosticPolicySummary:
+    name: str
+    max_document_lines: int
+    min_document_lines: int
+    max_section_lines: int
+    require_index_reachability: bool
+    require_duplicate_guidance_detection: bool
+    relaxation_count: int
+
+
+@dataclass(frozen=True)
 class DiagnosticRunResult:
     diagnostics: tuple[Diagnostic, ...] = field(default_factory=tuple)
     checked_document_count: int = 0
     checked_document_paths: tuple[str, ...] = field(default_factory=tuple)
+    policy_summary: DiagnosticPolicySummary | None = None
 
     @property
     def has_error_severity(self) -> bool:

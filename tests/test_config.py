@@ -11,14 +11,18 @@ from docguard.config import (
     load_docguard_configuration,
     resolve_document_type_for_path,
 )
-from docguard.constants import DEFAULT_DUPLICATE_GUIDANCE_KINDS, DEFAULT_MAX_DOCUMENT_LINES
+from docguard.constants import (
+    DEFAULT_DUPLICATE_GUIDANCE_KINDS,
+    DEFAULT_MAX_DOCUMENT_LINES,
+    DEFAULT_MIN_DOCUMENT_LINES,
+)
 
 
 def write_pyproject(project_root: Path, contents: str) -> None:
     (project_root / "pyproject.toml").write_text(contents, encoding="utf-8")
 
 
-def test_zero_config_fallback_uses_cli_paths(temporary_project_directory: Path) -> None:
+def test_strict_baseline_uses_cli_paths(temporary_project_directory: Path) -> None:
     configuration = load_docguard_configuration(
         project_root=temporary_project_directory,
         config_path=None,
@@ -26,7 +30,32 @@ def test_zero_config_fallback_uses_cli_paths(temporary_project_directory: Path) 
     )
     assert configuration.paths == ("docs",)
     assert configuration.max_document_lines == DEFAULT_MAX_DOCUMENT_LINES
-    assert configuration.require_index_reachability is False
+    assert configuration.min_document_lines == DEFAULT_MIN_DOCUMENT_LINES
+    assert configuration.index_files == ("README.md",)
+    assert configuration.require_index_reachability is True
+    assert configuration.require_duplicate_guidance_detection is True
+    assert configuration.severities["DG-SPLIT002"] == "error"
+    assert configuration.severities["DG-STYLE001"] == "error"
+
+
+def test_empty_docguard_table_uses_strict_baseline(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.paths == ("README.md", "CONTEXT.md", "docs")
+    assert configuration.max_document_lines == 300
+    assert configuration.min_document_lines == 20
+    assert configuration.require_index_reachability is True
 
 
 def test_unknown_configuration_key_raises_configuration_error(
@@ -90,12 +119,12 @@ paths = ["docs"]
     assert configuration.paths == ("README.md",)
 
 
-def test_severity_override_is_loaded(temporary_project_directory: Path) -> None:
+def test_stricter_severity_override_is_loaded(temporary_project_directory: Path) -> None:
     write_pyproject(
         temporary_project_directory,
         """
 [tool.docguard.severity]
-DG-SIZE001 = "warning"
+DG-ORG001 = "error"
 """,
     )
     configuration = load_docguard_configuration(
@@ -103,7 +132,25 @@ DG-SIZE001 = "warning"
         config_path=temporary_project_directory / "pyproject.toml",
         cli_paths=tuple(),
     )
-    assert configuration.severities["DG-SIZE001"] == "warning"
+    assert configuration.severities["DG-ORG001"] == "error"
+
+
+def test_direct_looser_severity_raises_configuration_error(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard.severity]
+DG-STYLE001 = "warning"
+""",
+    )
+    with pytest.raises(ConfigurationError, match="severity.DG-STYLE001"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
 
 
 def test_invalid_severity_raises_configuration_error(
@@ -140,6 +187,42 @@ max_document_lines = "400"
             config_path=temporary_project_directory / "pyproject.toml",
             cli_paths=tuple(),
         )
+
+
+def test_direct_looser_max_document_lines_raises_configuration_error(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+max_document_lines = 400
+""",
+    )
+    with pytest.raises(ConfigurationError, match="max_document_lines"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
+def test_direct_stricter_max_document_lines_is_loaded(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+max_document_lines = 240
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.max_document_lines == 240
 
 
 def test_phase2_configuration_defaults_are_false(
@@ -194,10 +277,14 @@ def test_duplicate_guidance_configuration_keys_are_parsed(
 [tool.docguard]
 paths = ["docs"]
 require_duplicate_guidance_detection = true
-allowed_duplicate_patterns = ["^Run docguard locally"]
 
 [tool.docguard.severity]
 DG-SPLIT002 = "error"
+
+[[tool.docguard.relaxations]]
+parameter = "allowed_duplicate_patterns"
+value = ["^Run docguard locally"]
+reason = "Legacy duplicated command guidance is being consolidated."
 """,
     )
     configuration = load_docguard_configuration(
@@ -261,7 +348,7 @@ def test_duplicate_guidance_kinds_can_include_paragraph(
         """
 [tool.docguard]
 paths = ["docs"]
-duplicate_guidance_kinds = ["paragraph"]
+duplicate_guidance_kinds = ["code_block", "list_item", "paragraph"]
 """,
     )
     configuration = load_docguard_configuration(
@@ -269,7 +356,11 @@ duplicate_guidance_kinds = ["paragraph"]
         config_path=temporary_project_directory / "pyproject.toml",
         cli_paths=tuple(),
     )
-    assert configuration.duplicate_guidance_kinds == ("paragraph",)
+    assert configuration.duplicate_guidance_kinds == (
+        "code_block",
+        "list_item",
+        "paragraph",
+    )
 
 
 def test_empty_duplicate_guidance_kinds_raises_configuration_error(
@@ -356,7 +447,11 @@ def test_invalid_allowed_duplicate_pattern_raises_configuration_error(
         """
 [tool.docguard]
 paths = ["docs"]
-allowed_duplicate_patterns = ["["]
+
+[[tool.docguard.relaxations]]
+parameter = "allowed_duplicate_patterns"
+value = ["["]
+reason = "Legacy duplicate guidance patterns are being migrated."
 """,
     )
     with pytest.raises(ConfigurationError, match="allowed_duplicate_patterns"):
@@ -367,6 +462,88 @@ allowed_duplicate_patterns = ["["]
         )
 
 
+def test_relaxation_requires_reason(temporary_project_directory: Path) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+
+[[tool.docguard.relaxations]]
+parameter = "max_document_lines"
+value = 400
+reason = "too short"
+""",
+    )
+    with pytest.raises(ConfigurationError, match="reason"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
+def test_relaxation_requires_value(temporary_project_directory: Path) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+
+[[tool.docguard.relaxations]]
+parameter = "max_document_lines"
+reason = "Legacy documents need migration time before splitting."
+""",
+    )
+    with pytest.raises(ConfigurationError, match="value"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
+def test_unknown_relaxation_parameter_raises_configuration_error(
+    temporary_project_directory: Path,
+) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+
+[[tool.docguard.relaxations]]
+parameter = "unknown"
+value = true
+reason = "Legacy documents need migration time before splitting."
+""",
+    )
+    with pytest.raises(ConfigurationError, match="Unknown relaxation parameter"):
+        load_docguard_configuration(
+            project_root=temporary_project_directory,
+            config_path=temporary_project_directory / "pyproject.toml",
+            cli_paths=tuple(),
+        )
+
+
+def test_valid_relaxation_is_applied(temporary_project_directory: Path) -> None:
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+
+[[tool.docguard.relaxations]]
+parameter = "max_document_lines"
+value = 400
+reason = "Legacy documents need migration time before splitting."
+""",
+    )
+    configuration = load_docguard_configuration(
+        project_root=temporary_project_directory,
+        config_path=temporary_project_directory / "pyproject.toml",
+        cli_paths=tuple(),
+    )
+    assert configuration.max_document_lines == 400
+    assert configuration.relaxation_count == 1
+
+
 def test_non_string_allowed_duplicate_pattern_raises_configuration_error(
     temporary_project_directory: Path,
 ) -> None:
@@ -375,7 +552,11 @@ def test_non_string_allowed_duplicate_pattern_raises_configuration_error(
         """
 [tool.docguard]
 paths = ["docs"]
-allowed_duplicate_patterns = [true]
+
+[[tool.docguard.relaxations]]
+parameter = "allowed_duplicate_patterns"
+value = [true]
+reason = "Legacy duplicate guidance patterns are being migrated."
 """,
     )
     with pytest.raises(ConfigurationError, match="allowed_duplicate_patterns"):
@@ -441,13 +622,25 @@ def test_prose_style_configuration_keys_are_parsed(
         """
 [tool.docguard]
 paths = ["docs"]
-max_strong_emphasis_pairs = 2
-allowed_prose_phrases = ["What you can check"]
 extra_prohibited_prose_patterns = ["\\\\bkindly\\\\b"]
 
 [tool.docguard.severity]
-DG-STYLE001 = "warning"
 DG-STYLE002 = "error"
+
+[[tool.docguard.relaxations]]
+parameter = "max_strong_emphasis_pairs"
+value = 2
+reason = "Legacy prose cleanup needs a temporary emphasis allowance."
+
+[[tool.docguard.relaxations]]
+parameter = "allowed_prose_phrases"
+value = ["What you can check"]
+reason = "Usage documentation keeps this exact heading during migration."
+
+[[tool.docguard.relaxations]]
+parameter = "severity.DG-STYLE001"
+value = "warning"
+reason = "Legacy prose style diagnostics are being migrated gradually."
 """,
     )
     configuration = load_docguard_configuration(

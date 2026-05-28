@@ -25,6 +25,15 @@ def test_cli_help_exits_successfully() -> None:
     assert exit_info.value.code == EXIT_CODE_SUCCESS
 
 
+def test_cli_init_prints_strict_baseline_snippet(capsys) -> None:
+    exit_code = main(["init"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert "[tool.docguard]" in captured_output.out
+    assert 'paths = ["README.md", "CONTEXT.md", "docs"]' in captured_output.out
+    assert "[[tool.docguard.relaxations]]" in captured_output.out
+
+
 def test_cli_reports_diagnostic_failure(
     temporary_project_directory: Path,
     monkeypatch,
@@ -40,7 +49,11 @@ def test_cli_reports_diagnostic_failure(
         """
 [tool.docguard]
 paths = ["docs"]
-max_document_lines = 400
+
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused CLI size test does not define repository navigation."
 """,
     )
     monkeypatch.chdir(temporary_project_directory)
@@ -122,10 +135,16 @@ def test_cli_verbose_prints_warnings_without_failing_exit_code(
         """
 [tool.docguard]
 paths = ["docs"]
-max_document_lines = 400
 
-[tool.docguard.severity]
-DG-SIZE001 = "warning"
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused CLI warning test does not define repository navigation."
+
+[[tool.docguard.relaxations]]
+parameter = "severity.DG-SIZE001"
+value = "warning"
+reason = "Focused CLI warning test needs a non-failing size diagnostic."
 """,
     )
     monkeypatch.chdir(temporary_project_directory)
@@ -176,16 +195,43 @@ paths = ["README.md"]
     assert "Found 0 diagnostics." not in captured_output.out
 
 
+def test_cli_summary_includes_policy_line(
+    temporary_project_directory: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    (temporary_project_directory / "README.md").write_text("# Readme\n", encoding="utf-8")
+    write_pyproject(
+        temporary_project_directory,
+        """
+[tool.docguard]
+paths = ["README.md"]
+""",
+    )
+    monkeypatch.chdir(temporary_project_directory)
+    exit_code = main(["--summary"])
+    captured_output = capsys.readouterr()
+    assert exit_code == EXIT_CODE_SUCCESS
+    assert "Checked 1 documents. Found 0 diagnostics." in captured_output.out
+    assert "Policy: strict baseline" in captured_output.out
+
+
 def write_warning_severity_pyproject(project_root: Path) -> None:
     write_pyproject(
         project_root,
         """
 [tool.docguard]
 paths = ["docs"]
-max_document_lines = 400
 
-[tool.docguard.severity]
-DG-SIZE001 = "warning"
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused CLI warning test does not define repository navigation."
+
+[[tool.docguard.relaxations]]
+parameter = "severity.DG-SIZE001"
+value = "warning"
+reason = "Focused CLI warning test needs a non-failing size diagnostic."
 """,
     )
 
@@ -206,8 +252,14 @@ def write_orphan_detection_project(project_root: Path) -> None:
         "# Index\n\n[Design](docs/design.md)\n",
         encoding="utf-8",
     )
-    (docs_directory / "design.md").write_text("# Design\n", encoding="utf-8")
-    (docs_directory / "orphan.md").write_text("# Orphan\n", encoding="utf-8")
+    (docs_directory / "design.md").write_text(
+        "# Design\n\n" + "detail\n" * 18,
+        encoding="utf-8",
+    )
+    (docs_directory / "orphan.md").write_text(
+        "# Orphan\n\n" + "detail\n" * 18,
+        encoding="utf-8",
+    )
     write_pyproject(
         project_root,
         """
@@ -215,6 +267,11 @@ def write_orphan_detection_project(project_root: Path) -> None:
 paths = ["README.md", "docs"]
 index_files = ["README.md"]
 require_orphan_detection = true
+
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused ORG001 warning test isolates orphan detection behavior."
 """,
     )
 
@@ -351,7 +408,11 @@ def test_cli_quiet_does_not_suppress_error_output(
         """
 [tool.docguard]
 paths = ["docs"]
-max_document_lines = 400
+
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused CLI error test does not define repository navigation."
 """,
     )
     monkeypatch.chdir(temporary_project_directory)
@@ -433,7 +494,11 @@ def test_cli_verbose_does_not_change_error_diagnostic_output(
         """
 [tool.docguard]
 paths = ["docs"]
-max_document_lines = 400
+
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused CLI error test does not define repository navigation."
 """,
     )
     monkeypatch.chdir(temporary_project_directory)

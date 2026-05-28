@@ -42,7 +42,11 @@ def test_pytest_docguard_creates_one_item_per_document(
         """
 [tool.docguard]
 paths = ["docs"]
-max_document_lines = 400
+
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused pytest adapter test does not define repository navigation."
 """,
     )
     completed_process = subprocess.run(

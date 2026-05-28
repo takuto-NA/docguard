@@ -17,11 +17,12 @@ An agent or maintainer can repeat this workaround whenever documentation pressur
 
 ## Decision
 
-1. **Restore the global documentation budget to 400 lines** in this repository's `[tool.docguard]` configuration.
+1. **Tighten the global documentation budget to 300 lines** through docguard's strict baseline.
 2. **Split oversized documentation by role** instead of raising limits. Phase-specific and dogfood material moves out of `docs/usage.md` into focused pages.
 3. **Add `tests/test_document_budget.py`** as a dogfood gate that fails when:
-   - repository `max_document_lines` exceeds 400
-   - any in-scope document exceeds its configured budget (400 for normal docs, 160 for ADRs)
+   - repository `max_document_lines` exceeds 300
+   - any in-scope document exceeds its configured budget (300 for normal docs, 160 for ADRs)
+   - any untyped non-index document falls below the 20-line document floor
 4. **No per-file exceptions** for normal Markdown documents. ADRs keep their existing typed budget through `document_types`.
 5. **Do not rely on documentation-only warnings** for this invariant. The gate is automated in tests.
 
@@ -35,5 +36,5 @@ Alternatives rejected:
 
 - `docs/usage.md` becomes a concise entry point with links to detailed pages.
 - New documentation pages must remain reachable from `README.md`.
-- Future documentation growth must split files or restructure content; raising the global budget requires changing both ADR policy and the budget gate test.
+- Future documentation growth must split files or restructure content; raising the global budget requires a reasoned policy relaxation plus changing both ADR policy and the budget gate test.
 - Phase 2 and Phase 3 readiness snapshots may change when navigation links move.

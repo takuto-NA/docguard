@@ -6,24 +6,26 @@ Docguard helps teams keep documentation from growing too large, becoming unreach
 
 ## Quick start
 
-Install from PyPI as **`docguard-structure`** (CLI command remains `docguard`; this is not the unrelated [docguard-cli](https://pypi.org/project/docguard-cli/) package). Use `uv add docguard-structure`, then run `uv run docguard docs/ --summary`. Equivalent with pip: `pip install docguard-structure`. Git-based install: [usage guide — Install from Git](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#install-from-git).
+Install from PyPI as `docguard-structure` (CLI command remains `docguard`; this is not the unrelated [docguard-cli](https://pypi.org/project/docguard-cli/) package). Use `uv add docguard-structure`, then run `uv run docguard --summary`. Existing uv users can upgrade with `uv add --upgrade docguard-structure`; see [Update an existing uv install](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#update-an-existing-uv-install). Equivalent with pip: `pip install docguard-structure`. Git-based install: [usage guide — Install from Git](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#install-from-git).
 
-Configure `[tool.docguard]` in `pyproject.toml` using the [configuration example](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#configuration). Full install commands, pytest integration, and exit codes: [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
+Run `docguard init` for a starter `[tool.docguard]` snippet, or use the strict baseline without configuration. Full install commands, configuration, pytest integration, and exit codes: [usage guide](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 
 ```bash
-docguard docs/ --summary
+docguard --summary
 ```
 
 ## What this tool checks
 
 Docguard focuses on document structure and repository health. Prose style checks (`DG-STYLE001`, `DG-STYLE002`) flag decorative strong emphasis and conversational phrasing in body text; they are not a general Markdown formatter.
 
+With no configuration, docguard applies the strict baseline: scan `README.md`, `CONTEXT.md`, and `docs`; require reachability from `README.md`; enforce 300-line documents, 120-line sections, and a 20-line floor for untyped non-index documents; and fail duplicate guidance plus prose style diagnostics as errors. Any relaxation from that baseline must be recorded in `[[tool.docguard.relaxations]]` with a reason.
+
 | Phase | What you can check | Diagnostics | Typical default |
 |-------|-------------------|-------------|-----------------|
-| Core | Document and section size; typed document shape; index reachability; prose style | `DG-SIZE001`, `DG-SIZE002`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003`, `DG-STYLE001`, `DG-STYLE002` | on when configured; prose style `warning` |
+| Core | Document and section size; stub detection; typed document shape; index reachability; prose style | `DG-SIZE001`, `DG-SIZE002`, `DG-SIZE003`, `DG-FORMAT001`, `DG-FORMAT003`, `DG-ORG003`, `DG-STYLE001`, `DG-STYLE002` | strict baseline, `error` |
 | Phase 2 | Link structure between files: orphans and hub dead ends | `DG-ORG001`, `DG-ORG002` | opt-in, `warning` |
 | Phase 3 | Structure inside each file: mixed roles and heading level skips | `DG-SPLIT001`, `DG-FORMAT002` | opt-in, `warning` |
-| Duplicate guidance | Repeated commands, list guidance, or prose paragraphs across the scan scope; headings and paragraphs opt-in | `DG-SPLIT002` | opt-in, `warning` |
+| Duplicate guidance | Repeated commands, list guidance, or prose paragraphs across the scan scope; headings and paragraphs opt-in | `DG-SPLIT002` | strict baseline, `error` |
 
 Phase 2 details: [organization rules](https://github.com/takuto-NA/docguard/blob/main/docs/organization-rules.md). Phase 3 and duplicate guidance details: [structure rules](https://github.com/takuto-NA/docguard/blob/main/docs/structure-rules.md). Prose style details: [prose style rules](https://github.com/takuto-NA/docguard/blob/main/docs/prose-style-rules.md). To adopt docguard in another repository, see [Use in another repository](https://github.com/takuto-NA/docguard/blob/main/docs/usage.md#use-in-another-repository).
 
@@ -52,7 +54,7 @@ uv run docguard README.md CONTEXT.md docs/ --summary
 
 Alpha (`Development Status :: 3 - Alpha`). Configuration keys, diagnostic JSON fields, and rule defaults may change; breaking changes are recorded in [CHANGELOG.md](https://github.com/takuto-NA/docguard/blob/main/CHANGELOG.md). Exit codes and existing diagnostic meanings are preserved where practical.
 
-Phase 3 structure diagnostics (`DG-SPLIT001`, `DG-FORMAT002`) and prose style diagnostics (`DG-STYLE001`, `DG-STYLE002`) are implemented. Release readiness is documented in [docs/release-readiness.md](https://github.com/takuto-NA/docguard/blob/main/docs/release-readiness.md).
+Docguard 0.3.0 uses a strict baseline by default. Relaxations require `[[tool.docguard.relaxations]]` entries with reasons. Release readiness is documented in [docs/release-readiness.md](https://github.com/takuto-NA/docguard/blob/main/docs/release-readiness.md).
 
 ## Repository navigation
 
@@ -78,3 +80,4 @@ Relative links for clone checkouts and docguard reachability checks:
 - [docs/adr/0011-duplicate-prose-paragraph-guidance.md](docs/adr/0011-duplicate-prose-paragraph-guidance.md)
 - [docs/adr/0012-prose-style-diagnostics.md](docs/adr/0012-prose-style-diagnostics.md)
 - [docs/adr/0013-pypi-distribution-name-docguard-structure.md](docs/adr/0013-pypi-distribution-name-docguard-structure.md)
+- [docs/adr/0014-strict-baseline-and-policy-relaxations.md](docs/adr/0014-strict-baseline-and-policy-relaxations.md)

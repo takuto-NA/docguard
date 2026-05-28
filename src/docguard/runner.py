@@ -7,11 +7,13 @@ from pathlib import Path
 from docguard.config import ConfigurationError, load_docguard_configuration
 from docguard.constants import EXIT_CODE_CONFIGURATION_FAILURE
 from docguard.diagnostics import Diagnostic, DiagnosticRunResult
+from docguard.diagnostics import DiagnosticPolicySummary
 from docguard.discovery import discover_documents
 from docguard.graph import build_document_graph
 from docguard.models import DocguardConfiguration
 from docguard.rules import (
     check_document_length,
+    check_document_minimum_length,
     check_duplicate_guidance,
     check_heading_level_skips,
     check_hub_missing_outgoing_links,
@@ -39,6 +41,13 @@ def run_docguard_checks(
 
     diagnostics: list[Diagnostic] = []
     for inspection_context in document_contexts:
+        document_minimum_length_diagnostic = check_document_minimum_length(
+            configuration,
+            inspection_context,
+        )
+        if document_minimum_length_diagnostic is not None:
+            diagnostics.append(document_minimum_length_diagnostic)
+
         document_length_diagnostic = check_document_length(
             configuration,
             inspection_context,
@@ -88,6 +97,17 @@ def run_docguard_checks(
         diagnostics=tuple(diagnostics),
         checked_document_count=len(document_contexts),
         checked_document_paths=checked_document_paths,
+        policy_summary=DiagnosticPolicySummary(
+            name=configuration.policy_name,
+            max_document_lines=configuration.max_document_lines,
+            min_document_lines=configuration.min_document_lines,
+            max_section_lines=configuration.max_section_lines,
+            require_index_reachability=configuration.require_index_reachability,
+            require_duplicate_guidance_detection=(
+                configuration.require_duplicate_guidance_detection
+            ),
+            relaxation_count=configuration.relaxation_count,
+        ),
     )
 
 

@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import json
 
-from docguard.diagnostics import Diagnostic, DiagnosticRunResult, SeverityLevel
+from docguard.diagnostics import (
+    Diagnostic,
+    DiagnosticPolicySummary,
+    DiagnosticRunResult,
+    SeverityLevel,
+)
 from docguard.formatters import (
     format_run_result_human,
     format_run_result_json,
@@ -54,6 +59,27 @@ def test_format_run_summary_reports_checked_document_count() -> None:
     )
     formatted_output = format_run_summary(run_result)
     assert formatted_output == "Checked 4 documents. Found 0 diagnostics."
+
+
+def test_format_run_summary_includes_policy_summary_when_available() -> None:
+    run_result = DiagnosticRunResult(
+        diagnostics=tuple(),
+        checked_document_count=4,
+        policy_summary=DiagnosticPolicySummary(
+            name="strict baseline",
+            max_document_lines=300,
+            min_document_lines=20,
+            max_section_lines=120,
+            require_index_reachability=True,
+            require_duplicate_guidance_detection=True,
+            relaxation_count=0,
+        ),
+    )
+    formatted_output = format_run_summary(run_result)
+    assert "Checked 4 documents. Found 0 diagnostics." in formatted_output
+    assert "Policy: strict baseline" in formatted_output
+    assert "max document 300" in formatted_output
+    assert "0 relaxations" in formatted_output
 
 
 def test_format_run_verbose_reports_no_diagnostics_on_clean_run() -> None:

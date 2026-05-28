@@ -26,7 +26,32 @@ SHIFT_JIS_ENCODING_NAME = "cp932"
 
 
 def write_pyproject(project_root: Path, contents: str) -> None:
-    (project_root / "pyproject.toml").write_text(contents, encoding="utf-8")
+    appended_relaxations = []
+    if "parameter = \"min_document_lines\"" not in contents:
+        appended_relaxations.append(
+            """
+[[tool.docguard.relaxations]]
+parameter = "min_document_lines"
+value = 0
+reason = "Focused Unicode tests do not exercise document floor diagnostics."
+"""
+        )
+    if (
+        "require_index_reachability = true" not in contents
+        and "parameter = \"require_index_reachability\"" not in contents
+    ):
+        appended_relaxations.append(
+            """
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused Unicode tests isolate encoding and localized headings."
+"""
+        )
+    (project_root / "pyproject.toml").write_text(
+        contents + "".join(appended_relaxations),
+        encoding="utf-8",
+    )
 
 
 def build_subprocess_environment() -> dict[str, str]:

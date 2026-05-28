@@ -72,13 +72,6 @@ paths = ["README.md", "CONTEXT.md", "docs"]
 index_files = ["README.md"]
 require_index_reachability = true
 require_duplicate_guidance_detection = true
-max_document_lines = 400
-max_section_lines = 120
-
-[tool.docguard.severity]
-DG-SPLIT002 = "error"
-DG-STYLE001 = "error"
-DG-STYLE002 = "error"
 
 [[tool.docguard.document_types]]
 name = "adr"

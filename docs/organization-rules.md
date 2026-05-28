@@ -74,9 +74,9 @@ Full specification: [docs/adr/0003-organization-link-rules.md](adr/0003-organiza
 Phase 2 diagnostics use the same entry points as other rules:
 
 ```bash
-docguard docs/                 # warnings print on stdout; exit 0 unless severity is error
-docguard docs/ --verbose       # summary plus non-error diagnostics
-docguard docs/ --format json   # machine-readable output for CI
+docguard                       # warnings print on stdout; exit 0 unless severity is error
+docguard --verbose             # summary plus non-error diagnostics
+docguard --format json         # machine-readable output for CI
 pytest --docguard              # one pytest item per Markdown file
 ```
 

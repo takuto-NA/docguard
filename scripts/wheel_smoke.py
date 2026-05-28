@@ -18,7 +18,12 @@ WHEEL_FILE_GLOB = "*.whl"
 
 MINIMAL_SAMPLE_PROJECT_NAME = "sample-docguard-project"
 MINIMAL_SAMPLE_DOCUMENT_RELATIVE_PATH = "docs/example.md"
-MINIMAL_SAMPLE_DOCUMENT_CONTENT = "# Example\n"
+MINIMAL_SAMPLE_README_CONTENT = "# Sample\n\n[Example](docs/example.md)\n"
+MINIMAL_SAMPLE_DOCUMENT_CONTENT = (
+    "# Example\n\n"
+    + "\n".join(f"detail {line_number}" for line_number in range(1, 19))
+    + "\n"
+)
 MINIMAL_SAMPLE_PYPROJECT_CONTENT = """\
 [project]
 name = "sample-docguard-project"
@@ -26,7 +31,8 @@ version = "0.0.0"
 requires-python = ">=3.11"
 
 [tool.docguard]
-paths = ["docs"]
+paths = ["README.md", "docs"]
+index_files = ["README.md"]
 """
 
 
@@ -144,6 +150,11 @@ def verify_console_script_help(
 
 
 def create_minimal_sample_project(sample_project_directory: Path) -> None:
+    sample_project_directory.mkdir(parents=True, exist_ok=True)
+    (sample_project_directory / "README.md").write_text(
+        MINIMAL_SAMPLE_README_CONTENT,
+        encoding="utf-8",
+    )
     sample_document_path = sample_project_directory / MINIMAL_SAMPLE_DOCUMENT_RELATIVE_PATH
     sample_document_path.parent.mkdir(parents=True, exist_ok=True)
     sample_document_path.write_text(MINIMAL_SAMPLE_DOCUMENT_CONTENT, encoding="utf-8")

@@ -8,6 +8,19 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-28
+
+### Breaking
+
+- Replaced the lenient zero-config fallback with a strict baseline that scans `README.md`, `CONTEXT.md`, and `docs`; requires index reachability from `README.md`; enables duplicate guidance detection; enforces 300-line documents; and treats duplicate guidance plus prose style diagnostics as errors.
+- Direct config values that loosen the strict baseline now fail with exit code `2`. Use `[[tool.docguard.relaxations]]` with `parameter`, `value`, and `reason` instead.
+
+### Added
+
+- `DG-SIZE003` reports untyped non-index Markdown documents below the 20-line document floor.
+- `docguard init` prints a strict-baseline starter snippet.
+- `--summary` prints the active policy line on clean runs.
+
 ## [0.2.0] - 2026-05-25
 
 ### Added
@@ -35,5 +48,6 @@ Docguard is in Alpha. Configuration keys, diagnostic JSON fields, and rule defau
 - UTF-8 Markdown encoding requirement with Japanese path and heading support.
 - PyPI Alpha distribution planning with uv-first documentation and pip-compatible wheels.
 
+[0.3.0]: https://github.com/takuto-NA/docguard/releases/tag/v0.3.0
 [0.2.0]: https://github.com/takuto-NA/docguard/releases/tag/v0.2.0
 [0.1.0]: https://github.com/takuto-NA/docguard/releases/tag/v0.1.0

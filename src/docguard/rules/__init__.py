@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from docguard.constants import (
+    DIAGNOSTIC_CODE_DOCUMENT_TOO_SHORT,
     DIAGNOSTIC_CODE_DOCUMENT_TOO_LONG,
     DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
     DIAGNOSTIC_CODE_MISSING_FRONT_MATTER,
@@ -14,6 +15,7 @@ from docguard.constants import (
     DIAGNOSTIC_CODE_UNEXPECTED_HEADING_ORDER,
     DIAGNOSTIC_CODE_UNREACHABLE_FROM_INDEX,
     WHY_DOCUMENT_TOO_LONG,
+    WHY_DOCUMENT_TOO_SHORT,
     WHY_DUPLICATE_GUIDANCE,
     WHY_MISSING_FRONT_MATTER,
     WHY_MISSING_OUTGOING_LINKS,
@@ -75,6 +77,45 @@ def check_document_length(
             inspection_context.document_type.name
             if inspection_context.document_type is not None
             else None
+        ),
+    )
+
+
+def check_document_minimum_length(
+    configuration: DocguardConfiguration,
+    inspection_context: DocumentInspectionContext,
+) -> Diagnostic | None:
+    if configuration.min_document_lines <= 0:
+        return None
+    if inspection_context.document_type is not None:
+        return None
+
+    parsed_document = inspection_context.parsed_document
+    normalized_index_files = {
+        index_file.replace("\\", "/")
+        for index_file in configuration.index_files
+    }
+    if parsed_document.repository_relative_path in normalized_index_files:
+        return None
+    if parsed_document.physical_line_count >= configuration.min_document_lines:
+        return None
+
+    return Diagnostic(
+        code=DIAGNOSTIC_CODE_DOCUMENT_TOO_SHORT,
+        severity=resolve_severity_for_code(
+            DIAGNOSTIC_CODE_DOCUMENT_TOO_SHORT,
+            configuration.severities,
+        ),
+        document_path=parsed_document.repository_relative_path,
+        message=(
+            f"{parsed_document.repository_relative_path} has "
+            f"{parsed_document.physical_line_count} lines. "
+            f"Minimum: {configuration.min_document_lines} lines."
+        ),
+        why_it_matters=WHY_DOCUMENT_TOO_SHORT,
+        suggestion=(
+            "Merge this stub into its canonical document, or delete it if the "
+            "content is no longer needed."
         ),
     )
 

@@ -12,6 +12,7 @@ from pathlib import Path
 USAGE_RELATIVE_PATH = "docs/usage.md"
 
 INSTALL_HEADING = "## Install"
+UPDATE_UV_INSTALL_HEADING = "### Update an existing uv install"
 INSTALL_FROM_GIT_HEADING = "### Install from Git"
 USE_IN_ANOTHER_REPOSITORY_HEADING = "## Use in another repository"
 PYPI_DISTRIBUTION_NAME = "docguard-structure"
@@ -25,11 +26,11 @@ UNICODE_HEADING = "## Unicode and UTF-8 support"
 PHASE_15_HEADING = "## Phase 1.5 UX and reliability"
 CONFIGURATION_HEADING = "## Configuration"
 
-FULL_CONFIGURATION_MARKER = 'paths = ["docs", "adr", "README.md"]'
+FULL_CONFIGURATION_MARKER = 'paths = ["README.md", "CONTEXT.md", "docs"]'
 
 CANONICAL_CLI_COMMAND_MARKERS = (
-    "docguard docs/ --summary",
-    "docguard docs/ --format json",
+    "docguard --summary",
+    "docguard --format json",
 )
 
 CANONICAL_PYTEST_COMMAND_MARKERS = (
@@ -126,11 +127,11 @@ def test_usage_has_one_canonical_install_section() -> None:
 
     assert count_fenced_blocks_containing_all_markers(
         install_section,
-        (f"uv add {PYPI_DISTRIBUTION_NAME}", "uv run docguard docs/ --summary"),
+        (f"uv add {PYPI_DISTRIBUTION_NAME}", "uv run docguard --summary"),
     ) == 1
     assert count_fenced_blocks_containing_all_markers(
         install_section,
-        (f"pip install {PYPI_DISTRIBUTION_NAME}", "docguard docs/ --summary"),
+        (f"pip install {PYPI_DISTRIBUTION_NAME}", "docguard --summary"),
     ) == 1
 
 
@@ -147,9 +148,29 @@ def test_install_section_documents_git_uv_add_from_git() -> None:
         install_section,
         (
             f'{PYPI_DISTRIBUTION_NAME} @ {PRE_PYPI_GIT_REPOSITORY_URL}',
-            "uv run docguard docs/ --summary",
+            "uv run docguard --summary",
         ),
     ) == 1
+
+
+def test_install_section_documents_existing_uv_update() -> None:
+    usage_text = read_usage_text()
+    install_section = extract_section_between_headings(
+        usage_text,
+        INSTALL_HEADING,
+        USE_IN_ANOTHER_REPOSITORY_HEADING,
+    )
+
+    assert UPDATE_UV_INSTALL_HEADING in install_section
+    assert count_fenced_blocks_containing_all_markers(
+        install_section,
+        ("uv add --upgrade docguard-structure", "uv run docguard --summary"),
+    ) == 1
+    assert count_fenced_blocks_containing_all_markers(
+        install_section,
+        ('uv add "docguard-structure==0.3.0"', "uv run docguard --summary"),
+    ) == 1
+    assert "[[tool.docguard.relaxations]]" in install_section
 
 
 def test_install_section_documents_git_uvx_from_git() -> None:
@@ -214,11 +235,11 @@ def test_usage_has_one_canonical_cli_block_and_one_pytest_block() -> None:
     assert count_fenced_code_blocks(what_you_can_do_section) == 0
     assert count_fenced_blocks_containing_all_markers(
         what_you_can_do_section,
-        ("docguard docs/",),
+        ("docguard --summary",),
     ) == 0
     assert count_fenced_blocks_containing_all_markers(
         unicode_section,
-        ("docguard docs/",),
+        ("docguard --summary",),
     ) == 0
     assert count_fenced_blocks_containing_all_markers(
         unicode_section,

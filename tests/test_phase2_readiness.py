@@ -118,6 +118,9 @@ EXPECTED_REPOSITORY_INCOMING_LINKS = {
     "docs/adr/0013-pypi-distribution-name-docguard-structure.md": frozenset(
         {"README.md", "docs/adr/0008-pypi-alpha-distribution.md", "docs/release-readiness.md"}
     ),
+    "docs/adr/0014-strict-baseline-and-policy-relaxations.md": frozenset(
+        {"README.md"}
+    ),
 }
 
 EXPECTED_REPOSITORY_OUTGOING_LINKS = {
@@ -142,6 +145,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
             "docs/adr/0011-duplicate-prose-paragraph-guidance.md",
             "docs/adr/0012-prose-style-diagnostics.md",
             "docs/adr/0013-pypi-distribution-name-docguard-structure.md",
+            "docs/adr/0014-strict-baseline-and-policy-relaxations.md",
             "docs/prose-style-rules.md",
         }
     ),
@@ -249,6 +253,7 @@ EXPECTED_REPOSITORY_OUTGOING_LINKS = {
     "docs/adr/0013-pypi-distribution-name-docguard-structure.md": frozenset(
         {"docs/adr/0008-pypi-alpha-distribution.md", "docs/release-readiness.md"}
     ),
+    "docs/adr/0014-strict-baseline-and-policy-relaxations.md": frozenset(),
 }
 
 EXPECTED_ORPHAN_CANDIDATES = frozenset()

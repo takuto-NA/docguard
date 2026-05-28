@@ -146,9 +146,20 @@ def strip_inline_code_segments(line_text: str) -> str:
     return INLINE_CODE_SEGMENT_PATTERN.sub("", text_without_double_tick_code)
 
 
+def mask_inline_code_segments(line_text: str) -> str:
+    text_with_masked_double_tick_code = INLINE_CODE_DOUBLE_TICK_PATTERN.sub(
+        "INLINE_CODE",
+        line_text,
+    )
+    return INLINE_CODE_SEGMENT_PATTERN.sub(
+        "INLINE_CODE",
+        text_with_masked_double_tick_code,
+    )
+
+
 def count_strong_emphasis_pairs(line_text: str) -> int:
-    text_without_inline_code = strip_inline_code_segments(line_text)
-    return len(CLOSED_STRONG_EMPHASIS_PATTERN.findall(text_without_inline_code))
+    text_with_masked_inline_code = mask_inline_code_segments(line_text)
+    return len(CLOSED_STRONG_EMPHASIS_PATTERN.findall(text_with_masked_inline_code))
 
 
 def count_document_strong_emphasis_pairs(prose_lines: tuple[ProseLine, ...]) -> int:

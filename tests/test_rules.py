@@ -23,7 +23,32 @@ from docguard.runner import run_docguard_checks
 
 
 def write_pyproject(project_root: Path, contents: str) -> None:
-    (project_root / "pyproject.toml").write_text(contents, encoding="utf-8")
+    appended_relaxations = []
+    if "parameter = \"min_document_lines\"" not in contents:
+        appended_relaxations.append(
+            """
+[[tool.docguard.relaxations]]
+parameter = "min_document_lines"
+value = 0
+reason = "Focused rule tests disable the document floor unless explicitly tested."
+"""
+        )
+    if (
+        "require_index_reachability = true" not in contents
+        and "parameter = \"require_index_reachability\"" not in contents
+    ):
+        appended_relaxations.append(
+            """
+[[tool.docguard.relaxations]]
+parameter = "require_index_reachability"
+value = false
+reason = "Focused rule tests isolate non-navigation diagnostics."
+"""
+        )
+    (project_root / "pyproject.toml").write_text(
+        contents + "".join(appended_relaxations),
+        encoding="utf-8",
+    )
 
 
 def write_orphan_detection_project(project_root: Path, *, enabled: bool) -> None:
@@ -582,7 +607,6 @@ def test_document_too_long_diagnostic_is_reported(
         """
 [tool.docguard]
 paths = ["docs"]
-max_document_lines = 400
 """,
     )
     configuration = load_docguard_configuration(
@@ -809,10 +833,11 @@ def test_warning_severity_does_not_fail_run(
         """
 [tool.docguard]
 paths = ["docs"]
-max_document_lines = 400
 
-[tool.docguard.severity]
-DG-SIZE001 = "warning"
+[[tool.docguard.relaxations]]
+parameter = "severity.DG-SIZE001"
+value = "warning"
+reason = "Focused warning severity test needs a non-failing size diagnostic."
 """,
     )
     configuration = load_docguard_configuration(
@@ -882,7 +907,7 @@ def test_heading_duplicates_trigger_diagnostic_when_opted_in(
 [tool.docguard]
 paths = ["docs"]
 require_duplicate_guidance_detection = true
-duplicate_guidance_kinds = ["heading"]
+duplicate_guidance_kinds = ["code_block", "list_item", "heading"]
 """,
     )
     configuration = load_docguard_configuration(
@@ -924,7 +949,11 @@ uv run docguard docs/ --summary
         """
 [tool.docguard]
 paths = ["docs"]
-require_duplicate_guidance_detection = false
+
+[[tool.docguard.relaxations]]
+parameter = "require_duplicate_guidance_detection"
+value = false
+reason = "Focused duplicate guidance test verifies the disabled rule behavior."
 """,
     )
     configuration = load_docguard_configuration(
@@ -1002,7 +1031,7 @@ def test_paragraph_duplicates_trigger_diagnostic_when_opted_in(
 [tool.docguard]
 paths = ["docs"]
 require_duplicate_guidance_detection = true
-duplicate_guidance_kinds = ["paragraph"]
+duplicate_guidance_kinds = ["code_block", "list_item", "paragraph"]
 """,
     )
     configuration = load_docguard_configuration(
@@ -1021,7 +1050,7 @@ duplicate_guidance_kinds = ["paragraph"]
     assert "paragraph" in duplicate_guidance_diagnostics[0].message
 
 
-def test_duplicate_guidance_uses_warning_by_default(
+def test_duplicate_guidance_uses_error_by_default(
     temporary_project_directory: Path,
 ) -> None:
     docs_directory = temporary_project_directory / "docs"
@@ -1057,6 +1086,9 @@ require_duplicate_guidance_detection = true
         DIAGNOSTIC_CODE_DUPLICATE_GUIDANCE,
     )
     assert len(duplicate_guidance_diagnostics) == 1
-    assert duplicate_guidance_diagnostics[0].severity is SeverityLevel.WARNING
-    assert resolve_exit_code_from_diagnostics(run_result.diagnostics) == EXIT_CODE_SUCCESS
+    assert duplicate_guidance_diagnostics[0].severity is SeverityLevel.ERROR
+    assert (
+        resolve_exit_code_from_diagnostics(run_result.diagnostics)
+        != EXIT_CODE_SUCCESS
+    )
 

@@ -10,7 +10,7 @@ Prose style is not a general Markdown formatter. It does not validate heading sp
 |------------|------------|---------------|
 | Limit strong emphasis in prose | `DG-STYLE001` | `max_strong_emphasis_pairs` (default `0`) |
 | Flag prohibited pronoun and slang patterns | `DG-STYLE002` | built-in patterns; optional `extra_prohibited_prose_patterns` and `allowed_prose_phrases` |
-| Fail CI on either rule | both | set severity to `"error"` |
+| Fail CI on either rule | both | strict baseline severity is `"error"` |
 
 Entry points: same as other rules — `docguard`, `--format json`, `pytest --docguard`.
 
@@ -38,14 +38,13 @@ Typical fix: remove strong emphasis or rewrite the sentence in plain text.
 Example configuration:
 
 ```toml
-[tool.docguard]
-max_strong_emphasis_pairs = 0
-
-[tool.docguard.severity]
-DG-STYLE001 = "warning"
+[[tool.docguard.relaxations]]
+parameter = "max_strong_emphasis_pairs"
+value = 2
+reason = "Legacy prose cleanup needs a temporary emphasis allowance."
 ```
 
-Raise the limit temporarily when adopting docguard against legacy documentation, then tighten it once prose is cleaned up.
+Raise the limit only as a reasoned relaxation when adopting docguard against legacy documentation, then remove it once prose is cleaned up.
 
 ## Detect prohibited prose patterns (`DG-STYLE002`)
 
@@ -56,11 +55,10 @@ Typical fix: rewrite in neutral documentation voice.
 Allow intentional phrases:
 
 ```toml
-[tool.docguard]
-allowed_prose_phrases = ["What you can check"]
-
-[tool.docguard.severity]
-DG-STYLE002 = "warning"
+[[tool.docguard.relaxations]]
+parameter = "allowed_prose_phrases"
+value = ["What you can check"]
+reason = "Usage documentation keeps this exact heading during migration."
 ```
 
 Add project-specific patterns:
