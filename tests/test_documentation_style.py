@@ -13,6 +13,7 @@ from docguard.documentation_style import (
     DocumentationStyleSourceKind,
     EnforcementStatus,
     EXPECTED_RANKED_EXPRESSION_COUNT,
+    collect_documentation_style_candidates,
     extract_documentation_style_inspection_targets,
     find_forbidden_documentation_expression_matches,
 )
@@ -337,6 +338,24 @@ def test_check_documentation_style_reports_rank_in_message() -> None:
     assert diagnostics[0].code == DIAGNOSTIC_CODE_FORBIDDEN_DOCUMENTATION_EXPRESSION
     assert "rank 1" in diagnostics[0].message
     assert diagnostics[0].location == "line 1"
+
+
+def test_candidates_include_every_match_reported_as_diagnostic() -> None:
+    inspection_context = build_inspection_context("この案は筋が良いです。\n")
+    configuration = build_configuration()
+
+    diagnostics = check_documentation_style(configuration, inspection_context)
+    candidates = collect_documentation_style_candidates(
+        configuration,
+        (inspection_context,),
+    )
+
+    assert len(diagnostics) == 2
+    assert len(candidates) == len(diagnostics)
+    assert {candidate.detail for candidate in candidates} == {
+        "rank 43; 筋が良い phrase; prose; line 1",
+        "rank 50; deictic pronoun phrase; prose; line 1",
+    }
 
 
 def test_run_docguard_checks_includes_documentation_style_diagnostics(

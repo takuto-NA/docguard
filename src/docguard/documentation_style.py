@@ -876,15 +876,15 @@ def collect_documentation_style_candidates(
             )
             if not matched_rules:
                 continue
-            first_match = matched_rules[0]
-            candidates.append(
-                DocumentationStyleCandidate(
-                    document_path=parsed_document.repository_relative_path,
-                    line_number=first_match.line_number,
-                    kind=DocumentationStyleViolationKind.FORBIDDEN_DOCUMENTATION_EXPRESSION,
-                    detail=format_forbidden_documentation_expression_detail(first_match),
+            for match in matched_rules:
+                candidates.append(
+                    DocumentationStyleCandidate(
+                        document_path=parsed_document.repository_relative_path,
+                        line_number=match.line_number,
+                        kind=DocumentationStyleViolationKind.FORBIDDEN_DOCUMENTATION_EXPRESSION,
+                        detail=format_forbidden_documentation_expression_detail(match),
+                    )
                 )
-            )
 
     return tuple(candidates)
 
